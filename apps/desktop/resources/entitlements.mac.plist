@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hardened-runtime entitlements for RealtimeDocs Desktop (Developer ID builds).
+
+  Deliberately minimal: only what the V8 JavaScript engine needs under the
+  hardened runtime. The app requests no camera, microphone, screen-recording,
+  Bluetooth, USB, location, photo-library or Apple-events access, so none of
+  those entitlements appear here and no usage-description strings are shipped.
+  (The default entitlement set of the signing tool includes several of them;
+  scripts/package.mjs passes this file for every binary instead.)
+-->
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+  </dict>
+</plist>

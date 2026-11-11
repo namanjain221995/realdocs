@@ -1,0 +1,377 @@
+You are my senior full-stack engineer, desktop engineer, real-time systems engineer, product designer, and QA engineer.
+
+Build a complete new project called RealtimeDocs from the current workspace. This is an implementation assignment: create the files, install compatible dependencies, implement the product, run it, test meaningful behavior, fix defects, and deliver exact startup instructions. A plan or a static mockup is insufficient.
+
+Make routine decisions independently. Do not ask me to select a framework, approve every phase, pick colors, or say "continue." Read the existing workspace and applicable instructions first, preserve unrelated work, and proceed through the complete implementation.
+
+1. PRODUCT AND USER EXPERIENCE
+
+The primary workflow:
+- An administrator creates a document and assigns an employee as an editor.
+- The employee types or pastes rich content into a browser editor.
+- The administrator creates a document-specific sharing link.
+- A recipient opens the link and immediately sees the document.
+- Subsequent authorized edits appear automatically in connected browser and desktop clients.
+- The recipient can open a Windows or macOS desktop companion that displays the document in a compact, floating, transparent panel over their other applications. Both are required desktop platforms.
+- A recipient with explicit edit permission can also type and paste content. A view-only recipient cannot change the shared document.
+- The desktop companion can request operating-system capture exclusion for its own windows where supported. Describe this capability accurately and test actual meeting behavior.
+
+Use RealtimeDocs as the working product name. Create an original, polished interface. If reference screenshots are available, use their compact dark floating-panel layout as inspiration, while implementing our own interface and assets.
+
+The screenshot of VS Code appears to show an SSH workspace. Inspect the actual environment. Distinguish the remote server from the local Windows or Mac computer. A desktop process running on an SSH server does not create an overlay on my local computer. Provide a server setup and separate local Windows and macOS client setups.
+
+2. AUTONOMOUS EXECUTION RULES
+
+Make reasonable assumptions, record them briefly in docs/decisions.md, and keep implementing. Use self-hosted components and avoid paid-service prerequisites for development and core operation. Release signing/notarization may require separate credentials; document those prerequisites without blocking development. No AI model or GPU should be necessary for this product.
+
+Time-box initial reconnaissance and architecture notes; start a working end-to-end path promptly. Use parallel agents when available for independent tasks with clearly assigned ownership. Integrate and review their work.
+
+Consult official documentation for version-sensitive APIs. Select compatible maintained releases, pin the toolchain and dependencies, and create a lockfile. Do not mix examples from incompatible major versions.
+
+Run commands yourself when authorized and supported. Respect tool permissions and access controls. If a dependency, credential, native Windows/macOS session, or external service is genuinely unavailable, finish everything independent of that limitation and provide exact remaining steps. Never fabricate a successful build, package, benchmark, or manual test.
+
+Keep all Git/GitHub mutations, public deployment, paid provisioning, and unrelated infrastructure changes out of this implementation. Do not overwrite an occupied port by stopping another service. Choose available development ports and report them.
+
+Keep a concise progress/checkpoint file so work can continue after context compaction. Do not stop after generating scaffolding, after one successful screen, or after writing a plan. Avoid repeated optional refactoring once behavior is sufficiently verified.
+
+3. DEFAULT ARCHITECTURE
+
+Use this concrete starting architecture unless environment evidence requires a documented adjustment:
+- TypeScript throughout, with a pnpm workspace.
+- apps/web: React and Vite for dashboard, editor, browser viewer, invitations, and settings.
+- apps/server: Fastify for authentication, document APIs, permissions, uploads, exports, and a Hocuspocus collaboration endpoint.
+- apps/desktop: Electron for Windows and macOS, with a locally packaged renderer, a narrowly scoped preload bridge, and small platform adapters where native behavior differs.
+- packages/editor: shared Tiptap/ProseMirror schema, Yjs integration, clipboard handling, node views, and safe rendering.
+- packages/contracts: runtime-validated API contracts, roles, event types, and document schema versions.
+- packages/ui: shared accessible controls and design tokens.
+- PostgreSQL for accounts, document metadata, memberships, sessions, share grants, canonical collaborative state, snapshots, and asset metadata.
+- A private persistent file volume for uploaded bytes, behind an authorized asset endpoint and a storage adapter.
+- Docker Compose for the server, database, and persistent volumes.
+- Vitest and Playwright, or equally suitable compatible tools, for meaningful automated tests.
+
+Use one backend deployment and one collaboration-service instance initially. Do not introduce Redis, Kafka, Kubernetes, or multiple document writers without an actual requirement. Document the coordination needed before horizontal scaling.
+
+Build shared web/desktop document components, not two incompatible editors. Keep desktop window operations separate from document transport. Use a single authoritative document schema and explicit migration/version handling.
+
+4. AUTHENTICATION, ROLES, AND ADMIN DASHBOARD
+
+Implement a working authentication flow with secure password hashing, expiring sessions, logout, and rate limits. Bootstrap the first administrator through a one-time local command; never ship a shared default password.
+
+Support administrator, assigned editor, and viewer capabilities:
+- Administrators create and manage documents, memberships, invitations, links, and snapshots.
+- Editors modify only documents for which they have an active editing grant.
+- Viewers receive live content and use their own display preferences without modifying shared content.
+
+Provide a clean dashboard with create, rename, duplicate, search, recent documents, archive, and recoverable trash. Include a document sharing panel, current access list, and useful empty/error/loading states.
+
+Allow administrators to create copyable invitation links without requiring an email service. Do not automatically send messages. Keep invitations and document sharing links as separate permission concepts.
+
+Use opaque identifiers. Enforce authorization in every relevant HTTP route, collaboration connection, upload, download, export, and snapshot operation. Knowing a document ID must not grant access. Enforce workspace/document boundaries even if the initial deployment has one workspace.
+
+5. SHARING LINKS AND DESKTOP HANDOFF
+
+Default sharing links to view-only. Provide an explicit administrator choice for edit access. Implement expiry, revocation, and rotation.
+
+Generate cryptographically random capability secrets, store only their hashes, and exchange a valid link for a scoped session. Avoid exposing long-lived secrets in server logs, analytics, referrers, or WebSocket URLs. Prefer a URL-fragment secret with a deliberate exchange and cleanup flow. Use a restrictive referrer policy.
+
+WebSocket access must be scoped to document, role, grant, expiry, and current document generation. Never trust a role supplied by the client.
+
+Revoking a share link must invalidate sessions derived from that grant, disconnect active recipients, reject reconnection, and deny subsequent protected asset/export requests. Independent permissions remain independent. Expiry and permission downgrades must also affect existing connections.
+
+Revocation stops future access; do not claim it erases content already received, copied, or downloaded.
+
+Implement an Open in Desktop action and a reliable Paste Share Link alternative. Use a validated handoff with short-lived, single-use codes where appropriate; reject unexpected origins, schemes, document identifiers, and expired credentials. Do not grant arbitrary URLs privileged desktop capabilities.
+
+The desktop app must have an explicit server connection setting so Windows and macOS clients can reach the same remote backend. Explain that localhost on the user's Windows or Mac computer is different from localhost on the SSH server. Document a secure HTTPS/WSS deployment or explicit development tunnel without exposing services automatically.
+
+6. GOOGLE DOCS-STYLE CONTENT
+
+Deliver a real rich editor with:
+- Paragraphs, headings, bold, italic, underline, strikethrough, font size, text color, and highlighting.
+- Alignment, indentation, line spacing, ordered/unordered lists, checklists, block quotes, and separators.
+- Editable hyperlinks with safe protocol handling.
+- Tables with header cells, row/column insertion and deletion, and usable sizing.
+- Code blocks with language choice, syntax highlighting, preserved whitespace, and copy.
+- Images from clipboard paste, screenshots, drag-and-drop, and file upload.
+- Image alignment, aspect-preserving resize, alt text, and captions.
+- Diagram images and editable Mermaid source with a safe preview and readable syntax errors.
+- Find/replace for editors, find for viewers, and collaboration-aware undo/redo.
+- Plain-text paste and best-effort normalized rich paste from common browsers, office applications, and Google Docs.
+- Unicode, emoji, Hindi/English mixed text, IME composition, and multiline content.
+
+Support common additional files as authorized download attachments when they do not have a safe implemented preview. Do not advertise arbitrary file types as editable document content.
+
+Keep text, tables, images, code, and diagrams consistent in browser and desktop rendering. Clearly identify unsupported clipboard formatting instead of silently losing content or claiming perfect import fidelity.
+
+Provide practical exports: plain text, supported Markdown, and a print-friendly document view with Save to PDF instructions. Include images where the format supports them and document any export limitations. Do not claim full DOCX fidelity or complete Google Docs feature parity.
+
+Use open-source editor functionality and implement necessary small extensions. Verify licenses; do not accidentally require a commercial editor subscription.
+
+7. CLIPBOARD, UPLOADS, AND CONTENT SAFETY
+
+Upload asset bytes through the HTTP upload pipeline, not through Yjs. Document nodes should hold stable asset IDs and metadata, not huge base64 strings, temporary browser blob URLs, or expiring signed URLs.
+
+Give every pending upload a stable placeholder ID. Replace that specific node after upload succeeds, regardless of where the cursor moved. Preserve mixed text/image paste order even when uploads finish in a different order. Handle cancellation, retries, failed uploads, undo, and deleted placeholders without unexpected insertion.
+
+Authorize all asset reads and writes against the relevant document grant. Validate file sizes, actual formats, dimensions, and decompression limits. Use randomized storage keys and safe filenames; prevent path traversal. Provide configurable quotas and understandable failure messages.
+
+Safely handle pasted HTML, URL attributes, diagram source, and SVG. Reject or sanitize active content. Never execute pasted code, event handlers, arbitrary JavaScript, or remote scripts. Mermaid must run with a strict configuration and disabled executable features; keep failures isolated from the editor.
+
+Avoid automatic fetching of arbitrary server-side URLs. A pasted link can remain a link. Do not add an unrestricted URL-preview service or a public asset bucket as a shortcut.
+
+Retain assets needed by the live document and retained snapshots. Clean up orphan uploads only after a grace period and reference checks. Do not delete images that undo, reconnect, or snapshot restoration can still need.
+
+8. REAL-TIME SYNCHRONIZATION
+
+Use Yjs incremental updates over an authenticated persistent WebSocket connection. Do not implement collaborative editing by replacing full HTML on each keystroke, polling, or maintaining competing local/server documents.
+
+Initialize new documents exactly once on the server. Persist canonical Yjs binary state; JSON, HTML, or Markdown can be derived exports but must not recreate a fresh collaborative document every time a client connects.
+
+Support concurrent editing, reconnect, network interruption, and bounded retry with jitter. Configure collaboration-aware local undo so undoing my work does not undo another person's changes.
+
+Enforce view-only mode on the server's update-processing path. A malicious client sending raw Yjs messages must not modify the shared document. Validate session and document scope before loading or sending content.
+
+Synchronize presence and cursor information separately from durable document state. Rate-limit presence independently, clean up disconnected participants, and prevent spoofed roles or identities.
+
+Keep content updates prompt. Do not add a long artificial debounce to typing synchronization. Small measured batching is acceptable if it improves behavior without noticeable delay.
+
+Maintain useful states: Connecting, Live, Reconnecting, Offline, Access expired, and Access revoked. Display pending edits and persistence state separately. Handle server overload with bounded queues and clear errors.
+
+Do not allow old clients with incompatible schemas to silently delete unknown content. Define a compatible-version check and a safe update-required state.
+
+9. DURABILITY, OFFLINE RECOVERY, AND HISTORY
+
+Connected, synchronized, and durably saved are different states. Show Saved only after a server acknowledgment establishes that the corresponding pending changes have committed to persistent storage.
+
+Implement ordered persistence per document with monotonic revisions or an equivalent durable update log. Prevent older asynchronous writes from overwriting newer state. Any compaction must retain updates beyond its committed boundary.
+
+The acknowledgment scheme must cover all pending changes, including deletion-only operations. State-vector equality alone is not sufficient evidence for every kind of saved change. Test the chosen design directly.
+
+A database error must never produce a false Saved indicator. Keep pending work recoverable, surface the error, and recover when the database returns. Graceful shutdown helps but is not a substitute for crash-safe acknowledged persistence.
+
+For signed-in editors, provide scoped local pending-change recovery using an appropriate local store. Partition it by account, document, and generation; clear it appropriately on logout. Guest viewers should not persist confidential documents locally by default.
+
+On reconnect, reauthorize before accepting offline changes. If editing access was removed, preserve a clearly separated recoverable local draft where appropriate without publishing it. Do not promise remote wiping of previously received data.
+
+Implement named snapshots and restore. Snapshot restoration must establish a new document generation or another tested boundary so stale offline updates cannot silently resurrect content from the abandoned generation. Reconnect active clients and explain the restoration state. Preserve an editor's pending work from an older generation as a separate recovery/export draft; do not silently merge or discard it.
+
+Back up both the database and uploaded assets. Provide a practical backup/restore procedure and verify restoration in an isolated environment when available. Clearly state the retention defaults.
+
+10. FLOATING DESKTOP PANEL
+
+Deliver working Windows and macOS desktop companions as equal core requirements. Deliver a browser fallback for other environments. A browser fallback alone does not fulfill the macOS desktop requirement.
+
+Implement:
+- A compact frameless panel, initially around 720 by 460 logical pixels, with sensible minimum dimensions.
+- A genuinely transparent native background with adjustable panel-background alpha; keep text and images readable.
+- A dedicated drag area, clearly separated from selectable text and interactive controls.
+- Adjustable width/height, pin/always-on-top, collapse, hide/show, and restore.
+- Font-size and reading-width controls, dark/light foreground choices, and persisted local preferences.
+- Multiple-monitor positioning, DPI handling, and recovery when a saved monitor no longer exists.
+- A user-controlled click-through reading mode and a reliable return to interactive mode.
+- Configurable platform-appropriate keyboard shortcuts with registration-failure handling, a Windows tray recovery path, and a macOS menu-bar recovery path.
+- No focus stealing when a remote edit arrives.
+- Clear document title, connection state, and access state without a bulky toolbar.
+
+Do not apply whole-window opacity as the only transparency control, because that also fades the document content.
+
+Treat transparent resizing as an early native feasibility test. Electron documents platform limitations around transparent resizable windows. Verify Windows and macOS behavior separately with the selected release. If live resizing is unreliable, implement a stable size-control fallback, such as presets or controlled window recreation preserving state, and document the limitation per platform.
+
+Do not confuse transparency with click-through. Keep text selection, links, scrolling, and toolbar controls usable in interactive mode. Do not let users become trapped in an unclickable panel.
+
+Keep scroll position local to each recipient. Follow Latest must be optional, pause when the recipient scrolls back or selects text, and provide a clear jump-to-latest control. Resume rendering smoothly without moving the reader unexpectedly.
+
+10A. MACOS PLATFORM REQUIREMENTS
+
+Support Apple Silicon arm64 and Intel x64 on macOS versions supported by the chosen maintained Electron release and dependencies. Verify current support, record minimum OS versions, and identify any unsupported combination rather than silently dropping it or choosing an obsolete runtime.
+
+Keep rich editing, clipboard/image paste, live viewing, reconnect, permissions, and all panel controls consistent across Windows and macOS. Use Command-based editing shortcuts on Mac, native application menus with working copy/paste/undo roles, and tested trackpad scrolling. Handle Dock reopen, close-versus-quit behavior, and menu-bar recovery from hidden or click-through mode.
+
+Test Retina scaling, multiple displays, monitor removal, sleep/wake reconnect, and user-controlled behavior across Spaces and fullscreen applications. Do not promise that always-on-top can cover every system surface or fullscreen configuration. Keep a recovery command accessible and avoid stealing focus.
+
+Verify browser behavior in current Safari as well as Chromium browsers on Mac, including clipboard fallbacks and image uploads. Do not claim a Playwright WebKit run is evidence of every Safari release or native desktop behavior.
+
+Provide macOS arm64/x64 packaging configuration and .app plus .dmg or .zip release targets, separately or as a universal app when supported by the selected pipeline. Document and configure Developer ID signing and notarization for normal external distribution. Keep signing secrets out of source. If a Mac build host or Apple credentials are unavailable, finish the implementation and provide exact macOS build/sign/notarize steps; mark the missing artifacts or checks as pending.
+
+Do not require disabling Gatekeeper, SIP, or other OS protections. Request only permissions required by an implemented feature. Displaying live notes should not introduce unnecessary microphone, camera, or screen-recording permissions.
+
+Document support in docs/macos-client.md and include actual OS/architecture/build results in the test matrix. macOS desktop support and capture-exclusion reliability are separate capabilities; never label the panel hidden from meetings merely because the Mac app works.
+
+11. SCREEN-CAPTURE EXCLUSION: PRECISE REQUIREMENTS
+
+Implement an optional private presenter-panel mode using documented operating-system controls on our own app windows.
+
+For supported Windows configurations, use Electron's content-protection API and verify its current mapping to Windows capture-exclusion behavior. Create relevant windows hidden, apply the requested protection, and then show them. Reapply the setting when windows are recreated.
+
+Do not describe this as a universal meeting bypass, guaranteed invisibility, or protection from every recording method. A successful API request is not proof of what another meeting participant sees. Protection transitions can depend on subsequent desktop composition.
+
+Use clear status labels that distinguish:
+- Browser mode: capture exclusion unavailable.
+- Supported desktop mode: OS capture exclusion requested; meeting setup not yet verified.
+- Request failure: capture exclusion could not be enabled.
+- Unsupported or unreliable platform behavior.
+- A manually tested app/OS/capture combination, with recorded versions and date.
+
+Keep technical diagnostics available in settings, without overwhelming the main document view.
+
+Document Electron's macOS ScreenCaptureKit limitation. Modern ScreenCaptureKit-based applications can capture the panel despite this content-protection setting. Show an explicit macOS warning that screen-share hiding is not guaranteed, while keeping all document and floating-panel features usable. Do not claim reliable macOS exclusion using this API. Treat Linux exclusion as unavailable unless a separately implemented and verified supported path exists.
+
+Do not inject into, hook, patch, or modify Google Meet, Zoom, Teams, or their recording pipelines. Do not install capture-interception drivers or change system security settings. The feature controls our own windows only.
+
+Cover all app-owned surfaces that can display document content. Avoid document-content notifications. An external browser, exported document, or other unprotected surface is outside the panel's protection.
+
+Provide a fallback guide: share a selected presentation/app window where appropriate, keep notes on a separate unshared display/device, and verify the receiving participant's view. Ordinary web pages cannot promise desktop capture exclusion.
+
+12. CAPTURE COMPATIBILITY VERIFICATION
+
+Create docs/capture-compatibility.md and leave unperformed cases marked NOT TESTED.
+
+The matrix must cover Windows and macOS independently and include Google Meet, Zoom, and Microsoft Teams; browser tab, selected application window, and entire-display sharing; relevant browser/native client variants; and protection enabled/disabled where supported.
+
+For every completed check, record:
+- OS/build, Electron/app version, meeting application version, and browser version where applicable.
+- Exact capture mode and monitor configuration.
+- The local appearance and the view observed by a second participant/device.
+- Whether the panel, a black rectangle, partial content, or another artifact was visible.
+- Date and evidence of the test.
+- Startup, document switch, resize, hide/show, and protection-toggle behavior.
+
+Use an identifiable sample document. Verify that ordinary shared content remains visible while the local panel is visible to its user, and independently check whether the participant receives the panel.
+
+A screenshot captured on the local computer or an API boolean is not sufficient evidence of meeting compatibility. Do not claim native Windows or macOS capture tests passed from a Linux server, an SSH terminal, or headless browser tests.
+
+If an actual local Windows/macOS meeting environment is unavailable, complete the implementation and all available tests, then provide concise exact manual steps for that platform. Do not silently convert NOT TESTED into PASS.
+
+13. DESKTOP AND WEB SECURITY
+
+Use a locally packaged desktop application renderer, context isolation, renderer sandboxing, disabled Node integration, a restrictive Content Security Policy, and a minimal typed preload API.
+
+Validate IPC sender, frame, input shape, bounds, and allowlisted actions. Never expose arbitrary shell execution, filesystem access, URL loading, or unrestricted IPC to document content. Validate external links and block privileged navigation and unexpected popups.
+
+Keep long-lived desktop credentials out of document state and ordinary renderer storage. Use appropriate OS-backed credential storage where available, handle unavailable secure storage honestly, and avoid persistent plaintext secrets.
+
+Apply TLS/WSS in deployed setups, secure session cookies, CSRF protection where relevant, origin validation for WebSockets, input validation, sensible body/message limits, and login/share-link rate limits.
+
+Use structured logs that omit document bodies, passwords, raw share secrets, and session tokens. Record necessary administrative events without turning document keystrokes into an audit-data leak.
+
+Implement clear unauthorized, expired-link, missing-document, upload-failure, and server-unavailable screens. Never fix security failures by disabling authorization, CORS checks, TLS verification, or Electron protections.
+
+14. SPEED AND PERFORMANCE
+
+The goal is immediate-feeling collaboration, not a physically impossible zero-millisecond network guarantee.
+
+Use these initial engineering targets:
+- Local typing should not wait for a network request or block behind an upload.
+- For plain-text edits after connection is established, on a documented healthy LAN with network RTT at or below 10 ms, a small document, and up to 10 connected clients, aim for p95 edit-to-visible-remote-render below 100 ms. Measure initial loading separately.
+- Measure wider internet conditions separately; do not promise the same latency on every network.
+- Keep code highlighting, large paste processing, and diagram rendering off the typing-critical path.
+- Recompute expensive nodes only when needed; avoid full-document React rerenders per keystroke.
+- Rate-limit presence separately and load image bytes efficiently.
+
+Create a reproducible performance harness and report p50, p95, p99, sample count, document size, client count, hardware, and network conditions.
+
+Measure end-to-end render latency with a valid clock methodology. Never subtract unsynchronized timestamps from separate computers without accounting for clock error. Label ping/RTT and one-way propagation measurements accurately.
+
+Benchmark text separately from image upload plus image rendering. Large images cannot appear remotely before their bytes arrive. Show honest upload progress.
+
+Set reasonable documented limits for document and attachment sizes. If a performance goal is missed, identify the bottleneck, make targeted improvements, and report actual results. Do not invent numbers or spend indefinitely optimizing a cosmetic benchmark.
+
+15. UI QUALITY AND RESPONSIVENESS
+
+Build a coherent dashboard/editor/viewer experience with clear typography, compact toolbars, consistent spacing, useful hover/focus states, and keyboard accessibility.
+
+Check desktop, tablet, and narrow mobile browser layouts. Toolbars must remain usable without forcing the entire page to overflow. Tables and code may scroll within their own blocks.
+
+Use modest motion and respect reduced-motion preferences. Show genuine skeleton/loading, disconnected, read-only, empty, and error states. Avoid decorative animations that slow editing.
+
+Keep the desktop overlay focused on reading and document interaction. Put administration, diagnostics, and complex sharing controls in appropriate dedicated views.
+
+Provide a realistic seeded sample document containing mixed text, a table, an image, a code block, a link, and a Mermaid diagram. Use self-contained safe demo assets with no confidential data.
+
+16. IMPLEMENTATION ORDER
+
+Execute all phases without asking me to approve routine next steps:
+
+A. Inspect the workspace, toolchain, architecture, ports, and applicable instructions. Create concise decisions and requirements notes. Check Windows and macOS overlay feasibility early; mark unavailable native tests pending if the environment is remote/headless.
+
+B. Build the first complete path: bootstrap/login, create document, edit rich text, generate a view link, open a second client, see live changes, persist them, and reload successfully.
+
+C. Complete roles, active-session revocation, reconnect, durable acknowledgment, uploads, tables, code, diagrams, snapshots, and exports.
+
+D. Implement the Windows and macOS desktop companions, server connection flow, transparent display controls, click-through recovery, platform-specific capture status, and both packaging pipelines.
+
+E. Finish responsive UI, error states, documentation, performance measurement, and meaningful tests. Fix discovered defects and re-run the relevant checks.
+
+Maintain a requirement-to-implementation checklist. Do not quietly drop the core workflow, image pasting, native floating panel, or link authorization. If something is blocked by the environment, identify the exact boundary and finish the rest.
+
+17. ACCEPTANCE TESTS
+
+Automate meaningful scenarios with real service connections where possible:
+1. An administrator creates a document and a viewer link; another isolated session opens it.
+2. New text and formatting appear without refreshing.
+3. Two editors make overlapping changes and converge without lost paragraphs or duplication.
+4. Mixed text/images are pasted, the cursor moves, and upload completion preserves intended placement/order.
+5. Tables, code, links, and Mermaid content render consistently.
+6. Disconnect/reconnect merges authorized pending work and preserves truthful status indicators.
+7. A crafted viewer WebSocket update cannot modify the document or database.
+8. Access to another document's endpoints, assets, exports, and snapshots is rejected.
+9. Link revocation or expiry disconnects an already-open viewer and prevents future access.
+10. An acknowledged save survives forced server termination and restart, including a deletion-only edit.
+11. Database unavailability never produces a false Saved indicator.
+12. Restart/reconnect does not duplicate initialized content.
+13. Snapshot restoration prevents stale offline updates from silently resurrecting the abandoned generation.
+14. Malicious clipboard HTML, links, filenames, diagrams, and document attributes cannot execute scripts or privileged desktop actions.
+15. Logout/account switching does not expose another account's pending local document.
+16. Large documents and rapid edits remain responsive within the documented limits.
+17. Desktop controls, focus behavior, shortcuts, recovery, and offscreen-window handling work on an available native environment.
+18. A fresh documented setup can start the services and reach the first working document.
+19. Windows and macOS clients connected to the same document exchange live edits correctly; platform-specific shortcuts, native lifecycle, display controls, and packaging checks are recorded separately.
+
+Test the isolated permission and durability failure paths, not only happy-path screenshots. Do not test solely by mocking the components whose correctness is being asserted.
+
+Run formatting, lint, type checking, relevant unit/integration tests, browser end-to-end tests, and production builds. Produce Windows and macOS desktop artifacts wherever supported by the available build hosts; otherwise provide and validate the available build configurations with exact native packaging steps. Report arm64/x64, signing, notarization, and native-test status honestly for each platform.
+
+Native capture compatibility remains a separate manual evidence matrix. Never equate passing web tests with proof that meeting participants cannot see the overlay.
+
+18. DELIVERABLES AND FINAL HANDOFF
+
+Create:
+- Complete application source and dependency lockfile.
+- .env.example without secrets.
+- Database migrations and a one-time administrator bootstrap command.
+- Docker Compose with durable database and asset volumes.
+- Development/start/build/test/package scripts.
+- README.md with exact setup and normal usage.
+- docs/architecture.md, including concise system and data-flow diagrams.
+- docs/decisions.md.
+- docs/requirements-checklist.md.
+- docs/security.md.
+- docs/capture-compatibility.md.
+- docs/testing.md and docs/performance.md containing real results.
+- docs/deployment.md covering HTTPS/WSS, proxy WebSocket settings, private database/assets, backups, and restore.
+- docs/windows-client.md with local Windows setup, backend connection, packaging, troubleshooting, and manual capture checks.
+- docs/macos-client.md with Mac setup, supported OS/architectures, shortcuts, Spaces/display behavior, packaging, signing/notarization, troubleshooting, and capture limitations.
+- docs/status.md as a short implementation checkpoint.
+
+Document command names that actually exist. Include a first-run path suitable for someone starting with an empty directory. Distinguish required environment configuration from optional enhancements.
+
+Your final response must state what works, what was tested, the exact commands and addresses to use, how to create the first account/document/link, and how to launch the floating panel on both Windows and Mac computers.
+
+Separate verified behavior from environment-dependent pending checks. Give actual measured latency and exact remaining limitations. Never say "perfect," "zero latency," "100% invisible," or "production-ready" without justified evidence.
+
+19. PRIMARY REFERENCES TO VERIFY WHILE IMPLEMENTING
+
+Use current official documentation and the installed package types:
+- Electron window API: https://www.electronjs.org/docs/latest/api/browser-window
+- Electron window styles: https://www.electronjs.org/docs/latest/tutorial/custom-window-styles
+- Electron window interactions: https://www.electronjs.org/docs/latest/tutorial/custom-window-interactions
+- Electron security: https://www.electronjs.org/docs/latest/tutorial/security
+- Electron signing/notarization: https://www.electronjs.org/docs/latest/tutorial/code-signing
+- Windows display affinity: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity
+- Hocuspocus authentication: https://tiptap.dev/docs/hocuspocus/guides/authentication
+- Hocuspocus persistence: https://tiptap.dev/docs/hocuspocus/guides/persistence
+- Hocuspocus lifecycle hooks: https://tiptap.dev/docs/hocuspocus/server/hooks
+- Yjs collaborative editor concepts: https://docs.yjs.dev/getting-started/a-collaborative-editor
+
+Start now. Inspect the workspace, make reasonable decisions, and implement the complete working product. Continue through integration and verification instead of stopping at a proposal.
+

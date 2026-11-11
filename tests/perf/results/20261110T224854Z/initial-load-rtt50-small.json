@@ -1,0 +1,610 @@
+{
+  "scenario": "initial-load",
+  "condition": "rtt50",
+  "doc": "small",
+  "chromium": "156.0.8078.4",
+  "cold": [
+    {
+      "firstContent": 1209,
+      "firstContentRaf": 1230.8999999985099,
+      "live": 1228.199999999255,
+      "responseEnd": 53.099999997764826,
+      "domContentLoaded": 357.0999999977648,
+      "loadEvent": 419.69999999925494,
+      "requests": 59,
+      "transferBytes": 1568143
+    },
+    {
+      "firstContent": 1203,
+      "firstContentRaf": 1219.9000000022352,
+      "live": 1217.9000000022352,
+      "responseEnd": 53.600000001490116,
+      "domContentLoaded": 356.69999999925494,
+      "loadEvent": 429,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1206.9000000022352,
+      "firstContentRaf": 1224,
+      "live": 1222.2000000029802,
+      "responseEnd": 53,
+      "domContentLoaded": 357.9000000022352,
+      "loadEvent": 425,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1220.2999999970198,
+      "firstContentRaf": 1240.7999999970198,
+      "live": 1237.8999999985099,
+      "responseEnd": 53.19999999925494,
+      "domContentLoaded": 365.5999999977648,
+      "loadEvent": 434.3999999985099,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1220.3999999985099,
+      "firstContentRaf": 1239.0999999977648,
+      "live": 1235.5,
+      "responseEnd": 53.29999999701977,
+      "domContentLoaded": 373,
+      "loadEvent": 439.79999999701977,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1219.699999999255,
+      "firstContentRaf": 1245.800000000745,
+      "live": 1242.199999999255,
+      "responseEnd": 53.5,
+      "domContentLoaded": 378.5999999977648,
+      "loadEvent": 447.8999999985099,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1218.8999999985099,
+      "firstContentRaf": 1235.800000000745,
+      "live": 1232,
+      "responseEnd": 54,
+      "domContentLoaded": 363.5,
+      "loadEvent": 435.8999999985099,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1222.3999999985099,
+      "firstContentRaf": 1246.8999999985099,
+      "live": 1244.0999999977648,
+      "responseEnd": 54.099999997764826,
+      "domContentLoaded": 365.19999999925494,
+      "loadEvent": 431.0999999977648,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1219.4000000022352,
+      "firstContentRaf": 1237.9000000022352,
+      "live": 1235.699999999255,
+      "responseEnd": 54.30000000074506,
+      "domContentLoaded": 362.19999999925494,
+      "loadEvent": 428.4000000022352,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1234.8999999985099,
+      "firstContentRaf": 1255.300000000745,
+      "live": 1251.800000000745,
+      "responseEnd": 53,
+      "domContentLoaded": 374.6000000014901,
+      "loadEvent": 446.19999999925494,
+      "requests": 59,
+      "transferBytes": 1568143
+    },
+    {
+      "firstContent": 1200,
+      "firstContentRaf": 1211.5999999977648,
+      "live": 1209.7999999970198,
+      "responseEnd": 53.29999999701977,
+      "domContentLoaded": 361.69999999925494,
+      "loadEvent": 434.0999999977648,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1231.4000000022352,
+      "firstContentRaf": 1249.300000000745,
+      "live": 1246,
+      "responseEnd": 54.30000000074506,
+      "domContentLoaded": 385.6000000014901,
+      "loadEvent": 455,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1224.300000000745,
+      "firstContentRaf": 1244,
+      "live": 1240.5,
+      "responseEnd": 54,
+      "domContentLoaded": 380.0999999977648,
+      "loadEvent": 447.8999999985099,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1249.3999999985099,
+      "firstContentRaf": 1273.199999999255,
+      "live": 1269.5,
+      "responseEnd": 53.79999999701977,
+      "domContentLoaded": 386.8999999985099,
+      "loadEvent": 458.79999999701977,
+      "requests": 59,
+      "transferBytes": 1568142
+    },
+    {
+      "firstContent": 1243.2000000029802,
+      "firstContentRaf": 1259.9000000022352,
+      "live": 1256.5,
+      "responseEnd": 53.30000000074506,
+      "domContentLoaded": 384.30000000074506,
+      "loadEvent": 453.1000000014901,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1215.1000000014901,
+      "firstContentRaf": 1228.300000000745,
+      "live": 1226.2000000029802,
+      "responseEnd": 53.100000001490116,
+      "domContentLoaded": 360.30000000074506,
+      "loadEvent": 428.4000000022352,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1211.699999999255,
+      "firstContentRaf": 1231.7999999970198,
+      "live": 1228.8999999985099,
+      "responseEnd": 53,
+      "domContentLoaded": 356.29999999701977,
+      "loadEvent": 419.69999999925494,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1248.9000000022352,
+      "firstContentRaf": 1272.4000000022352,
+      "live": 1269.1000000014901,
+      "responseEnd": 53.20000000298023,
+      "domContentLoaded": 378.5,
+      "loadEvent": 450,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1228.300000000745,
+      "firstContentRaf": 1250.7000000029802,
+      "live": 1247.2000000029802,
+      "responseEnd": 53.70000000298023,
+      "domContentLoaded": 365.20000000298023,
+      "loadEvent": 437.5,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1233.199999999255,
+      "firstContentRaf": 1256.699999999255,
+      "live": 1251.5,
+      "responseEnd": 54.099999997764826,
+      "domContentLoaded": 365.8999999985099,
+      "loadEvent": 430.5999999977648,
+      "requests": 59,
+      "transferBytes": 1568142
+    },
+    {
+      "firstContent": 1222.699999999255,
+      "firstContentRaf": 1245.6000000014901,
+      "live": 1242.6000000014901,
+      "responseEnd": 53.80000000074506,
+      "domContentLoaded": 373.30000000074506,
+      "loadEvent": 446.69999999925494,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1202.6000000014901,
+      "firstContentRaf": 1227.6000000014901,
+      "live": 1224.1000000014901,
+      "responseEnd": 53.30000000074506,
+      "domContentLoaded": 358.19999999925494,
+      "loadEvent": 430.1000000014901,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1236.3999999985099,
+      "firstContentRaf": 1258.0999999977648,
+      "live": 1254.8999999985099,
+      "responseEnd": 53.29999999701977,
+      "domContentLoaded": 374.5,
+      "loadEvent": 441.19999999925494,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1221.3999999985099,
+      "firstContentRaf": 1248.800000000745,
+      "live": 1245.3999999985099,
+      "responseEnd": 52.80000000074506,
+      "domContentLoaded": 375.5,
+      "loadEvent": 444.6000000014901,
+      "requests": 59,
+      "transferBytes": 1568142
+    },
+    {
+      "firstContent": 1228.8999999985099,
+      "firstContentRaf": 1247.5999999977648,
+      "live": 1245.8999999985099,
+      "responseEnd": 54,
+      "domContentLoaded": 377.80000000074506,
+      "loadEvent": 445.69999999925494,
+      "requests": 59,
+      "transferBytes": 1568141
+    },
+    {
+      "firstContent": 1236.800000000745,
+      "firstContentRaf": 1261.699999999255,
+      "live": 1259,
+      "responseEnd": 53.69999999925494,
+      "domContentLoaded": 377.1000000014901,
+      "loadEvent": 445.69999999925494,
+      "requests": 59,
+      "transferBytes": 1568144
+    },
+    {
+      "firstContent": 1232.199999999255,
+      "firstContentRaf": 1251.7999999970198,
+      "live": 1249.0999999977648,
+      "responseEnd": 53.79999999701977,
+      "domContentLoaded": 362.0999999977648,
+      "loadEvent": 428.8999999985099,
+      "requests": 59,
+      "transferBytes": 1568142
+    },
+    {
+      "firstContent": 1244.5,
+      "firstContentRaf": 1276.300000000745,
+      "live": 1272.6000000014901,
+      "responseEnd": 53.19999999925494,
+      "domContentLoaded": 377.69999999925494,
+      "loadEvent": 451.80000000074506,
+      "requests": 59,
+      "transferBytes": 1568140
+    },
+    {
+      "firstContent": 1247.6000000014901,
+      "firstContentRaf": 1270.9000000022352,
+      "live": 1268,
+      "responseEnd": 53.900000002235174,
+      "domContentLoaded": 382.69999999925494,
+      "loadEvent": 458.9000000022352,
+      "requests": 59,
+      "transferBytes": 1568138
+    },
+    {
+      "firstContent": 1202.6000000014901,
+      "firstContentRaf": 1224.4000000022352,
+      "live": 1222.699999999255,
+      "responseEnd": 54,
+      "domContentLoaded": 357,
+      "loadEvent": 423.6000000014901,
+      "requests": 59,
+      "transferBytes": 1568142
+    }
+  ],
+  "warm": [
+    {
+      "firstContent": 755.3000000007451,
+      "firstContentRaf": 767.8999999985099,
+      "live": 765.8999999985099,
+      "responseEnd": 53,
+      "domContentLoaded": 167.69999999925494,
+      "loadEvent": 183.39999999850988,
+      "requests": 75,
+      "transferBytes": 883696
+    },
+    {
+      "firstContent": 775,
+      "firstContentRaf": 796.4000000022352,
+      "live": 794.6000000014901,
+      "responseEnd": 53,
+      "domContentLoaded": 170.20000000298023,
+      "loadEvent": 186.10000000149012,
+      "requests": 75,
+      "transferBytes": 883693
+    },
+    {
+      "firstContent": 748.9000000022352,
+      "firstContentRaf": 767.6000000014901,
+      "live": 765.1000000014901,
+      "responseEnd": 52.900000002235174,
+      "domContentLoaded": 148,
+      "loadEvent": 155.90000000223517,
+      "requests": 73,
+      "transferBytes": 672137
+    },
+    {
+      "firstContent": 764.5,
+      "firstContentRaf": 779.8000000007451,
+      "live": 777.5,
+      "responseEnd": 53.600000001490116,
+      "domContentLoaded": 173.5,
+      "loadEvent": 188.30000000074506,
+      "requests": 75,
+      "transferBytes": 883694
+    },
+    {
+      "firstContent": 773.3999999985099,
+      "firstContentRaf": 796.3999999985099,
+      "live": 794.5,
+      "responseEnd": 53.099999997764826,
+      "domContentLoaded": 168.89999999850988,
+      "loadEvent": 183.69999999925494,
+      "requests": 73,
+      "transferBytes": 672138
+    },
+    {
+      "firstContent": 777.3999999985099,
+      "firstContentRaf": 802,
+      "live": 799.1999999992549,
+      "responseEnd": 53.399999998509884,
+      "domContentLoaded": 172.19999999925494,
+      "loadEvent": 185.89999999850988,
+      "requests": 75,
+      "transferBytes": 883694
+    },
+    {
+      "firstContent": 743.8000000007451,
+      "firstContentRaf": 762,
+      "live": 759.8000000007451,
+      "responseEnd": 52.600000001490116,
+      "domContentLoaded": 148.5,
+      "loadEvent": 156.10000000149012,
+      "requests": 73,
+      "transferBytes": 672137
+    },
+    {
+      "firstContent": 758.6000000014901,
+      "firstContentRaf": 770.6000000014901,
+      "live": 768.6000000014901,
+      "responseEnd": 52.80000000074506,
+      "domContentLoaded": 170.30000000074506,
+      "loadEvent": 183.5,
+      "requests": 75,
+      "transferBytes": 883694
+    },
+    {
+      "firstContent": 748.1000000014901,
+      "firstContentRaf": 768.8000000007451,
+      "live": 765.5,
+      "responseEnd": 53.19999999925494,
+      "domContentLoaded": 142.10000000149012,
+      "loadEvent": 151.39999999850988,
+      "requests": 73,
+      "transferBytes": 672138
+    },
+    {
+      "firstContent": 759.5,
+      "firstContentRaf": 784.1999999992549,
+      "live": 781.1999999992549,
+      "responseEnd": 52.69999999925494,
+      "domContentLoaded": 158.80000000074506,
+      "loadEvent": 173.69999999925494,
+      "requests": 75,
+      "transferBytes": 883696
+    },
+    {
+      "firstContent": 779.3000000007451,
+      "firstContentRaf": 803.6999999992549,
+      "live": 800.3999999985099,
+      "responseEnd": 52.80000000074506,
+      "domContentLoaded": 163.60000000149012,
+      "loadEvent": 178.89999999850988,
+      "requests": 73,
+      "transferBytes": 672137
+    },
+    {
+      "firstContent": 738.9000000022352,
+      "firstContentRaf": 753.8000000007451,
+      "live": 750.3000000007451,
+      "responseEnd": 53,
+      "domContentLoaded": 142.90000000223517,
+      "loadEvent": 151.10000000149012,
+      "requests": 75,
+      "transferBytes": 883693
+    },
+    {
+      "firstContent": 775.3000000007451,
+      "firstContentRaf": 797.6999999992549,
+      "live": 794.1999999992549,
+      "responseEnd": 52.899999998509884,
+      "domContentLoaded": 169.39999999850988,
+      "loadEvent": 185,
+      "requests": 73,
+      "transferBytes": 672137
+    },
+    {
+      "firstContent": 757.1999999992549,
+      "firstContentRaf": 783.3000000007451,
+      "live": 779.6999999992549,
+      "responseEnd": 53.099999997764826,
+      "domContentLoaded": 149.5,
+      "loadEvent": 158.30000000074506,
+      "requests": 73,
+      "transferBytes": 672139
+    },
+    {
+      "firstContent": 759.8000000007451,
+      "firstContentRaf": 780.8000000007451,
+      "live": 777.7000000029802,
+      "responseEnd": 52.600000001490116,
+      "domContentLoaded": 170.30000000074506,
+      "loadEvent": 186.5,
+      "requests": 75,
+      "transferBytes": 883693
+    },
+    {
+      "firstContent": 773.6000000014901,
+      "firstContentRaf": 795.4000000022352,
+      "live": 793.3000000007451,
+      "responseEnd": 53.80000000074506,
+      "domContentLoaded": 172.30000000074506,
+      "loadEvent": 185.40000000223517,
+      "requests": 75,
+      "transferBytes": 883693
+    },
+    {
+      "firstContent": 771.3999999985099,
+      "firstContentRaf": 795.3999999985099,
+      "live": 792.3999999985099,
+      "responseEnd": 52.5,
+      "domContentLoaded": 166.39999999850988,
+      "loadEvent": 179.89999999850988,
+      "requests": 73,
+      "transferBytes": 672138
+    },
+    {
+      "firstContent": 772.6000000014901,
+      "firstContentRaf": 797.1000000014901,
+      "live": 794.4000000022352,
+      "responseEnd": 53.69999999925494,
+      "domContentLoaded": 150.80000000074506,
+      "loadEvent": 159,
+      "requests": 73,
+      "transferBytes": 672137
+    },
+    {
+      "firstContent": 774.6999999992549,
+      "firstContentRaf": 796.3999999985099,
+      "live": 793,
+      "responseEnd": 53.100000001490116,
+      "domContentLoaded": 169.30000000074506,
+      "loadEvent": 176.69999999925494,
+      "requests": 73,
+      "transferBytes": 672138
+    },
+    {
+      "firstContent": 753.8999999985099,
+      "firstContentRaf": 774.8000000007451,
+      "live": 771,
+      "responseEnd": 52.599999997764826,
+      "domContentLoaded": 168,
+      "loadEvent": 184.09999999776483,
+      "requests": 76,
+      "transferBytes": 884261
+    },
+    {
+      "firstContent": 735.3999999985099,
+      "firstContentRaf": 749.0999999977648,
+      "live": 747.3999999985099,
+      "responseEnd": 54.099999997764826,
+      "domContentLoaded": 142.19999999925494,
+      "loadEvent": 150.39999999850988,
+      "requests": 73,
+      "transferBytes": 672138
+    },
+    {
+      "firstContent": 781,
+      "firstContentRaf": 807.1999999992549,
+      "live": 804,
+      "responseEnd": 53.400000002235174,
+      "domContentLoaded": 171.10000000149012,
+      "loadEvent": 186.90000000223517,
+      "requests": 75,
+      "transferBytes": 883694
+    },
+    {
+      "firstContent": 742.1000000014901,
+      "firstContentRaf": 754,
+      "live": 752.5,
+      "responseEnd": 52.5,
+      "domContentLoaded": 149.30000000074506,
+      "loadEvent": 157.80000000074506,
+      "requests": 75,
+      "transferBytes": 883693
+    },
+    {
+      "firstContent": 767,
+      "firstContentRaf": 784.5999999977648,
+      "live": 782.8999999985099,
+      "responseEnd": 53.69999999925494,
+      "domContentLoaded": 165.59999999776483,
+      "loadEvent": 182.29999999701977,
+      "requests": 75,
+      "transferBytes": 883695
+    },
+    {
+      "firstContent": 754.4000000022352,
+      "firstContentRaf": 770.7000000029802,
+      "live": 768.4000000022352,
+      "responseEnd": 53.5,
+      "domContentLoaded": 163.30000000074506,
+      "loadEvent": 178.5,
+      "requests": 75,
+      "transferBytes": 883694
+    },
+    {
+      "firstContent": 765.8000000007451,
+      "firstContentRaf": 781.3000000007451,
+      "live": 778.3000000007451,
+      "responseEnd": 52.399999998509884,
+      "domContentLoaded": 166.19999999925494,
+      "loadEvent": 179.69999999925494,
+      "requests": 75,
+      "transferBytes": 883697
+    },
+    {
+      "firstContent": 761.1000000014901,
+      "firstContentRaf": 786,
+      "live": 782.8999999985099,
+      "responseEnd": 52.5,
+      "domContentLoaded": 149.80000000074506,
+      "loadEvent": 160,
+      "requests": 73,
+      "transferBytes": 672139
+    },
+    {
+      "firstContent": 766.4000000022352,
+      "firstContentRaf": 790.3000000007451,
+      "live": 786.8000000007451,
+      "responseEnd": 53,
+      "domContentLoaded": 167.80000000074506,
+      "loadEvent": 183.90000000223517,
+      "requests": 75,
+      "transferBytes": 883693
+    },
+    {
+      "firstContent": 763.1000000014901,
+      "firstContentRaf": 779.6999999992549,
+      "live": 777.1000000014901,
+      "responseEnd": 53.899999998509884,
+      "domContentLoaded": 172.89999999850988,
+      "loadEvent": 190.60000000149012,
+      "requests": 75,
+      "transferBytes": 883691
+    },
+    {
+      "firstContent": 734,
+      "firstContentRaf": 746.3000000007451,
+      "live": 744.2000000029802,
+      "responseEnd": 52.600000001490116,
+      "domContentLoaded": 140.70000000298023,
+      "loadEvent": 148.70000000298023,
+      "requests": 75,
+      "transferBytes": 883695
+    }
+  ]
+}

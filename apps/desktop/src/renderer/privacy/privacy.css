@@ -1,0 +1,145 @@
+/* Privacy Test Center: built on the UI kit's tokens, so dark and light themes come for free. */
+.rdp-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-5);
+  min-width: 0;
+  max-width: 100%;
+  padding: var(--rd-space-4);
+  color: var(--rd-text);
+  font-family: var(--rd-font-ui);
+  overflow-wrap: anywhere;
+}
+
+.rdp-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-3);
+  min-width: 0;
+}
+
+.rdp-h2 {
+  margin: 0;
+  font-size: var(--rd-text-xl);
+  line-height: var(--rd-leading-tight);
+}
+
+.rdp-h2:focus-visible {
+  outline: 2px solid var(--rd-focus-ring);
+  outline-offset: 2px;
+}
+
+.rdp-h3 {
+  margin: 0 0 var(--rd-space-2);
+  font-size: var(--rd-text-lg);
+  line-height: var(--rd-leading-tight);
+}
+
+.rdp-muted {
+  margin: 0;
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+}
+
+.rdp-error {
+  margin: 0;
+  color: var(--rd-danger);
+  font-size: var(--rd-text-sm);
+}
+
+.rdp-errors {
+  margin: 0;
+  padding-left: var(--rd-space-4);
+}
+
+.rdp-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-3);
+  min-width: 0;
+}
+
+.rdp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--rd-space-3);
+}
+
+.rdp-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-4);
+}
+
+.rdp-observer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-2);
+  min-width: 0;
+}
+
+.rdp-head,
+.rdp-record {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-2);
+}
+
+.rdp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+}
+
+.rdp-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rdp-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rd-space-2);
+  padding: var(--rd-space-2) var(--rd-space-3);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-surface-1);
+}
+
+.rdp-row__title {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.rdp-record {
+  padding-top: var(--rd-space-2);
+  border-top: 1px solid var(--rd-border);
+}
+
+.rdp-record__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: var(--rd-text-sm);
+}
+
+.rdp-statusline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rd-space-2);
+  margin: 0;
+}
+
+.rdp-outcome {
+  font-size: var(--rd-text-sm);
+  color: var(--rd-text-muted);
+}

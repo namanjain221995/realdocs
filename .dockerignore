@@ -1,0 +1,23 @@
+**/node_modules
+**/dist
+**/out
+.toolchain
+.env
+.env.*
+**/.env
+**/.env.*
+deploy
+data
+backups
+playwright-report
+test-results
+**/*.log
+**/.stage
+apps/desktop
+tests
+# Documentation stays out of the image, except the pages the web app bundles as
+# its in-app reader (apps/web/src/features/docs/documents.ts imports them with ?raw).
+docs/*
+!docs/windows-client.md
+!docs/macos-client.md
+!docs/security.md

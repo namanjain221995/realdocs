@@ -1,0 +1,157 @@
+/* People: accounts, invitations, audit log. */
+.admin-panel {
+  padding-top: var(--rd-space-5);
+}
+
+.admin-lede {
+  margin: 0 0 var(--rd-space-5);
+}
+
+.admin-subheading {
+  margin: var(--rd-space-6) 0 var(--rd-space-2);
+  font-size: var(--rd-text-lg);
+}
+
+.admin-list {
+  border-top: 1px solid var(--rd-border);
+  border-bottom: 1px solid var(--rd-border);
+}
+
+.admin-list > .app-row:first-child {
+  padding-top: 10px;
+}
+
+.admin-row .app-row__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.admin-you {
+  font-weight: 600;
+}
+
+.admin-joined {
+  margin-left: var(--rd-space-3);
+  color: var(--rd-text-faint);
+  white-space: nowrap;
+}
+
+.admin-controls {
+  gap: var(--rd-space-4);
+}
+
+.admin-controls .rd-field {
+  min-width: 136px;
+}
+
+.admin-row__note {
+  grid-column: 1 / -1;
+}
+
+.admin-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-3) 0;
+  border-bottom: 1px solid var(--rd-border);
+}
+
+.admin-invite-form {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--rd-space-3);
+  margin-bottom: var(--rd-space-4);
+}
+
+/* Lines the button up with the inputs, which sit under a label. */
+.admin-invite-form__submit {
+  margin-top: calc(var(--rd-text-sm) * var(--rd-leading-tight) + 6px);
+}
+
+.admin-invite-form__warning {
+  grid-column: 1 / -1;
+}
+
+.admin-new-invitation {
+  max-width: 640px;
+}
+
+.admin-audit {
+  overflow-x: auto;
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  scrollbar-width: thin;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--rd-text-sm);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: var(--rd-space-2) var(--rd-space-3);
+  border-bottom: 1px solid var(--rd-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  background: var(--rd-surface-1);
+  color: var(--rd-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-table td:first-child {
+  white-space: nowrap;
+}
+
+.admin-audit__target,
+.admin-audit__detail {
+  display: inline-block;
+  margin-right: var(--rd-space-3);
+  color: var(--rd-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.admin-audit__target {
+  color: var(--rd-text);
+}
+
+@media (max-width: 859px) {
+  .admin-invite-form {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .admin-invite-form__email,
+  .admin-invite-form__submit {
+    grid-column: 1 / -1;
+  }
+
+  .admin-invite-form__submit {
+    margin-top: 0;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Controls move under the name instead of squeezing it. */
+  .admin-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-controls {
+    justify-content: space-between;
+  }
+}

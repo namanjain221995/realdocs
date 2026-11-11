@@ -1,0 +1,34 @@
+{
+  "name": "@realtimedocs/perf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "stack:up": "node --import tsx src/stack.ts up",
+    "stack:down": "node --import tsx src/stack.ts down",
+    "stack:status": "node --import tsx src/stack.ts status",
+    "perf": "node --import tsx src/run.ts",
+    "perf:ping": "node --import tsx src/ping.ts",
+    "perf:protocol": "node --import tsx src/protocol.ts",
+    "perf:browser-edit": "node --import tsx src/in-docker.ts src/browser-edit.ts",
+    "perf:initial-load": "node --import tsx src/in-docker.ts src/initial-load.ts",
+    "perf:image": "node --import tsx src/in-docker.ts src/image.ts",
+    "perf:report": "node --import tsx src/report.ts",
+    "stack:pw-up": "node --import tsx src/stack.ts pw-up",
+    "stack:pw-down": "node --import tsx src/stack.ts pw-down",
+    "perf:local": "node --import tsx src/extras.ts local",
+    "perf:reconnect": "node --import tsx src/extras.ts reconnect",
+    "perf:resources": "node --import tsx src/extras.ts resources"
+  },
+  "devDependencies": {
+    "@hocuspocus/provider": "4.8.0",
+    "@playwright/test": "1.64.1",
+    "@realtimedocs/contracts": "workspace:*",
+    "@types/ws": "8.18.2",
+    "lib0": "0.2.120",
+    "ws": "8.22.2",
+    "y-protocols": "1.0.7",
+    "yjs": "13.6.33"
+  }
+}

@@ -1,0 +1,101 @@
+/* Sign-in and invitation screens. */
+.auth-title {
+  font-size: var(--rd-text-2xl);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+}
+
+/*
+ * The heading reads as if it has just been typed: the brand's caret follows
+ * it, blinks three times and then rests.
+ */
+.auth-title::after {
+  display: inline-block;
+  width: 3px;
+  height: 0.82em;
+  margin-left: 5px;
+  border-radius: 2px;
+  background: var(--rd-accent);
+  content: '';
+  vertical-align: -0.06em;
+  animation: app-caret 1.05s steps(1, end) 3;
+}
+
+.auth-lede {
+  margin-top: 6px;
+  margin-bottom: var(--rd-space-5);
+  color: var(--rd-text-muted);
+}
+
+.auth-banner {
+  margin-bottom: var(--rd-space-4);
+}
+
+.auth-footnote {
+  display: grid;
+  gap: var(--rd-space-2);
+  margin-top: var(--rd-space-5);
+  padding-top: var(--rd-space-4);
+  border-top: 1px solid var(--rd-border);
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+}
+
+/* Who the invitation is for, stated before the form. */
+.auth-invite-facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px var(--rd-space-4);
+  margin-bottom: var(--rd-space-5);
+  padding: var(--rd-space-3) var(--rd-space-4);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-surface-1);
+}
+
+.auth-invite-facts dt {
+  color: var(--rd-text-muted);
+}
+
+.auth-invite-facts dd {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.auth-strength {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rd-space-2);
+}
+
+.auth-strength__meter {
+  display: inline-flex;
+  flex: none;
+  gap: 3px;
+  transform: translateY(-1px);
+}
+
+.auth-strength__meter > span {
+  width: 18px;
+  height: 4px;
+  border-radius: var(--rd-radius-full);
+  background: var(--rd-active);
+}
+
+.auth-strength[data-level='weak'] .auth-strength__meter > [data-on] {
+  background: var(--rd-danger);
+}
+
+.auth-strength[data-level='fair'] .auth-strength__meter > [data-on] {
+  background: var(--rd-warning);
+}
+
+.auth-strength[data-level='strong'] .auth-strength__meter > [data-on] {
+  background: var(--rd-success);
+}
+
+.auth-strength__text strong {
+  color: var(--rd-text);
+  font-weight: 600;
+}

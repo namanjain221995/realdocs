@@ -1,0 +1,1468 @@
+/*
+ * RealtimeDocs editor styles.
+ *
+ * Import after the UI kit:  import '@realtimedocs/ui/styles.css';
+ *                           import '@realtimedocs/editor/styles.css';
+ *
+ * Only `--rd-*` tokens of the UI kit are used for colour, so the document
+ * follows the app theme, or the theme set on the editor itself through the
+ * `display.tone` preference (`data-theme` on `.rd-editor`).
+ *
+ * Host knobs (custom properties on or above `.rd-editor`):
+ *   --rd-doc-bg      background of the document surface. Transparent by
+ *                    default; when a tone is forced it falls back to --rd-bg
+ *                    so text stays readable. The desktop panel sets its own.
+ *   --rd-doc-scale   font scale (set from `display.fontScale`)
+ *   --rd-doc-width   reading width (set from `display.readingWidth`)
+ *
+ * Contents
+ *   1. Tokens for code       6. Images, attachments, uploads   11. Status, banners
+ *   2. Frame and layout      7. Diagrams                       12. Print
+ *   3. ProseMirror base      8. Carets, find, placeholder      13. Motion, small screens
+ *   4. Typography            9. Toolbar, find bar, popovers
+ *   5. Tables and code      10. Notices and Follow Latest
+ */
+
+/* ---------------------------------------------------------- 1. Code tokens */
+:root,
+[data-theme='dark'] {
+  --rd-code-bg: rgb(0 0 0 / 0.28);
+  --rd-code-keyword: #ff9bcb;
+  --rd-code-string: #a5e075;
+  --rd-code-number: #f8bd40;
+  --rd-code-comment: #8b9aa1;
+  --rd-code-title: #79bbf3;
+  --rd-code-type: #5eead4;
+  --rd-code-meta: #c4a7ff;
+  --rd-highlight-ink: #14181a;
+  --rd-find-bg: rgb(248 189 64 / 0.32);
+  --rd-find-current: #f8bd40;
+}
+
+[data-theme='light'] {
+  --rd-code-bg: rgb(15 23 28 / 0.045);
+  --rd-code-keyword: #b4136b;
+  --rd-code-string: #26700d;
+  --rd-code-number: #8f5a00;
+  --rd-code-comment: #5f6d74;
+  --rd-code-title: #0b5cad;
+  --rd-code-type: #00706a;
+  --rd-code-meta: #6b3fc4;
+  --rd-highlight-ink: #14181a;
+  --rd-find-bg: rgb(245 176 0 / 0.38);
+  --rd-find-current: #f5a700;
+}
+
+/* ------------------------------------------------------ 2. Frame and layout */
+.rd-editor {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  color: var(--rd-text);
+  background: var(--rd-doc-bg, transparent);
+}
+
+/* A forced tone needs its own surface, or light ink could sit on a dark page. */
+.rd-editor[data-theme] {
+  background: var(--rd-doc-bg, var(--rd-bg));
+}
+
+.rd-editor__scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* The host scrolls: the editor grows with its content. */
+.rd-editor[data-external-scroll] {
+  height: auto;
+}
+
+.rd-editor[data-external-scroll] .rd-editor__scroll {
+  overflow: visible;
+}
+
+.rd-editor--static {
+  height: auto;
+}
+
+.rd-editor__page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--rd-doc-width, 780px);
+  min-height: 100%;
+  margin: 0 auto;
+  padding: var(--rd-space-6) clamp(var(--rd-space-3), 4vw, var(--rd-space-8)) 96px;
+}
+
+.rd-editor[data-reading-width='full'] .rd-editor__page {
+  max-width: none;
+}
+
+.rd-editor--panel .rd-editor__page {
+  padding: var(--rd-space-3) var(--rd-space-4) 72px;
+}
+
+.rd-editor--static .rd-editor__page {
+  min-height: 0;
+  padding-bottom: var(--rd-space-6);
+}
+
+.rd-editor__loading {
+  display: grid;
+  gap: var(--rd-space-3);
+  padding-top: var(--rd-space-2);
+}
+
+.rd-editor__loading + .rd-editor__content {
+  display: none;
+}
+
+.rd-editor__warning {
+  display: flex;
+  gap: var(--rd-space-2);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--rd-space-2) var(--rd-space-4);
+  font: var(--rd-text-md) / var(--rd-leading-normal) var(--rd-font-ui);
+  color: var(--rd-text);
+  background: var(--rd-warning-soft);
+  border-bottom: 1px solid var(--rd-border);
+}
+
+.rd-editor__warning svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--rd-warning);
+}
+
+/* Find button of the reading surface: floats over the text, takes no space. */
+.rd-editor__float {
+  position: sticky;
+  top: var(--rd-space-2);
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  height: 0;
+  padding-right: var(--rd-space-2);
+}
+
+/* ------------------------------------------------------ 3. ProseMirror base */
+/* Tiptap would inject these at runtime; shipping them here works under a
+   Content-Security-Policy without inline styles as well. */
+.rd-doc {
+  position: relative;
+  outline: none;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0;
+}
+
+.rd-doc [contenteditable='false'] {
+  white-space: normal;
+}
+
+.rd-doc [contenteditable='false'] [contenteditable='true'] {
+  white-space: pre-wrap;
+}
+
+.rd-doc img.ProseMirror-separator {
+  display: inline !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+.ProseMirror-gapcursor {
+  position: absolute;
+  display: none;
+  margin: 0;
+  pointer-events: none;
+}
+
+.ProseMirror-gapcursor::after {
+  position: absolute;
+  top: -2px;
+  display: block;
+  width: 20px;
+  content: '';
+  border-top: 1px solid var(--rd-text);
+  animation: rd-blink 1.1s steps(2, start) infinite;
+}
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+.ProseMirror-hideselection *::selection {
+  background: transparent;
+}
+
+.ProseMirror-hideselection * {
+  caret-color: transparent;
+}
+
+.rd-dropcursor {
+  background: var(--rd-accent);
+}
+
+@keyframes rd-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* ------------------------------------------------------------ 4. Typography */
+.rd-doc {
+  font-family: var(--rd-font-doc);
+  font-size: calc(1rem * var(--rd-doc-scale, 1));
+  line-height: 1.65;
+  color: var(--rd-text);
+  /* Long words, URLs and unbroken Devanagari runs never widen the page. */
+  overflow-wrap: anywhere;
+  caret-color: var(--rd-accent);
+  tab-size: 4;
+}
+
+/* Resets carry no specificity of their own, so the spacing rules below win. */
+.rd-doc :where(p, h1, h2, h3, h4, ul, ol, blockquote, pre, figure) {
+  margin: 0;
+}
+
+.rd-doc > * + * {
+  margin-top: 0.75em;
+}
+
+.rd-doc li > p + p,
+.rd-doc blockquote > * + *,
+.rd-doc td > * + *,
+.rd-doc th > * + * {
+  margin-top: 0.5em;
+}
+
+.rd-doc h1,
+.rd-doc h2,
+.rd-doc h3,
+.rd-doc h4 {
+  font-family: var(--rd-font-doc);
+  font-weight: 650;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.rd-doc h1 {
+  font-size: 1.9em;
+}
+
+.rd-doc h2 {
+  font-size: 1.45em;
+}
+
+.rd-doc h3 {
+  font-size: 1.2em;
+}
+
+.rd-doc h4 {
+  font-size: 1.05em;
+}
+
+.rd-doc > h1:not(:first-child),
+.rd-doc > h2:not(:first-child) {
+  margin-top: 1.4em;
+}
+
+.rd-doc > h3:not(:first-child),
+.rd-doc > h4:not(:first-child) {
+  margin-top: 1.2em;
+}
+
+.rd-doc a {
+  color: var(--rd-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.rd-doc a:hover {
+  color: var(--rd-accent-hover);
+}
+
+.rd-doc strong {
+  font-weight: 700;
+}
+
+.rd-doc :not(pre) > code {
+  padding: 0.1em 0.35em;
+  font-family: var(--rd-font-mono);
+  font-size: 0.9em;
+  background: var(--rd-code-bg);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-sm);
+}
+
+.rd-doc mark {
+  padding: 0.05em 0.15em;
+  color: var(--rd-highlight-ink);
+  background: #fde68a;
+  border-radius: 2px;
+}
+
+.rd-doc ul,
+.rd-doc ol {
+  padding-left: 1.7em;
+}
+
+.rd-doc li + li,
+.rd-doc li > ul,
+.rd-doc li > ol {
+  margin-top: 0.25em;
+}
+
+.rd-doc ul[data-type='taskList'] {
+  padding-left: 0.2em;
+  list-style: none;
+}
+
+.rd-doc ul[data-type='taskList'] > li {
+  display: flex;
+  gap: 0.6em;
+  align-items: flex-start;
+}
+
+.rd-doc ul[data-type='taskList'] > li > label {
+  flex: none;
+  /* Centre the box on the first line of text. */
+  margin-top: calc((1.65em - 1.05em) / 2);
+  user-select: none;
+}
+
+.rd-doc ul[data-type='taskList'] > li > label input {
+  width: 1.05em;
+  height: 1.05em;
+  margin: 0;
+  vertical-align: top;
+  accent-color: var(--rd-accent);
+  cursor: pointer;
+}
+
+.rd-doc[contenteditable='false'] ul[data-type='taskList'] > li > label input {
+  pointer-events: none;
+}
+
+.rd-doc ul[data-type='taskList'] > li > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rd-doc ul[data-type='taskList'] > li[data-checked='true'] > div {
+  color: var(--rd-text-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--rd-text-faint);
+}
+
+.rd-doc blockquote {
+  padding: 0.1em 0 0.1em 1em;
+  color: var(--rd-text-muted);
+  border-left: 3px solid var(--rd-accent);
+}
+
+/* Callouts (schema version 2): a tinted box with a coloured edge. The variant only selects a
+   colour token; it never reaches a style attribute. */
+.rd-doc div[data-type='callout'] {
+  --rd-callout-edge: var(--rd-info);
+  --rd-callout-fill: var(--rd-info-soft);
+  margin: 0.8em 0;
+  padding: 0.6em 0.9em;
+  border-left: 4px solid var(--rd-callout-edge);
+  border-radius: var(--rd-radius-sm);
+  background: var(--rd-callout-fill);
+}
+/* A short label inside the box, drawn by CSS from the variant (never from a style attribute).
+   An unknown variant renders as `info`, so the default label is the info one. */
+.rd-doc div[data-type='callout']::before {
+  content: 'Note';
+  display: block;
+  margin-bottom: 0.25em;
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rd-text-muted);
+  user-select: none;
+}
+.rd-doc div[data-type='callout'][data-variant='tip']::before {
+  content: 'Tip';
+}
+.rd-doc div[data-type='callout'][data-variant='success']::before {
+  content: 'Success';
+}
+.rd-doc div[data-type='callout'][data-variant='warning']::before {
+  content: 'Warning';
+}
+.rd-doc div[data-type='callout'][data-variant='danger']::before {
+  content: 'Danger';
+}
+.rd-doc div[data-type='callout'] > :first-child {
+  margin-top: 0;
+}
+.rd-doc div[data-type='callout'] > :last-child {
+  margin-bottom: 0;
+}
+.rd-doc div[data-type='callout'][data-variant='tip'],
+.rd-doc div[data-type='callout'][data-variant='success'] {
+  --rd-callout-edge: var(--rd-success);
+  --rd-callout-fill: var(--rd-success-soft);
+}
+.rd-doc div[data-type='callout'][data-variant='warning'] {
+  --rd-callout-edge: var(--rd-warning);
+  --rd-callout-fill: var(--rd-warning-soft);
+}
+.rd-doc div[data-type='callout'][data-variant='danger'] {
+  --rd-callout-edge: var(--rd-danger);
+  --rd-callout-fill: var(--rd-danger-soft);
+}
+
+.rd-doc hr {
+  height: 0;
+  margin: 1.6em 0;
+  border: 0;
+  border-top: 1px solid var(--rd-border-strong);
+}
+
+.rd-doc hr.ProseMirror-selectednode {
+  border-top-color: var(--rd-accent);
+  box-shadow: 0 0 0 2px var(--rd-accent-soft);
+}
+
+.rd-doc ::selection {
+  background: var(--rd-accent-soft);
+}
+
+/* A selected image or attachment is marked by its outline, not by a selection tint. */
+.rd-doc .rd-image ::selection,
+.rd-doc .rd-attachment ::selection {
+  background: transparent;
+}
+
+/* ------------------------------------------------------- 5. Tables and code */
+/* Wide tables scroll inside their own block; the page never does. */
+.rd-doc .tableWrapper {
+  max-width: 100%;
+  margin: 1em 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.rd-doc table {
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.rd-doc td,
+.rd-doc th {
+  position: relative;
+  box-sizing: border-box;
+  min-width: 3.5em;
+  padding: 0.4em 0.65em;
+  text-align: left;
+  vertical-align: top;
+  border: 1px solid var(--rd-border-strong);
+}
+
+.rd-doc th {
+  font-weight: 650;
+  background: var(--rd-surface-2);
+}
+
+.rd-doc .selectedCell::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: '';
+  pointer-events: none;
+  background: var(--rd-accent-soft);
+}
+
+.rd-doc .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: -2px;
+  z-index: 2;
+  width: 4px;
+  pointer-events: none;
+  background: var(--rd-accent);
+}
+
+.rd-doc.resize-cursor {
+  cursor: col-resize;
+}
+
+.rd-doc .rd-code,
+.rd-doc .rd-diagram {
+  margin: 1em 0;
+  overflow: hidden;
+  background: var(--rd-code-bg);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+}
+
+.rd-block-bar {
+  display: flex;
+  gap: var(--rd-space-2);
+  align-items: center;
+  justify-content: space-between;
+  min-height: 34px;
+  padding: 2px var(--rd-space-1) 2px var(--rd-space-3);
+  font: var(--rd-text-sm) / 1.2 var(--rd-font-ui);
+  color: var(--rd-text-muted);
+  user-select: none;
+  border-bottom: 1px solid var(--rd-border);
+}
+
+.rd-block-bar__title {
+  display: inline-flex;
+  gap: var(--rd-space-2);
+  align-items: center;
+}
+
+.rd-block-bar__actions {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.rd-code__language {
+  width: 9.5em;
+  margin-left: calc(var(--rd-space-2) * -1);
+}
+
+.rd-code__pre,
+.rd-diagram__source {
+  margin: 0;
+  padding: var(--rd-space-3) var(--rd-space-4);
+  /* Code keeps its whitespace and scrolls sideways inside its block. */
+  overflow-x: auto;
+  font-family: var(--rd-font-mono);
+  font-size: 0.875em;
+  line-height: 1.55;
+  white-space: pre;
+  tab-size: 2;
+  overflow-wrap: normal;
+}
+
+.rd-code__pre code,
+.rd-diagram__source code {
+  display: block;
+  min-width: max-content;
+  padding: 0;
+  font: inherit;
+  white-space: pre;
+  background: none;
+  border: 0;
+}
+
+.hljs-comment,
+.hljs-quote {
+  font-style: italic;
+  color: var(--rd-code-comment);
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-deletion {
+  color: var(--rd-code-keyword);
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attr,
+.hljs-template-tag {
+  color: var(--rd-code-string);
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-variable.constant_ {
+  color: var(--rd-code-number);
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--rd-code-title);
+}
+
+.hljs-type,
+.hljs-built_in,
+.hljs-class .hljs-title,
+.hljs-tag {
+  color: var(--rd-code-type);
+}
+
+.hljs-meta,
+.hljs-attribute,
+.hljs-params,
+.hljs-property,
+.hljs-link {
+  color: var(--rd-code-meta);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 700;
+}
+
+/* ---------------------------------- 6. Images, attachments, upload states */
+.rd-doc .rd-image {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1em 0;
+}
+
+.rd-image[data-align='left'] {
+  align-items: flex-start;
+}
+
+.rd-image[data-align='right'] {
+  align-items: flex-end;
+}
+
+.rd-image__frame {
+  position: relative;
+  display: inline-block;
+  /* Images never overflow the column, whatever their natural size. */
+  max-width: 100%;
+  width: var(--rd-image-width, auto);
+  line-height: 0;
+  border-radius: var(--rd-radius-sm);
+}
+
+.rd-image__img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--rd-radius-sm);
+}
+
+.rd-image[style*='--rd-image-width'] .rd-image__img {
+  width: 100%;
+}
+
+.rd-image__img--pending {
+  opacity: 0.45;
+  filter: saturate(0.6);
+}
+
+.rd-image.is-selected .rd-image__frame {
+  outline: 2px solid var(--rd-accent);
+  outline-offset: 2px;
+}
+
+.rd-image__handle {
+  position: absolute;
+  bottom: -7px;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  background: var(--rd-accent);
+  border: 2px solid var(--rd-surface-1);
+  border-radius: var(--rd-radius-full);
+  touch-action: none;
+}
+
+.rd-image__handle--start {
+  left: -7px;
+  cursor: nesw-resize;
+}
+
+.rd-image__handle--end {
+  right: -7px;
+  cursor: nwse-resize;
+}
+
+.rd-image__size {
+  position: absolute;
+  top: var(--rd-space-2);
+  right: var(--rd-space-2);
+  padding: 2px 6px;
+  font: var(--rd-text-xs) / 1.3 var(--rd-font-ui);
+  color: var(--rd-tooltip-text, #0a1215);
+  background: var(--rd-tooltip-bg, #e8eef1);
+  border-radius: var(--rd-radius-sm);
+}
+
+.rd-image__caption {
+  max-width: 100%;
+  margin-top: var(--rd-space-2);
+  font-size: 0.875em;
+  line-height: 1.45;
+  color: var(--rd-text-muted);
+  text-align: center;
+  white-space: pre-wrap;
+}
+
+.rd-image__missing {
+  display: flex;
+  gap: var(--rd-space-2);
+  align-items: center;
+  justify-content: center;
+  min-width: min(260px, 100%);
+  min-height: 96px;
+  padding: var(--rd-space-4);
+  font: var(--rd-text-md) / 1.4 var(--rd-font-ui);
+  color: var(--rd-text-muted);
+  background: var(--rd-surface-2);
+  border: 1px dashed var(--rd-border-strong);
+  border-radius: var(--rd-radius-md);
+}
+
+/* Floating options of a selected block node. */
+.rd-node-tools {
+  position: absolute;
+  top: calc(100% + var(--rd-space-2));
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px;
+  overflow-x: auto;
+  line-height: 1;
+  background: var(--rd-surface-2);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-md);
+  box-shadow: var(--rd-shadow-2);
+  transform: translateX(-50%);
+}
+
+.rd-node-tools__separator {
+  flex: none;
+  width: 1px;
+  height: 18px;
+  margin: 0 3px;
+  background: var(--rd-border-strong);
+}
+
+.rd-upload {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--rd-space-2) var(--rd-space-3);
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: min(320px, 100%);
+  padding: var(--rd-space-3);
+  font: var(--rd-text-md) / 1.35 var(--rd-font-ui);
+  color: var(--rd-text);
+  background: var(--rd-surface-2);
+  border: 1px dashed var(--rd-border-strong);
+  border-radius: var(--rd-radius-md);
+}
+
+.rd-image__img--pending + .rd-upload {
+  margin-top: var(--rd-space-2);
+}
+
+.rd-upload[data-upload-state='failed'] {
+  border-color: var(--rd-danger);
+  border-style: solid;
+}
+
+.rd-upload__icon {
+  display: inline-flex;
+  color: var(--rd-text-muted);
+}
+
+.rd-upload[data-upload-state='failed'] .rd-upload__icon {
+  color: var(--rd-danger);
+}
+
+.rd-upload__text {
+  display: grid;
+  min-width: 0;
+}
+
+.rd-upload__name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rd-upload__status {
+  font-size: var(--rd-text-sm);
+  color: var(--rd-text-muted);
+}
+
+.rd-upload__actions {
+  display: inline-flex;
+  gap: var(--rd-space-1);
+}
+
+.rd-upload__bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  overflow: hidden;
+  background: var(--rd-surface-3);
+  border-radius: var(--rd-radius-full);
+}
+
+.rd-upload__bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--rd-accent);
+  border-radius: inherit;
+  transition: width var(--rd-duration-base) linear;
+}
+
+.rd-doc .rd-attachment {
+  margin: 0.8em 0;
+}
+
+.rd-attachment__chip {
+  display: inline-flex;
+  gap: var(--rd-space-3);
+  align-items: center;
+  max-width: 100%;
+  padding: var(--rd-space-2) var(--rd-space-3);
+  font: var(--rd-text-md) / 1.3 var(--rd-font-ui);
+  background: var(--rd-surface-2);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-md);
+}
+
+.rd-attachment.is-selected .rd-attachment__chip,
+.rd-attachment.is-selected .rd-upload {
+  outline: 2px solid var(--rd-accent);
+  outline-offset: 2px;
+}
+
+.rd-attachment__icon {
+  flex: none;
+  color: var(--rd-text-muted);
+}
+
+.rd-attachment__text {
+  display: grid;
+  min-width: 0;
+}
+
+.rd-attachment__name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rd-attachment__details {
+  font-size: var(--rd-text-sm);
+  color: var(--rd-text-muted);
+}
+
+.rd-doc a.rd-attachment__download {
+  display: inline-flex;
+  flex: none;
+  gap: var(--rd-space-1);
+  align-items: center;
+  padding: 4px 8px;
+  font-weight: 600;
+  color: var(--rd-accent);
+  text-decoration: none;
+  border-radius: var(--rd-radius-sm);
+}
+
+.rd-doc a.rd-attachment__download:hover {
+  background: var(--rd-accent-soft);
+}
+
+/* ------------------------------------------------------------- 7. Diagrams */
+.rd-diagram__preview {
+  display: grid;
+  /* One column that never grows with its content (a long error line, a wide image). */
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-4);
+}
+
+.rd-diagram__canvas {
+  /* A diagram too wide to stay legible scrolls here, inside its own block. */
+  overflow-x: auto;
+}
+
+.rd-diagram__image {
+  display: block;
+  /*
+   * Shrinks with the column, but never below 60% of its natural size
+   * (`--rd-diagram-width`): smaller than that the labels stop being readable,
+   * so the diagram scrolls in its canvas instead.
+   */
+  max-width: 100%;
+  min-width: calc(var(--rd-diagram-width, 0px) * 0.6);
+  height: auto;
+  margin-inline: auto;
+}
+
+.rd-diagram__image[data-stale] {
+  opacity: 0.55;
+}
+
+.rd-diagram__status {
+  display: inline-flex;
+  gap: var(--rd-space-2);
+  align-items: center;
+  justify-self: center;
+  font: var(--rd-text-md) / 1.4 var(--rd-font-ui);
+  color: var(--rd-text-muted);
+}
+
+.rd-diagram__error {
+  display: flex;
+  gap: var(--rd-space-2);
+  align-items: flex-start;
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--rd-space-3);
+  font: var(--rd-text-md) / 1.45 var(--rd-font-ui);
+  color: var(--rd-text);
+  background: var(--rd-danger-soft);
+  border-radius: var(--rd-radius-sm);
+}
+
+.rd-diagram__error > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--rd-danger);
+}
+
+.rd-diagram__error > div {
+  min-width: 0;
+}
+
+.rd-diagram__error > div {
+  flex: 1 1 0;
+}
+
+.rd-diagram__error pre {
+  max-height: 12em;
+  margin: var(--rd-space-1) 0 0;
+  overflow: auto;
+  font: var(--rd-text-sm) / 1.5 var(--rd-font-mono);
+  white-space: pre;
+}
+
+.rd-diagram__source {
+  border-top: 1px solid var(--rd-border);
+}
+
+.rd-diagram__source[hidden] {
+  display: none;
+}
+
+/* Find steps onto a match inside a collapsed source: show it. */
+.rd-diagram__source[hidden]:has(.rd-find-match--current) {
+  display: block;
+}
+
+/* ------------------------------------------ 8. Carets, find, placeholder */
+.rd-caret {
+  position: relative;
+  margin: 0 -1px;
+  pointer-events: none;
+  border-right: 1px solid var(--rd-caret-color);
+  border-left: 1px solid var(--rd-caret-color);
+  word-break: normal;
+}
+
+.rd-caret__label {
+  position: absolute;
+  top: -1.45em;
+  left: -1px;
+  z-index: 2;
+  padding: 1px 5px;
+  font: 600 11px/1.35 var(--rd-font-ui);
+  color: #fff;
+  white-space: nowrap;
+  user-select: none;
+  background: var(--rd-caret-color);
+  border-radius: 3px 3px 3px 0;
+  text-shadow: 0 0 2px rgb(0 0 0 / 0.55);
+}
+
+.rd-find-match {
+  background: var(--rd-find-bg);
+  border-radius: 2px;
+}
+
+.rd-find-match--current {
+  color: var(--rd-highlight-ink);
+  background: var(--rd-find-current);
+  box-shadow: 0 0 0 1px var(--rd-find-current);
+}
+
+.rd-doc p.is-empty.is-editor-empty:first-child::before,
+.rd-doc p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: var(--rd-text-faint);
+  pointer-events: none;
+  content: attr(data-placeholder);
+}
+
+/* -------------------------------------- 9. Toolbar, find bar, popovers */
+.rd-editor-toolbar {
+  flex: none;
+  padding: var(--rd-space-1) var(--rd-space-2);
+  background: var(--rd-surface-1);
+  border-bottom: 1px solid var(--rd-border);
+}
+
+.rd-editor[data-external-scroll] .rd-editor-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.rd-editor-toolbar__block {
+  width: 8.4em;
+}
+
+.rd-editor-toolbar__size {
+  width: 4.9em;
+}
+
+.rd-editor--panel .rd-editor-toolbar {
+  padding: 2px var(--rd-space-1);
+}
+
+.rd-swatch-icon {
+  display: inline-flex;
+}
+
+.rd-swatches {
+  display: grid;
+  grid-template-columns: repeat(5, 28px);
+  gap: var(--rd-space-2);
+  padding: var(--rd-space-1);
+}
+
+.rd-swatch {
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  cursor: pointer;
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-full);
+}
+
+.rd-swatch[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 2px var(--rd-surface-2),
+    0 0 0 4px var(--rd-focus-ring);
+}
+
+.rd-swatch:focus-visible {
+  outline: 2px solid var(--rd-focus-ring);
+  outline-offset: 2px;
+}
+
+.rd-swatch--clear {
+  grid-column: 1 / -1;
+  width: auto;
+  height: var(--rd-control-h-sm);
+  padding: 0 var(--rd-space-3);
+  font: var(--rd-text-md) / 1 var(--rd-font-ui);
+  color: var(--rd-text);
+  background: var(--rd-button-bg, transparent);
+  border-radius: var(--rd-radius-md);
+}
+
+.rd-swatch--clear:hover {
+  background: var(--rd-button-bg-hover, var(--rd-surface-3));
+}
+
+.rd-popover-form {
+  display: grid;
+  gap: var(--rd-space-3);
+  width: min(320px, calc(100vw - 48px));
+}
+
+.rd-popover-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+  justify-content: flex-end;
+}
+
+.rd-find {
+  display: grid;
+  flex: none;
+  gap: var(--rd-space-1);
+  padding: var(--rd-space-1) var(--rd-space-2);
+  background: var(--rd-surface-1);
+  border-bottom: 1px solid var(--rd-border);
+}
+
+.rd-find__row {
+  display: flex;
+  gap: var(--rd-space-1);
+  align-items: center;
+  min-width: 0;
+}
+
+.rd-find__field {
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 360px;
+}
+
+.rd-find__count {
+  flex: none;
+  min-width: 5.5em;
+  font: var(--rd-text-sm) / 1.2 var(--rd-font-ui);
+  color: var(--rd-text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.rd-find[data-compact] .rd-find__count {
+  min-width: 4em;
+}
+
+/* ------------------------------------- 10. Notices and Follow Latest */
+/* Sticks to the bottom of whatever scrolls the document and takes no height,
+   so it never adds to the scroll length. */
+.rd-editor__dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  height: 0;
+  pointer-events: none;
+}
+
+.rd-editor__dock-start,
+.rd-editor__dock-end {
+  position: absolute;
+  bottom: var(--rd-space-3);
+  display: flex;
+  gap: var(--rd-space-2);
+  align-items: flex-end;
+}
+
+.rd-editor__dock-start {
+  left: var(--rd-space-3);
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: min(440px, calc(100% - 200px));
+}
+
+.rd-editor__dock-end {
+  right: var(--rd-space-3);
+}
+
+.rd-editor__dock-start > *,
+.rd-editor__dock-end > * {
+  pointer-events: auto;
+}
+
+.rd-follow-toggle {
+  background: var(--rd-surface-2);
+  box-shadow: var(--rd-shadow-1);
+}
+
+.rd-follow-toggle[aria-pressed='true'] {
+  color: var(--rd-accent);
+}
+
+.rd-notice {
+  display: flex;
+  gap: var(--rd-space-2);
+  align-items: flex-start;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: var(--rd-space-2) var(--rd-space-2) var(--rd-space-2) var(--rd-space-3);
+  font: var(--rd-text-md) / 1.45 var(--rd-font-ui);
+  color: var(--rd-text);
+  background: var(--rd-surface-2);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-md);
+  box-shadow: var(--rd-shadow-2);
+}
+
+.rd-notice__icon {
+  flex: none;
+  margin-top: 3px;
+  color: var(--rd-info);
+}
+
+.rd-notice__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rd-notice__title {
+  display: block;
+  font-weight: 650;
+}
+
+.rd-notice__list {
+  max-height: 9.5em;
+  margin: 2px 0 0;
+  padding: 0 0 0 1.1em;
+  overflow-y: auto;
+  color: var(--rd-text-muted);
+}
+
+.rd-notice__list:only-child {
+  padding-left: 0;
+  list-style: none;
+  color: var(--rd-text);
+}
+
+/* --------------------------------------------- 11. Status and banners */
+.rd-status {
+  display: inline-flex;
+  gap: var(--rd-space-3);
+  align-items: center;
+  min-width: 0;
+  font: var(--rd-text-md) / 1.2 var(--rd-font-ui);
+  color: var(--rd-text-muted);
+  white-space: nowrap;
+}
+
+.rd-status--compact {
+  gap: var(--rd-space-2);
+}
+
+.rd-status__part {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  border-radius: var(--rd-radius-sm);
+}
+
+.rd-status__part[hidden] {
+  display: none;
+}
+
+.rd-status__part:focus-visible {
+  outline: 2px solid var(--rd-focus-ring);
+  outline-offset: 2px;
+}
+
+.rd-status__part[data-state='saved'] svg {
+  color: var(--rd-success);
+}
+
+.rd-status__part[data-state='pending'] {
+  color: var(--rd-warning);
+}
+
+.rd-status__part[data-state='error'] {
+  color: var(--rd-danger);
+}
+
+.rd-spin {
+  animation: rd-spin 0.9s linear infinite;
+}
+
+@keyframes rd-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rd-banners {
+  display: grid;
+  gap: var(--rd-space-2);
+}
+
+.rd-participants {
+  flex: none;
+}
+
+/* ---------------------------------------------------------------- 12. Print */
+@media print {
+  .rd-editor,
+  .rd-editor[data-theme] {
+    display: block;
+    height: auto;
+    color: #000;
+    background: #fff;
+    /* Ink on paper regardless of the screen theme. */
+    --rd-text: #000;
+    --rd-text-muted: #333;
+    --rd-text-faint: #555;
+    --rd-border: #bbb;
+    --rd-border-strong: #888;
+    --rd-surface-2: #f1f1f1;
+    --rd-accent: #0b4f8a;
+    --rd-code-bg: #f6f6f6;
+    --rd-code-keyword: #8a0f52;
+    --rd-code-string: #1d5a0a;
+    --rd-code-number: #6e4500;
+    --rd-code-comment: #555;
+    --rd-code-title: #0b4f8a;
+    --rd-code-type: #00554f;
+    --rd-code-meta: #4d2d91;
+  }
+
+  .rd-editor__scroll {
+    overflow: visible;
+  }
+
+  .rd-editor__page {
+    max-width: none;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .rd-editor-toolbar,
+  .rd-find,
+  .rd-editor__dock,
+  .rd-editor__float,
+  .rd-editor__loading,
+  .rd-block-bar__actions,
+  .rd-node-tools,
+  .rd-image__handle,
+  .rd-caret,
+  .ProseMirror-gapcursor {
+    display: none !important;
+  }
+
+  .rd-doc {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  .rd-doc h1,
+  .rd-doc h2,
+  .rd-doc h3,
+  .rd-doc h4 {
+    break-after: avoid;
+  }
+
+  .rd-doc tr,
+  .rd-image,
+  .rd-attachment,
+  .rd-diagram__preview,
+  .rd-doc blockquote,
+  .rd-doc div[data-type='callout'] {
+    break-inside: avoid;
+  }
+
+  /* On paper nothing can scroll: wrap code and let tables use the page width. */
+  .rd-code__pre,
+  .rd-code__pre code,
+  .rd-diagram__source,
+  .rd-diagram__source code {
+    min-width: 0;
+    overflow: visible;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .rd-doc .tableWrapper,
+  .rd-diagram__canvas {
+    overflow: visible;
+  }
+
+  .rd-diagram__image {
+    min-width: 0;
+  }
+
+  .rd-doc table {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .rd-doc a[href^='http']::after {
+    font-size: 0.85em;
+    color: #444;
+    content: ' (' attr(href) ')';
+    overflow-wrap: anywhere;
+  }
+
+  .rd-find-match,
+  .rd-find-match--current,
+  .rd-caret-selection {
+    color: inherit;
+    background: none !important;
+    box-shadow: none;
+  }
+
+  .rd-image.is-selected .rd-image__frame {
+    outline: none;
+  }
+}
+
+/* -------------------------------------------- 13. Motion, small screens */
+@media (prefers-reduced-motion: reduce) {
+  .rd-spin,
+  .ProseMirror-gapcursor::after {
+    animation: none;
+  }
+
+  .rd-upload__bar-fill {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .rd-editor__page {
+    padding: var(--rd-space-4) var(--rd-space-3) 104px;
+  }
+
+  .rd-doc h1 {
+    font-size: 1.6em;
+  }
+
+  /* Paste report above the Follow Latest controls instead of beside them. */
+  .rd-editor__dock-start {
+    right: var(--rd-space-3);
+    bottom: calc(var(--rd-space-3) + 40px);
+    max-width: none;
+  }
+
+  .rd-upload {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .rd-upload__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  .rd-attachment__chip {
+    flex-wrap: wrap;
+  }
+
+  .rd-find__count {
+    min-width: 4em;
+  }
+}

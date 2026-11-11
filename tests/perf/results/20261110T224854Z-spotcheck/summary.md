@@ -1,0 +1,41 @@
+# RealtimeDocs performance results
+
+Run directory: `20261110T224854Z-spotcheck` (UTC timestamp). All numbers below were measured on this host in this run; nothing is estimated or extrapolated.
+
+## Environment
+
+- Hardware: Cortex-X925 + Cortex-A725, 20 logical cores (10 cores at max 3900.0000 MHz; 10 cores at max 2808.0000 MHz); memory MemTotal: 127598700 kB, MemAvailable: 34138116 kB at start; Ubuntu 24.04.5 LTS, kernel Linux 7.0.0-1025-nvidia aarch64.
+- Load: this host is shared with other workloads. 1/5/15-minute load average at the start of the run: 3.77 / 4.97 / 5.42 on 20 cores. Top CPU consumers at start (percent, command): `%CPU COMMAND |  116 VLLM::Worker_TP | 63.1 MainThread | 58.6 MainThread | 55.3 VLLM::EngineCor | 41.0 chrome-headless | 40.1 python | 31.7 chrome-headless`.
+- Software: Node v24.22.2 (host scripts, protocol test), server RealtimeDocs 0.1.0 (protocol 1) run as a plain Node process from `apps/server/dist`, postgres (PostgreSQL) 17.11 in container `rd-perf-pg` (default settings, fsync on, container filesystem), Docker version 29.6.2, build dfc4efb, Playwright image `mcr.microsoft.com/playwright:v1.64.1-noble` (Node 24.21.0 inside, Chromium version in the tables below).
+- Server settings (every non-default value): `NODE_ENV=production RD_HOST=127.0.0.1 RD_PORT=4320 PUBLIC_ORIGIN=http://127.0.0.1:4320 ALLOWED_ORIGINS=http://127.0.0.1:4321,http://127.0.0.1:4322,http://127.0.0.1:4324 WEB_DIST_DIR=/home/techsphere/Documents/project/realtimedocs/tests/perf/.stage/web ASSET_DIR=/home/techsphere/Documents/project/realtimedocs/tests/perf/.stage/assets LOG_LEVEL=warn CLEANUP_INTERVAL_MINUTES=0 RATE_API_PER_MINUTE=1000000 RATE_LOGIN_PER_IP=100000 RATE_SHARE_EXCHANGE_PER_IP=100000 RATE_INVITE_PER_IP=100000 RATE_DESKTOP_REDEEM_PER_IP=100000 RATE_COLLAB_TICKET_PER_MINUTE=100000 RATE_UPLOAD_PER_MINUTE=100000 RATE_WS_UPGRADE_PER_MINUTE=100000 DATABASE_URL=postgres://rd:***@127.0.0.1:54320/realtimedocs_perf SESSION_SECRET=*** (generated, 32 random bytes)`. Everything else is the default of `docs/notes/server.md`.
+- Documents: **small** = the seeded sample document, 18 blocks, 1667 bytes of text (UTF-8, plain-text export), 5478 bytes Yjs state, it also holds one image and a diagram. **large** = generated, 201 blocks (200 paragraphs of about 250 characters, plus the empty paragraph the editor keeps), 49994 bytes of text, 57448 bytes Yjs state.
+
+## Network conditions and measured RTT
+
+"RTT" below is a round-trip time measured at one sender with one clock (`performance.now()`), not a one-way delay. Method: WebSocket ping/pong control frames to `/collab` (answered by the `ws` library of the server), 300 samples after 20 warm-up, 20 ms apart; plus an HTTP GET `/api/health` on a keep-alive connection (includes about 0.3 ms of server handling). The "emulated" conditions use a userspace Node TCP delay proxy that adds a fixed delay per direction to every chunk, WebSocket included; it does not model bandwidth, loss, jitter, or the delay of the TCP handshake. **Emulated with a userspace delay proxy, not a real LAN or WAN.**
+
+## 1. Text edit to visible remote render (headline, real editor pages in one Chromium)
+
+Chromium 156.0.8078.4, headless, one process; one editor page plus N-1 viewer pages (viewers are share-link guests, each in its own browser context; the editor is the administrator's session). The editor types one letter every 100-200 ms (5-10 characters per second) after a 50-edit warm-up; each letter is a marker (position k, letter k of a fixed pseudo-random sequence) and every viewer verifies both.
+
+**Clock method.** t0 and t1 are both `performance.timeOrigin + performance.now()` read inside pages of the same Chromium on the same host, so they share one OS clock; no timestamps from separate computers are subtracted. `performance.now()` is rounded by Chromium to 100 microseconds in non-isolated pages, so the resolution is 0.1 ms. t0 = capture-phase `keydown` listener on `window` of the editor page (the first script that sees the key, before ProseMirror handles it). t1 (DOM) = the first MutationObserver callback in the viewer after which the marker is present in the viewer's DOM. t1 (next frame) = the `requestAnimationFrame` callback after that DOM change, i.e. the frame in which the browser paints it (headless cannot report when pixels reach a display). Pages' clocks were compared with the Node driver's clock before and after each run (best of 25 round trips per page); the largest absolute offset and the uncertainty of that comparison (half the CDP round trip) are in the last column.
+
+### 1a. t1 = marker present in the viewer DOM
+
+| condition                                                                  | document | clients | edits | viewer samples | p50 ms | p95 ms | p99 ms | mean ms | max ms | worst viewer per edit p95 ms | p95 < 100 ms | missing/mismatched | clock offset                     |
+| -------------------------------------------------------------------------- | -------- | ------: | ----: | -------------: | -----: | -----: | -----: | ------: | -----: | ---------------------------: | ------------ | ------------------ | -------------------------------- |
+| loopback on one host                                                       | large    |      10 |   320 |           2880 |    4.0 |    4.8 |    5.3 |     4.0 |    7.5 |                          5.3 | yes          | 0/0                | max 0.13 ms, uncertainty 0.37 ms |
+| loopback on one host                                                       | small    |      10 |   320 |           2880 |    4.1 |    7.4 |    9.3 |     4.8 |   14.4 |                          9.3 | yes          | 0/0                | max 0.24 ms, uncertainty 0.31 ms |
+| emulated 10 ms RTT (emulated with a userspace delay proxy, not a real LAN) | large    |      10 |   320 |           2880 |   15.1 |   16.6 |   17.5 |    15.2 |   19.6 |                         17.1 | yes          | 0/0                | max 0.19 ms, uncertainty 0.35 ms |
+| emulated 10 ms RTT (emulated with a userspace delay proxy, not a real LAN) | small    |      10 |   320 |           2880 |   14.4 |   15.8 |   16.9 |    14.5 |   26.5 |                         16.5 | yes          | 0/0                | max 0.25 ms, uncertainty 0.45 ms |
+
+### 1b. t1 = next animation frame after the DOM change
+
+| condition                                                                  | document | clients | edits | viewer samples | p50 ms | p95 ms | p99 ms | mean ms | max ms | worst viewer per edit p95 ms | p95 < 100 ms | missing/mismatched | clock offset                     |
+| -------------------------------------------------------------------------- | -------- | ------: | ----: | -------------: | -----: | -----: | -----: | ------: | -----: | ---------------------------: | ------------ | ------------------ | -------------------------------- |
+| loopback on one host                                                       | large    |      10 |   320 |           2880 |    4.3 |    5.3 |    6.2 |     4.4 |    7.9 |                          6.2 | yes          | 0/0                | max 0.13 ms, uncertainty 0.37 ms |
+| loopback on one host                                                       | small    |      10 |   320 |           2880 |    4.6 |    9.0 |   11.7 |     5.5 |   25.8 |                         11.4 | yes          | 0/0                | max 0.24 ms, uncertainty 0.31 ms |
+| emulated 10 ms RTT (emulated with a userspace delay proxy, not a real LAN) | large    |      10 |   320 |           2880 |   15.5 |   17.1 |   18.2 |    15.6 |   21.0 |                         18.0 | yes          | 0/0                | max 0.19 ms, uncertainty 0.35 ms |
+| emulated 10 ms RTT (emulated with a userspace delay proxy, not a real LAN) | small    |      10 |   320 |           2880 |   14.8 |   16.5 |   17.7 |    15.0 |   30.9 |                         17.2 | yes          | 0/0                | max 0.25 ms, uncertainty 0.45 ms |
+
+"edits" = measured keystrokes; "viewer samples" = edits x (clients - 1), every viewer's latency for every edit, pooled (they are not independent). "missing/mismatched" counts edits a viewer never showed or showed with a wrong letter; both should be 0.

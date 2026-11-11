@@ -1,0 +1,173 @@
+{
+  "scenario": "image",
+  "condition": "rtt10",
+  "clients": 2,
+  "imageBytes": 2001201,
+  "width": 816,
+  "height": 817,
+  "chromium": "156.0.8078.4",
+  "samples": [
+    {
+      "uploadMs": 37.60009765625,
+      "t0ToUploadEndMs": 38.60009765625,
+      "t0ToEditorImgMs": 40.900146484375,
+      "seenMs": [54.5],
+      "decodedMs": [85.60009765625],
+      "viewerFetchMs": [16.300000000745058]
+    },
+    {
+      "uploadMs": 28.800048828125,
+      "t0ToUploadEndMs": 29.599853515625,
+      "t0ToEditorImgMs": 31.5,
+      "seenMs": [45.099853515625],
+      "decodedMs": [71.999755859375],
+      "viewerFetchMs": [16]
+    },
+    {
+      "uploadMs": 33.89990234375,
+      "t0ToUploadEndMs": 34.599853515625,
+      "t0ToEditorImgMs": 37.199951171875,
+      "seenMs": [49.699951171875],
+      "decodedMs": [74.499755859375],
+      "viewerFetchMs": [17.5]
+    },
+    {
+      "uploadMs": 35.400146484375,
+      "t0ToUploadEndMs": 36.5,
+      "t0ToEditorImgMs": 38.599853515625,
+      "seenMs": [51.599853515625],
+      "decodedMs": [85.499755859375],
+      "viewerFetchMs": [16.900000002235174]
+    },
+    {
+      "uploadMs": 38.7001953125,
+      "t0ToUploadEndMs": 40.60009765625,
+      "t0ToEditorImgMs": 42.300048828125,
+      "seenMs": [54.599853515625],
+      "decodedMs": [78.89990234375],
+      "viewerFetchMs": [19.699999999254942]
+    },
+    {
+      "uploadMs": 33.199951171875,
+      "t0ToUploadEndMs": 34.199951171875,
+      "t0ToEditorImgMs": 36.10009765625,
+      "seenMs": [48.5],
+      "decodedMs": [79],
+      "viewerFetchMs": [19.099999997764826]
+    },
+    {
+      "uploadMs": 29.699951171875,
+      "t0ToUploadEndMs": 31.5,
+      "t0ToEditorImgMs": 33.599853515625,
+      "seenMs": [45.7998046875],
+      "decodedMs": [76.699951171875],
+      "viewerFetchMs": [19.800000000745058]
+    },
+    {
+      "uploadMs": 31.5,
+      "t0ToUploadEndMs": 33.39990234375,
+      "t0ToEditorImgMs": 35.099853515625,
+      "seenMs": [47.2998046875],
+      "decodedMs": [83.89990234375],
+      "viewerFetchMs": [18.699999999254942]
+    },
+    {
+      "uploadMs": 30.300048828125,
+      "t0ToUploadEndMs": 31.2001953125,
+      "t0ToEditorImgMs": 33.10009765625,
+      "seenMs": [45.699951171875],
+      "decodedMs": [72.199951171875],
+      "viewerFetchMs": [16.799999997019768]
+    },
+    {
+      "uploadMs": 30.900146484375,
+      "t0ToUploadEndMs": 32.800048828125,
+      "t0ToEditorImgMs": 34.60009765625,
+      "seenMs": [46.599853515625],
+      "decodedMs": [85.099853515625],
+      "viewerFetchMs": [19.400000002235174]
+    },
+    {
+      "uploadMs": 34.300048828125,
+      "t0ToUploadEndMs": 36.60009765625,
+      "t0ToEditorImgMs": 38.5,
+      "seenMs": [51],
+      "decodedMs": [79],
+      "viewerFetchMs": [17.300000000745058]
+    },
+    {
+      "uploadMs": 33,
+      "t0ToUploadEndMs": 33.800048828125,
+      "t0ToEditorImgMs": 35.800048828125,
+      "seenMs": [48.199951171875],
+      "decodedMs": [77.699951171875],
+      "viewerFetchMs": [19]
+    },
+    {
+      "uploadMs": 29.5,
+      "t0ToUploadEndMs": 30.199951171875,
+      "t0ToEditorImgMs": 31.89990234375,
+      "seenMs": [44.699951171875],
+      "decodedMs": [69.7998046875],
+      "viewerFetchMs": [17]
+    },
+    {
+      "uploadMs": 29.10009765625,
+      "t0ToUploadEndMs": 31.199951171875,
+      "t0ToEditorImgMs": 33.199951171875,
+      "seenMs": [45.699951171875],
+      "decodedMs": [78.89990234375],
+      "viewerFetchMs": [17]
+    },
+    {
+      "uploadMs": 28.39990234375,
+      "t0ToUploadEndMs": 30.199951171875,
+      "t0ToEditorImgMs": 33.5,
+      "seenMs": [46.099853515625],
+      "decodedMs": [70.699951171875],
+      "viewerFetchMs": [18.899999998509884]
+    },
+    {
+      "uploadMs": 30.5,
+      "t0ToUploadEndMs": 31.300048828125,
+      "t0ToEditorImgMs": 37,
+      "seenMs": [49.699951171875],
+      "decodedMs": [73.7998046875],
+      "viewerFetchMs": [17.699999999254942]
+    },
+    {
+      "uploadMs": 31.5,
+      "t0ToUploadEndMs": 33.699951171875,
+      "t0ToEditorImgMs": 35.5,
+      "seenMs": [48.300048828125],
+      "decodedMs": [77.89990234375],
+      "viewerFetchMs": [16.700000002980232]
+    },
+    {
+      "uploadMs": 34,
+      "t0ToUploadEndMs": 34.89990234375,
+      "t0ToEditorImgMs": 36.699951171875,
+      "seenMs": [49.099853515625],
+      "decodedMs": [79.599853515625],
+      "viewerFetchMs": [18.200000002980232]
+    },
+    {
+      "uploadMs": 29.199951171875,
+      "t0ToUploadEndMs": 29.89990234375,
+      "t0ToEditorImgMs": 31.89990234375,
+      "seenMs": [45.499755859375],
+      "decodedMs": [80.099853515625],
+      "viewerFetchMs": [17.399999998509884]
+    },
+    {
+      "uploadMs": 31.699951171875,
+      "t0ToUploadEndMs": 32.60009765625,
+      "t0ToEditorImgMs": 34.400146484375,
+      "seenMs": [48],
+      "decodedMs": [150.60009765625],
+      "viewerFetchMs": [19]
+    }
+  ],
+  "failures": 0,
+  "clockMaxUncertaintyMs": 0.385009765625
+}

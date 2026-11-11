@@ -1,0 +1,593 @@
+/*
+ * Document workspace: a full-height frame of header, document (plus an
+ * optional side panel) and a status strip. The page itself never scrolls;
+ * the document and the panel scroll on their own.
+ */
+.doc-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--rd-bg);
+}
+
+/* ---------------------------------------------------------------- header */
+.doc-header {
+  flex: none;
+  padding: var(--rd-space-2) var(--rd-space-4) var(--rd-space-2) var(--rd-space-2);
+  border-bottom: 1px solid var(--rd-border);
+  background: var(--rd-bg);
+}
+
+.doc-header__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: var(--rd-control-h-md);
+}
+
+.doc-header__row--meta {
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  min-height: 24px;
+  margin-top: 6px;
+  padding-left: 6px;
+}
+
+.doc-header--narrow {
+  padding-right: var(--rd-space-2);
+}
+
+.doc-back {
+  flex: none;
+  width: var(--rd-control-h-md);
+  padding: 0;
+}
+
+.doc-title {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.doc-title--editing {
+  flex: 1 1 280px;
+  max-width: 560px;
+}
+
+.doc-title__text {
+  overflow: hidden;
+  padding: 5px 6px;
+  border-radius: var(--rd-radius-md);
+  font-size: var(--rd-text-lg);
+  font-weight: 650;
+  letter-spacing: -0.005em;
+  line-height: var(--rd-leading-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-title__text[data-editable] {
+  cursor: text;
+}
+
+.doc-title__text[data-editable]:hover {
+  background: var(--rd-hover);
+}
+
+.doc-title__edit {
+  flex: none;
+  color: var(--rd-text-faint);
+}
+
+.doc-title__input {
+  width: 100%;
+  height: var(--rd-control-h-md);
+  padding: 0 var(--rd-space-2);
+  border: 1px solid var(--rd-control-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-control-bg);
+  color: var(--rd-text);
+  font-size: var(--rd-text-lg);
+  font-weight: 650;
+}
+
+.doc-header__identity {
+  display: flex;
+  flex: none;
+  gap: 6px;
+}
+
+/* Status and avatars keep their size; the title is what gives way. */
+.doc-header__live {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--rd-space-3);
+  margin-left: auto;
+}
+
+.doc-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.doc-header--narrow .doc-actions {
+  margin-left: auto;
+}
+
+.doc-slot {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.doc-slot:empty {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  /* Tablet: the avatars give way before the title does. */
+  .doc-header:not(.doc-header--narrow) .doc-slot--participants {
+    display: none;
+  }
+}
+
+.doc-banner {
+  flex: none;
+  margin: var(--rd-space-2) var(--rd-space-3) 0;
+}
+
+/* ------------------------------------------------------------------ body */
+.doc-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.doc-main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  /* The editor scrolls inside itself; the page and this column never do. */
+  overflow: hidden;
+}
+
+/* Banners of the session, then the editor filling what is left. */
+.doc-editor {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.doc-editor > .rd-banners {
+  flex: none;
+  padding: var(--rd-space-2) var(--rd-space-3) 0;
+}
+
+.doc-editor > .rd-editor {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}
+
+.doc-editor__loading {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: var(--rd-space-6) clamp(var(--rd-space-3), 4vw, var(--rd-space-8));
+}
+
+/* ------------------------------------------------------------ status bar */
+.doc-statusbar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px var(--rd-space-4);
+  min-height: 28px;
+  padding: 5px var(--rd-space-3) max(5px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--rd-border);
+  background: var(--rd-surface-1);
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+}
+
+.doc-capture {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--rd-space-2);
+  min-width: 0;
+}
+
+.doc-capture__icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--rd-text-faint);
+}
+
+.doc-capture__label {
+  color: var(--rd-text);
+}
+
+.doc-statusbar__expiry {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------- dialogs and popover */
+.doc-display {
+  display: grid;
+  gap: 14px;
+  min-width: min(264px, 70vw);
+}
+
+.doc-display__group {
+  display: grid;
+  gap: 6px;
+}
+
+.doc-display-popover {
+  padding: var(--rd-space-4);
+}
+
+.doc-guidance,
+.doc-desktop,
+.snap-restore {
+  display: grid;
+  gap: var(--rd-space-3);
+}
+
+.doc-desktop section {
+  display: grid;
+  gap: var(--rd-space-2);
+}
+
+.doc-desktop section > .rd-btn {
+  justify-self: start;
+}
+
+.doc-guidance h3,
+.doc-desktop h3 {
+  margin-top: var(--rd-space-1);
+  font-size: var(--rd-text-md);
+}
+
+.doc-guidance :where(ul, ol),
+.doc-desktop :where(ul, ol),
+.snap-restore :where(ul, ol) {
+  display: grid;
+  gap: 6px;
+  padding-left: 1.25em;
+}
+
+.doc-desktop__status {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  color: var(--rd-text-muted);
+}
+
+.doc-left {
+  display: grid;
+  justify-items: center;
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-8) 0;
+  text-align: center;
+}
+
+.doc-left > svg {
+  width: 28px;
+  height: 28px;
+  color: var(--rd-text-faint);
+}
+
+.doc-left h1 {
+  font-size: var(--rd-text-xl);
+}
+
+/* ---------------------------------------------------------- share panel */
+.share-add,
+.share-form {
+  display: grid;
+  gap: var(--rd-space-3);
+}
+
+.share-add__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-2);
+}
+
+.share-form {
+  margin-bottom: var(--rd-space-4);
+  padding: var(--rd-space-3) var(--rd-space-3) var(--rd-space-4);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-lg);
+  background: var(--rd-surface-2);
+}
+
+/* Inside a dialog the form needs no frame of its own. */
+.rd-dialog .share-form {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.share-form__group {
+  display: grid;
+  gap: 6px;
+}
+
+.share-members {
+  margin-top: var(--rd-space-4);
+}
+
+.share-empty {
+  margin-top: var(--rd-space-3);
+}
+
+.share-members .rd-field,
+.app-row__actions .rd-field {
+  min-width: 108px;
+}
+
+.share-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.share-link {
+  display: grid;
+  gap: 5px;
+  padding: var(--rd-space-3) 0;
+  border-top: 1px solid var(--rd-border);
+}
+
+.share-link:first-child {
+  padding-top: 2px;
+  border-top: 0;
+}
+
+.share-link__head {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  min-height: var(--rd-control-h-sm);
+}
+
+.share-link__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-link__badges {
+  display: flex;
+  flex: none;
+  gap: var(--rd-space-1);
+}
+
+.share-link__origin {
+  color: var(--rd-text-faint);
+}
+
+.share-link [data-live] {
+  color: var(--rd-success);
+  font-weight: 600;
+}
+
+.share-link[data-share-state='revoked'] .share-link__name,
+.share-link[data-share-state='expired'] .share-link__name {
+  color: var(--rd-text-muted);
+}
+
+.share-inactive {
+  margin-top: var(--rd-space-3);
+  padding-top: var(--rd-space-3);
+  border-top: 1px solid var(--rd-border);
+}
+
+.share-inactive > summary {
+  width: fit-content;
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.share-inactive > summary:hover {
+  color: var(--rd-text);
+}
+
+.share-inactive[open] > summary {
+  margin-bottom: var(--rd-space-3);
+}
+
+.share-summary {
+  margin-bottom: var(--rd-space-3);
+}
+
+/* ------------------------------------------------------ snapshots panel */
+.snap-create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--rd-space-2);
+}
+
+.snap-create__name {
+  flex: 1 1 200px;
+}
+
+/* An error under the name must not push the button out of line. */
+.snap-create:has([data-invalid]) {
+  align-items: flex-start;
+}
+
+.snap-create:has([data-invalid]) > .rd-btn {
+  margin-top: calc(var(--rd-text-sm) * var(--rd-leading-tight) + 6px);
+}
+
+.snap-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.snap-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'head actions'
+    'facts actions';
+  align-items: center;
+  gap: 3px var(--rd-space-3);
+  padding: var(--rd-space-3) 0;
+  border-top: 1px solid var(--rd-border);
+}
+
+.snap-row:first-child {
+  padding-top: 2px;
+  border-top: 0;
+}
+
+.snap-row__head {
+  display: flex;
+  grid-area: head;
+  align-items: center;
+  gap: var(--rd-space-2);
+  min-width: 0;
+}
+
+.snap-row__name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.snap-row > .app-facts {
+  grid-area: facts;
+}
+
+.snap-row__actions {
+  display: flex;
+  grid-area: actions;
+  align-items: center;
+  gap: var(--rd-space-1);
+}
+
+/* ----------------------------------------------------------------- paper */
+/*
+ * Printing the document screen itself (Ctrl+P) prints the document, all of
+ * it, and nothing of the app around it. The print view under Export does the
+ * same and adds instructions for saving a PDF.
+ */
+@media print {
+  .doc-workspace {
+    display: block;
+    height: auto;
+    overflow: visible;
+    background: none;
+  }
+
+  .doc-header,
+  .doc-banner,
+  .doc-statusbar,
+  .doc-workspace .app-panel,
+  .doc-editor > .rd-banners {
+    display: none !important;
+  }
+
+  .doc-body,
+  .doc-main,
+  .doc-editor,
+  .doc-editor > .rd-editor {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  .doc-workspace .rd-diagram {
+    break-inside: avoid;
+  }
+}
+
+/* --------------------------------------------------------- reading mode */
+.doc-workspace--reading {
+  color: var(--rd-text);
+}
+
+.doc-reading-bar {
+  flex: none;
+  padding: var(--rd-space-2) var(--rd-space-3);
+  border-bottom: 1px solid var(--rd-border);
+  background: var(--rd-bg);
+}
+
+.doc-reading-bar__row {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  min-width: 0;
+  min-height: var(--rd-control-h-md);
+}
+
+.doc-reading-bar__row--tools {
+  flex-wrap: wrap;
+  gap: 4px var(--rd-space-3);
+}
+
+.doc-reading-bar__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--rd-text-lg);
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-reading-bar__tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.doc-reading-bar__scale {
+  min-width: 3.2em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--rd-text-muted);
+}
+
+.doc-reading-bar__note {
+  flex: 1 0 100%;
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+}
+
+.doc-display__reading {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rd-border);
+}

@@ -1,0 +1,58 @@
+/*
+ * Settings: one section per row. The explanation sits beside the controls on
+ * wide screens and above them on narrow ones; rules separate the sections.
+ */
+.settings-section {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) minmax(0, 440px);
+  gap: var(--rd-space-4) var(--rd-space-8);
+  padding: var(--rd-space-6) 0;
+  border-top: 1px solid var(--rd-border);
+  /* Keeps a section's heading clear of the sticky bar when linked to. */
+  scroll-margin-top: calc(var(--app-topbar-h) + var(--rd-space-2));
+}
+
+.settings-section__title {
+  font-size: var(--rd-text-lg);
+}
+
+.settings-section__description {
+  margin-top: var(--rd-space-1);
+  color: var(--rd-text-muted);
+}
+
+.settings-section__body {
+  min-width: 0;
+}
+
+.settings-facts {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--rd-space-1) var(--rd-space-4);
+}
+
+.settings-facts dt {
+  color: var(--rd-text-muted);
+}
+
+.settings-facts dd {
+  overflow-wrap: anywhere;
+}
+
+.settings-session {
+  display: grid;
+  gap: var(--rd-space-3);
+}
+
+/* Section bodies use the compact state blocks flush with the column. */
+.settings-section__body > .rd-state--compact {
+  padding: 0;
+}
+
+@media (max-width: 719px) {
+  .settings-section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--rd-space-3);
+    padding: var(--rd-space-5) 0;
+  }
+}

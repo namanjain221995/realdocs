@@ -1,0 +1,14 @@
+/* Share-link exchange. */
+.share-working {
+  display: grid;
+  justify-items: center;
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-8) 0;
+  color: var(--rd-text-muted);
+  text-align: center;
+}
+
+.share-working__title {
+  color: var(--rd-text);
+  font-size: var(--rd-text-xl);
+}

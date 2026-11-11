@@ -1,0 +1,44 @@
+{
+  "name": "@realtimedocs/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RealtimeDocs floating desktop companion (Windows and macOS)",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "package": "node scripts/package.mjs",
+    "package:win": "node scripts/package.mjs --platform win32 --arch x64,arm64",
+    "package:win:installer": "node scripts/build-installer.mjs",
+    "package:mac": "node scripts/package.mjs --platform darwin --arch x64,arm64",
+    "package:mac:universal": "node scripts/package.mjs --platform darwin --arch universal",
+    "package:linux": "node scripts/package.mjs --platform linux",
+    "inspect-package": "node scripts/inspect-package.mjs",
+    "test": "vitest run",
+    "test:smoke": "node scripts/smoke.mjs",
+    "test:real": "node scripts/real-stack.mjs",
+    "test:packaged": "node scripts/smoke.mjs --packaged",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@realtimedocs/contracts": "workspace:*",
+    "@realtimedocs/editor": "workspace:*",
+    "@realtimedocs/ui": "workspace:*",
+    "lucide-react": "1.70.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@electron/fuses": "2.1.3",
+    "@electron/packager": "20.3.0",
+    "@electron/universal": "3.0.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "electron": "45.2.3",
+    "esbuild": "0.28.2",
+    "vite": "8.3.7"
+  }
+}

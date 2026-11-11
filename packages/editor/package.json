@@ -1,0 +1,67 @@
+{
+  "name": "@realtimedocs/editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./export": "./src/export/index.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "demo": "vite --config demo/vite.config.ts",
+    "demo:server": "node --import tsx demo/server.ts",
+    "demo:build": "vite build --config demo/vite.config.ts",
+    "demo:preview": "vite preview --config demo/vite.config.ts"
+  },
+  "dependencies": {
+    "@hocuspocus/provider": "4.8.0",
+    "@realtimedocs/contracts": "workspace:*",
+    "@realtimedocs/ui": "workspace:*",
+    "@tiptap/core": "3.32.3",
+    "@tiptap/extension-code-block": "3.32.3",
+    "@tiptap/extension-code-block-lowlight": "3.32.3",
+    "@tiptap/extension-collaboration": "3.32.3",
+    "@tiptap/extension-collaboration-caret": "3.32.3",
+    "@tiptap/extension-highlight": "3.32.3",
+    "@tiptap/extension-list": "3.32.3",
+    "@tiptap/extension-table": "3.32.3",
+    "@tiptap/extension-text-align": "3.32.3",
+    "@tiptap/extension-text-style": "3.32.3",
+    "@tiptap/extensions": "3.32.3",
+    "@tiptap/pm": "3.32.3",
+    "@tiptap/react": "3.32.3",
+    "@tiptap/starter-kit": "3.32.3",
+    "@tiptap/y-tiptap": "3.2.0",
+    "dompurify": "3.4.17",
+    "highlight.js": "11.12.0",
+    "idb": "8.0.4",
+    "lib0": "0.2.120",
+    "lowlight": "3.3.0",
+    "lucide-react": "1.70.0",
+    "mermaid": "12.3.0",
+    "y-protocols": "1.0.7",
+    "yjs": "13.6.33",
+    "zod": "4.6.7"
+  },
+  "peerDependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@hocuspocus/server": "4.8.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/ws": "8.18.2",
+    "fake-indexeddb": "6.2.8",
+    "happy-dom": "21.0.4",
+    "jsdom": "31.0.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vite": "8.3.7",
+    "ws": "8.22.2"
+  }
+}

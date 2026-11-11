@@ -1,0 +1,400 @@
+/* Settings window: an ordinary opaque window built from the UI kit. */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+.rds-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  background: var(--rd-bg);
+  color: var(--rd-text);
+  font-family: var(--rd-font-ui);
+  font-size: var(--rd-text-md);
+  line-height: var(--rd-leading-normal);
+}
+
+.rds-shell--center {
+  align-items: center;
+  justify-content: center;
+  padding: var(--rd-space-6);
+}
+
+.rds-top {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rd-space-4);
+  padding: var(--rd-space-5) var(--rd-space-6) var(--rd-space-2);
+}
+
+.rds-heading {
+  margin: 0;
+  font-size: var(--rd-text-xl);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.rds-version {
+  color: var(--rd-text-faint);
+  font-size: var(--rd-text-sm);
+  white-space: nowrap;
+}
+
+.rds-top-banner {
+  flex: none;
+  margin: 0 var(--rd-space-6) var(--rd-space-2);
+}
+
+.rds-tabs {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 var(--rd-space-6);
+}
+
+.rds-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--rd-space-4) 0 var(--rd-space-6);
+  /* Room for focus rings at the scroll edge. */
+  scroll-padding: var(--rd-space-4);
+}
+
+.rds-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-4);
+  max-width: 760px;
+}
+
+.rds-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-3);
+}
+
+.rds-card p {
+  margin: 0;
+}
+
+/* Buttons placed directly in a card keep their natural width. */
+.rds-card > .rd-button {
+  align-self: flex-start;
+}
+
+.rds-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-3);
+}
+
+.rds-h2 {
+  margin: 0;
+  font-size: var(--rd-text-lg);
+  font-weight: 650;
+}
+
+.rds-lead {
+  color: var(--rd-text-muted);
+}
+
+.rds-muted {
+  color: var(--rd-text-muted);
+}
+
+.rds-small {
+  font-size: var(--rd-text-sm);
+}
+
+.rds-label {
+  font-weight: 600;
+}
+
+.rds-hint {
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+}
+
+.rds-error {
+  color: var(--rd-danger);
+  font-size: var(--rd-text-sm);
+}
+
+.rds-divider {
+  height: 1px;
+  background: var(--rd-border);
+}
+
+.rds-list {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: var(--rd-space-1);
+}
+
+.rds-card code {
+  padding: 1px 5px;
+  border-radius: var(--rd-radius-sm);
+  background: var(--rd-surface-3);
+  font-family: var(--rd-font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+}
+
+.rds-inline-form {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rd-space-2);
+}
+
+.rds-inline-form > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Line the button up with the input, below the field label. */
+.rds-inline-form > .rd-button {
+  margin-top: calc(var(--rd-text-sm) * 1.5 + var(--rd-space-1));
+}
+
+.rds-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rd-space-2);
+}
+
+.rds-status-label {
+  font-weight: 600;
+}
+
+.rds-status-message {
+  color: var(--rd-text-muted);
+}
+
+.rds-field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-4);
+}
+
+.rds-field-row > :first-child {
+  min-width: 0;
+}
+
+.rds-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+}
+
+.rds-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--rd-space-1) var(--rd-space-4);
+  margin: 0;
+}
+
+.rds-facts-row {
+  display: contents;
+}
+
+.rds-facts dt {
+  color: var(--rd-text-muted);
+}
+
+.rds-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.rds-path {
+  font-family: var(--rd-font-mono);
+  font-size: var(--rd-text-sm);
+}
+
+.rds-keycaps {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+/* ------------------------------------------------------------- Shortcuts */
+
+.rds-shortcuts {
+  display: grid;
+  gap: var(--rd-space-2);
+}
+
+.rds-shortcut {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-2) var(--rd-space-3);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+}
+
+.rds-shortcut-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.rds-shortcut-status {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+}
+
+.rds-recorder {
+  flex: none;
+  min-width: 190px;
+  min-height: var(--rd-control-h-md);
+  padding: 2px var(--rd-space-2);
+  border: 1px solid var(--rd-control-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-control-bg);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.rds-recorder:hover {
+  background: var(--rd-hover);
+}
+
+.rds-recorder[data-recording='true'] {
+  border-color: var(--rd-accent);
+  background: var(--rd-accent-soft);
+}
+
+.rds-recorder-prompt {
+  font-size: var(--rd-text-sm);
+}
+
+/* ------------------------------------------------------ Recovery checklist */
+
+.rds-checklist {
+  display: grid;
+  gap: var(--rd-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rds-checklist li {
+  position: relative;
+  padding-left: 22px;
+}
+
+.rds-checklist li::before {
+  content: '';
+  position: absolute;
+  top: 0.45em;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rd-success);
+}
+
+.rds-checklist li[data-ok='false'] {
+  color: var(--rd-text-muted);
+}
+
+.rds-checklist li[data-ok='false']::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--rd-danger);
+}
+
+/* ---------------------------------------------------------------- Capture */
+
+.rds-capture-status {
+  display: grid;
+  gap: var(--rd-space-2);
+  justify-items: start;
+  padding: var(--rd-space-3);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-surface-2);
+}
+
+.rds-form {
+  display: grid;
+  gap: var(--rd-space-3);
+}
+
+.rds-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 180px;
+  gap: var(--rd-space-3);
+}
+
+.rds-records {
+  display: grid;
+  gap: var(--rd-space-2);
+  margin: var(--rd-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rds-record {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-2) var(--rd-space-3);
+  border: 1px solid var(--rd-border);
+  border-left: 3px solid var(--rd-info);
+  border-radius: var(--rd-radius-md);
+}
+
+.rds-record[data-observed='visible'],
+.rds-record[data-observed='partially_visible'],
+.rds-record[data-observed='black_rectangle'] {
+  border-left-color: var(--rd-warning);
+}
+
+/* ------------------------------------------------------------ Diagnostics */
+
+.rds-report {
+  max-height: 360px;
+  margin: 0;
+  padding: var(--rd-space-3);
+  overflow: auto;
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-surface-2);
+  font-family: var(--rd-font-mono);
+  font-size: var(--rd-text-sm);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+@media (max-width: 700px) {
+  .rds-field-row,
+  .rds-shortcut {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rds-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

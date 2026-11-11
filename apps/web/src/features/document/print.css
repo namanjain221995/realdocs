@@ -1,0 +1,114 @@
+/*
+ * Print view. On screen: a toolbar, instructions and the document on a sheet.
+ * On paper: the document only.
+ */
+.print-shell {
+  min-height: 100dvh;
+  padding-bottom: var(--rd-space-8);
+  background: var(--rd-surface-2);
+}
+
+.print-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--app-z-bar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-2) var(--app-gutter);
+  border-bottom: 1px solid var(--rd-border);
+  background: var(--rd-bg);
+}
+
+.print-help {
+  display: grid;
+  gap: var(--rd-space-2);
+  width: min(100% - 2 * var(--app-gutter), 210mm);
+  margin: var(--rd-space-5) auto 0;
+  color: var(--rd-text-muted);
+}
+
+.print-help h2 {
+  color: var(--rd-text);
+  font-size: var(--rd-text-md);
+}
+
+.print-help ol {
+  display: grid;
+  gap: var(--rd-space-1);
+  padding-left: 1.3em;
+}
+
+/* The sheet is always paper-coloured, whatever the app theme. */
+.print-sheet {
+  width: min(100% - 2 * var(--app-gutter), 210mm);
+  min-height: 60vh;
+  margin: var(--rd-space-5) auto 0;
+  padding: clamp(20px, 6vw, 20mm) clamp(16px, 6vw, 18mm);
+  border-radius: 2px;
+  background: #ffffff;
+  box-shadow: var(--rd-shadow-2);
+  font-family: var(--rd-font-doc);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.print-title {
+  margin-bottom: 0.9em;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/*
+ * The document sits on the sheet itself: the renderer's own surface and
+ * margins would draw a second, tinted page inside the paper.
+ */
+.print-body {
+  --rd-doc-bg: transparent;
+}
+
+.print-body .rd-editor__page {
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+}
+
+@media print {
+  /* Page colours and the app's own chrome are handled for every screen in `app.css`. */
+  .print-toolbar,
+  .print-help {
+    display: none !important;
+  }
+
+  .print-shell {
+    min-height: 0;
+    padding: 0;
+    background: none;
+  }
+
+  .print-sheet {
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: #000000;
+  }
+
+  .print-title {
+    break-after: avoid;
+  }
+
+  .print-sheet :where(img, table, pre, figure) {
+    break-inside: avoid;
+  }
+
+  /* A diagram stays with its title bar instead of leaving an empty frame at the foot of a page. */
+  .print-sheet .rd-diagram {
+    break-inside: avoid;
+  }
+}

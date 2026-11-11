@@ -1,0 +1,2 @@
+{"browser":"webkit","version":"27.2","passed":1,"failed":0,"skipped":0,"notes":{}}
+{"name":"callout-toolbar","status":"pass","detail":"insert (current block), change variant (mouse + keyboard), remove, undo/redo; CSS label; viewer has no control","ms":3722}

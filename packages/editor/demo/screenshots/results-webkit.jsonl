@@ -1,0 +1,39 @@
+{"browser":"webkit","version":"27.2","passed":36,"failed":0,"skipped":2,"notes":{"diagramConfigProbes":[{"rendered":true,"directiveCss":false,"remoteUrl":false,"foreignObject":false},{"rendered":true,"directiveCss":false,"remoteUrl":false,"foreignObject":false},{"rendered":false,"directiveCss":false,"remoteUrl":false,"foreignObject":false}],"mermaidHostileReports":0,"pasteMode":"clipboard-event","syntheticDrop":true,"copyButtonReachedClipboard":true,"nativeScrollAnchoring":true,"offlineState":"offline","typing":{"keystrokes":60,"editorCommits":0,"viewerCommits":0,"statusCommits":2,"handlerMs":{"samples":103,"p50":"0.0","p95":"3.0","max":"4.0"}},"corpusInlineHandlerReports":0,"diagramConfigProbesWithoutCsp":[{"rendered":true,"directiveCss":false,"remoteUrl":false,"foreignObject":false},{"rendered":true,"directiveCss":false,"remoteUrl":false,"foreignObject":false},{"rendered":false,"directiveCss":false,"remoteUrl":false,"foreignObject":false}]}}
+{"name":"load","status":"pass","detail":"both panes live; no CSP violation; no foreign request","ms":2398}
+{"name":"typing-formatting","status":"pass","detail":"heading, bold, italic, underline, list, indent, alignment, size, highlight, link reached the viewer","ms":3308}
+{"name":"more-formatting","status":"pass","detail":"strike, text colour, line spacing, numbered list, checklist (ticked by the editor, not by the reader), quote, separator, indent/outdent, code block, diagram, undo/redo reached the viewer","ms":3047}
+{"name":"image-tools","status":"pass","detail":"file picker upload; alignment left/right/centre; resized 64% → 85% with the ratio kept; alt text and caption reached the viewer; removed","ms":2224}
+{"name":"table","status":"pass","detail":"insert/delete rows and columns; resized column widths in viewer 106/226/226","ms":2562}
+{"name":"code-block","status":"pass","detail":"highlighted in both panes; copy: not readable in this browser; whitespace preserved; language change synced","ms":1758}
+{"name":"mermaid","status":"pass","detail":"rendered as data:image/svg+xml; image (855px wide) under the strict CSP with 0 violations; syntax error shown as text (\"Parse error on line 7:\"); hostile diagram rendered without executing","ms":3721}
+{"name":"paste-images-order","status":"pass","detail":"pasted via clipboard-event; image 2 completed before image 1; order kept; cursor had moved","ms":3054}
+{"name":"paste-files-and-attachments","status":"pass","detail":"clipboard file via clipboard-event; attachment chip with download link; .exe rejected with a message; dropped image uploaded","ms":843}
+{"name":"paste-remote-report","status":"pass","detail":"pasted via clipboard-event; remote image became a labelled link; report lists fonts, embedded object and active content; nothing fetched","ms":1202}
+{"name":"real-clipboard","status":"pass","detail":"real Control+C / Control+V: heading, list and link survived a copy inside the document; the Copy button's text was pasted back","ms":1123}
+{"name":"hindi-emoji","status":"pass","detail":"Devanagari conjuncts, ZWJ emoji and mixed text identical in both panes","ms":824}
+{"name":"ime-composition","status":"skipped","detail":"only on chromium"}
+{"name":"ime-remote-edits","status":"skipped","detail":"only on chromium"}
+{"name":"find-replace","status":"pass","detail":"9 matches highlighted, stepped, replaced one, replaced all; viewer find works read-only","ms":1256}
+{"name":"follow-latest","status":"pass","detail":"off by default; followed without taking focus (focus before: null); paused on scroll and on selection; jump resumed","ms":5340}
+{"name":"follow-latest-manual","status":"pass","detail":"with native scroll anchoring disabled: off by default; followed without taking focus (focus before: null); paused on scroll and on selection; jump resumed","ms":5329}
+{"name":"scroll-stability","status":"pass","detail":"blocks inserted and removed above the viewport; the reader's first visible block moved at most 0.3px (native CSS scroll anchoring)","ms":2601}
+{"name":"scroll-stability-manual","status":"pass","detail":"same scenario with native anchoring disabled: the manual fallback kept the reader within 1.0px","ms":2641}
+{"name":"undo-isolation","status":"pass","detail":"undo removed only the local user's text in both editors; redo restored it","ms":1770}
+{"name":"upload-states","status":"pass","detail":"cancel, failure + retry, undo while uploading (no insertion), redo after completion (asset id), remote placeholder with remove","ms":6280}
+{"name":"status-truth","status":"pass","detail":"Saving while the commit was held, Saved only after it; error on a failing commit; offline + pending without network, then Saved","ms":1548}
+{"name":"roles-and-generation","status":"pass","detail":"live downgrade and upgrade; snapshot restore rebinds both editors; revocation shows the terminal state","ms":1005}
+{"name":"responsive-1280","status":"pass","detail":"no sideways page overflow; toolbar 624px wide, scrolls inside itself: true","ms":1681}
+{"name":"responsive-820","status":"pass","detail":"no sideways page overflow; toolbar 804px wide, scrolls inside itself: true","ms":1676}
+{"name":"responsive-360","status":"pass","detail":"no sideways page overflow; toolbar 344px wide, scrolls inside itself: true","ms":1587}
+{"name":"mobile-wide-content","status":"pass","detail":"a 9-column table, a 240-character code line and a 792px diagram scroll in their own blocks at 360px","ms":1369}
+{"name":"keyboard-and-shortcuts","status":"pass","detail":"toolbar reachable by keyboard (Block type → Font size); hints: \"Bold Ctrl+B\" / \"Bold ⌘B\"","ms":2607}
+{"name":"typing-performance","status":"pass","detail":"60 keystrokes in a 60-block document: 0 React commits in the editor, 0 in the viewer, 2 in the status indicator; input handlers p50 0.0ms, p95 3.0ms, max 4.0ms (103 events)","ms":3139}
+{"name":"print-view","status":"pass","detail":"static renderer shows diagram and highlighted code; print: controls hidden, code wraps, rgb(0, 0, 0) on rgb(255, 255, 255)","ms":961}
+{"name":"themes","status":"pass","detail":"light theme and compact panel rendered; font scale 1.25 gives 20px","ms":2542}
+{"name":"malicious-corpus","status":"pass","detail":"22 hostile payloads sanitized by this browser's DOM and pasted into the live editor: nothing executed, no foreign request (0 inline handlers were additionally blocked and reported by the policy while the sanitizer parsed them)","ms":1595}
+{"name":"malicious-corpus-without-csp","status":"pass","detail":"no policy on the page: 22 payloads pasted and 4 hostile diagrams inserted, 1 link(s) left (all http/https/mailto/tel) and clicked, nothing executed, no dialog, no console error, no foreign request","ms":3042}
+{"name":"hostile-attributes","status":"pass","detail":"hostile line height, indent, alignment, colours, column width, language, asset and upload ids arrived through Yjs: no injected CSS, no handler, no request, nothing executed (editor and viewer, no policy on the page)","ms":1693}
+{"name":"callout-toolbar","status":"pass","detail":"insert (current block), change variant (mouse + keyboard), remove, undo/redo; CSS label; viewer has no control","ms":2244}
+{"name":"copy-link","status":"pass","detail":"button confirmed the copy; pasted back as text; disabled for javascript:","ms":1108}
+{"name":"copy-code","status":"pass","detail":"viewer's Copy button: 4 lines pasted back unchanged","ms":1039}
+{"name":"upload-cancel","status":"pass","detail":"queued and active uploads cancelled: placeholders vanished in both panes, only the other three arrived, undo leaves no image and no placeholder","ms":12622}

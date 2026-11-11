@@ -1,0 +1,5 @@
+browser-edit loopback small clients=10: dom p50 4.1 p95 7.4 p99 9.3 n=2880; raf p50 4.6 p95 9.0; missing 0 mismatched 0; clock max |offset| 0.239 ms (+-0.310)
+browser-edit loopback large clients=10: dom p50 4.0 p95 4.8 p99 5.3 n=2880; raf p50 4.3 p95 5.3; missing 0 mismatched 0; clock max |offset| 0.127 ms (+-0.369)
+browser-edit rtt10 small clients=10: dom p50 14.4 p95 15.8 p99 16.9 n=2880; raf p50 14.8 p95 16.5; missing 0 mismatched 0; clock max |offset| 0.249 ms (+-0.450)
+browser-edit rtt10 large clients=10: dom p50 15.1 p95 16.6 p99 17.5 n=2880; raf p50 15.5 p95 17.1; missing 0 mismatched 0; clock max |offset| 0.195 ms (+-0.347)
+SPOT-DONE

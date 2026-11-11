@@ -1,0 +1,2 @@
+{"browser":"chromium","version":"156.0.8078.4","passed":1,"failed":0,"skipped":0,"notes":{"pasteMode":"clipboard-event"}}
+{"name":"upload-cancel","status":"pass","detail":"queued and active uploads cancelled: placeholders vanished in both panes, only the other three arrived, undo leaves no image and no placeholder","ms":12210}

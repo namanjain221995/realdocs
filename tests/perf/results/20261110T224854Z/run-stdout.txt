@@ -1,0 +1,181 @@
+$ node --import tsx src/run.ts
+
+== ping before (load 7.68 10.90 8.70)
+loopback: p50 0.36 p95 0.53 ms
+rtt10: p50 10.84 p95 11.26 ms
+rtt50: p50 50.92 p95 51.22 ms
+
+== browser-edit loopback small 2 (load 6.52 9.88 8.50)
+browser-edit loopback small clients=2: dom p50 3.6 p95 4.2 p99 4.7 n=320; raf p50 4.2 p95 14.6; missing 0 mismatched 0; clock max |offset| 0.031 ms (+-0.212)
+
+== browser-edit loopback small 5 (load 6.58 9.25 8.36)
+browser-edit loopback small clients=5: dom p50 3.9 p95 5.6 p99 7.0 n=1280; raf p50 4.3 p95 7.0; missing 0 mismatched 0; clock max |offset| 0.095 ms (+-0.276)
+
+== browser-edit loopback small 10 (load 11.64 10.27 8.78)
+browser-edit loopback small clients=10: dom p50 3.4 p95 4.3 p99 5.5 n=2880; raf p50 3.8 p95 5.2; missing 0 mismatched 0; clock max |offset| 0.197 ms (+-0.395)
+
+== browser-edit loopback large 2 (load 7.48 9.25 8.53)
+browser-edit loopback large clients=2: dom p50 4.1 p95 4.9 p99 6.2 n=320; raf p50 4.4 p95 5.3; missing 0 mismatched 0; clock max |offset| 0.042 ms (+-0.252)
+
+== browser-edit loopback large 5 (load 5.97 8.53 8.32)
+browser-edit loopback large clients=5: dom p50 6.8 p95 10.2 p99 14.1 n=1280; raf p50 7.4 p95 11.8; missing 0 mismatched 0; clock max |offset| 0.165 ms (+-0.210)
+
+== browser-edit loopback large 10 (load 12.71 10.36 8.99)
+browser-edit loopback large clients=10: dom p50 5.8 p95 9.0 p99 12.7 n=2880; raf p50 6.5 p95 10.8; missing 0 mismatched 0; clock max |offset| 0.149 ms (+-0.280)
+
+== browser-edit rtt10 small 2 (load 10.91 10.15 9.01)
+browser-edit rtt10 small clients=2: dom p50 15.9 p95 18.0 p99 19.3 n=320; raf p50 16.5 p95 19.2; missing 0 mismatched 0; clock max |offset| 0.107 ms (+-0.308)
+
+== browser-edit rtt10 small 5 (load 8.80 9.77 8.96)
+browser-edit rtt10 small clients=5: dom p50 15.8 p95 17.3 p99 18.3 n=1280; raf p50 16.4 p95 18.3; missing 0 mismatched 0; clock max |offset| 0.238 ms (+-0.257)
+
+== browser-edit rtt10 small 10 (load 7.15 9.08 8.77)
+browser-edit rtt10 small clients=10: dom p50 14.6 p95 16.7 p99 18.6 n=2880; raf p50 15.1 p95 17.7; missing 0 mismatched 0; clock max |offset| 0.146 ms (+-0.406)
+
+== browser-edit rtt10 large 2 (load 5.44 8.38 8.57)
+browser-edit rtt10 large clients=2: dom p50 18.2 p95 20.0 p99 21.4 n=320; raf p50 18.9 p95 20.9; missing 0 mismatched 0; clock max |offset| 0.257 ms (+-0.843)
+
+== browser-edit rtt10 large 5 (load 8.19 8.71 8.67)
+browser-edit rtt10 large clients=5: dom p50 18.4 p95 23.4 p99 36.3 n=1280; raf p50 19.1 p95 26.0; missing 0 mismatched 0; clock max |offset| 0.083 ms (+-0.331)
+
+== browser-edit rtt10 large 10 (load 10.64 9.10 8.80)
+browser-edit rtt10 large clients=10: dom p50 18.4 p95 22.7 p99 29.0 n=2880; raf p50 19.5 p95 25.0; missing 0 mismatched 0; clock max |offset| 0.185 ms (+-0.355)
+
+== browser-edit rtt50 small 2 (load 10.94 9.59 8.99)
+browser-edit rtt50 small clients=2: dom p50 57.3 p95 59.0 p99 60.5 n=320; raf p50 58.0 p95 59.7; missing 0 mismatched 0; clock max |offset| 0.282 ms (+-0.471)
+
+== browser-edit rtt50 small 5 (load 7.70 8.92 8.80)
+browser-edit rtt50 small clients=5: dom p50 54.6 p95 55.8 p99 57.1 n=1280; raf p50 55.0 p95 56.1; missing 0 mismatched 0; clock max |offset| 0.128 ms (+-0.177)
+
+== browser-edit rtt50 small 10 (load 4.60 7.80 8.42)
+browser-edit rtt50 small clients=10: dom p50 58.3 p95 62.0 p99 65.0 n=2880; raf p50 59.4 p95 64.4; missing 0 mismatched 0; clock max |offset| 0.141 ms (+-0.385)
+
+== browser-edit rtt50 large 2 (load 10.82 8.97 8.78)
+browser-edit rtt50 large clients=2: dom p50 55.5 p95 56.8 p99 57.8 n=320; raf p50 55.9 p95 57.2; missing 0 mismatched 0; clock max |offset| 0.142 ms (+-0.294)
+
+== browser-edit rtt50 large 5 (load 9.20 8.94 8.78)
+browser-edit rtt50 large clients=5: dom p50 55.3 p95 56.4 p99 57.0 n=1280; raf p50 55.6 p95 56.8; missing 0 mismatched 0; clock max |offset| 0.181 ms (+-0.158)
+
+== browser-edit rtt50 large 10 (load 5.87 8.02 8.47)
+browser-edit rtt50 large clients=10: dom p50 55.4 p95 56.5 p99 57.1 n=2880; raf p50 55.7 p95 57.1; missing 0 mismatched 0; clock max |offset| 0.180 ms (+-0.293)
+
+== protocol loopback small 2 (load 5.95 7.48 8.25)
+
+== protocol loopback small 5 (load 7.30 7.57 8.22)
+
+== protocol loopback small 10 (load 8.93 7.99 8.32)
+
+== protocol loopback large 2 (load 15.62 9.78 8.89)
+
+== protocol loopback large 5 (load 7.31 8.58 8.55)
+
+== protocol loopback large 10 (load 6.90 8.15 8.39)
+
+== protocol rtt10 small 2 (load 7.96 8.21 8.40)
+
+== protocol rtt10 small 5 (load 15.65 10.19 9.05)
+
+== protocol rtt10 small 10 (load 9.43 9.71 8.99)
+
+== protocol rtt10 large 2 (load 6.62 8.85 8.74)
+
+== protocol rtt10 large 5 (load 9.94 9.56 9.00)
+
+== protocol rtt10 large 10 (load 7.79 9.01 8.86)
+
+== protocol rtt50 small 2 (load 9.16 9.24 8.95)
+
+== protocol rtt50 small 5 (load 6.48 8.53 8.73)
+
+== protocol rtt50 small 10 (load 6.42 7.97 8.51)
+
+== protocol rtt50 large 2 (load 4.74 7.20 8.21)
+
+== protocol rtt50 large 5 (load 2.80 6.07 7.74)
+
+== protocol rtt50 large 10 (load 2.07 5.15 7.29)
+
+== initial-load loopback small (load 2.45 4.64 6.95)
+initial-load loopback small
+ cold: first content p50 472 p95 524; live p50 487 p95 540 (n=30)
+ warm: first content p50 434 p95 463; live p50 448 p95 477 (n=30)
+
+== initial-load loopback large (load 2.26 4.14 6.63)
+initial-load loopback large
+ cold: first content p50 473 p95 523; live p50 474 p95 525 (n=30)
+ warm: first content p50 442 p95 488; live p50 443 p95 490 (n=30)
+
+== initial-load rtt10 small (load 3.06 4.07 6.45)
+initial-load rtt10 small
+ cold: first content p50 626 p95 666; live p50 640 p95 687 (n=30)
+ warm: first content p50 484 p95 523; live p50 499 p95 540 (n=30)
+
+== initial-load rtt10 large (load 3.78 4.06 6.28)
+initial-load rtt10 large
+ cold: first content p50 624 p95 662; live p50 626 p95 663 (n=30)
+ warm: first content p50 487 p95 527; live p50 489 p95 528 (n=30)
+
+== initial-load rtt50 small (load 3.68 4.04 6.13)
+initial-load rtt50 small
+ cold: first content p50 1222 p95 1249; live p50 1243 p95 1270 (n=30)
+ warm: first content p50 761 p95 779; live p50 778 p95 800 (n=30)
+
+== initial-load rtt50 large (load 4.30 4.22 6.03)
+initial-load rtt50 large
+ cold: first content p50 1213 p95 1257; live p50 1215 p95 1258 (n=30)
+ warm: first content p50 751 p95 772; live p50 752 p95 774 (n=30)
+
+== image loopback 2 200000 (load 2.81 3.78 5.73)
+image loopback clients=2 200043 B (258x258): upload p50 22 p95 25; decoded p50 37 p95 49 (n=20, failures 0)
+
+== image loopback 2 2000000 (load 2.67 3.73 5.69)
+image loopback clients=2 2001201 B (816x817): upload p50 25 p95 28; decoded p50 48 p95 56 (n=20, failures 0)
+
+== image loopback 5 200000 (load 3.64 3.87 5.69)
+image loopback clients=5 200043 B (258x258): upload p50 25 p95 27; decoded p50 44 p95 52 (n=20, failures 0)
+
+== image loopback 5 2000000 (load 2.88 3.69 5.59)
+image loopback clients=5 2001201 B (816x817): upload p50 23 p95 27; decoded p50 59 p95 71 (n=20, failures 0)
+
+== image rtt10 2 200000 (load 3.06 3.66 5.54)
+image rtt10 clients=2 200043 B (258x258): upload p50 28 p95 35; decoded p50 69 p95 76 (n=20, failures 0)
+
+== image rtt10 2 2000000 (load 3.48 3.73 5.53)
+image rtt10 clients=2 2001201 B (816x817): upload p50 32 p95 38; decoded p50 79 p95 86 (n=20, failures 0)
+
+== image rtt10 5 200000 (load 3.66 3.75 5.50)
+image rtt10 clients=5 200043 B (258x258): upload p50 30 p95 37; decoded p50 75 p95 85 (n=20, failures 0)
+
+== image rtt10 5 2000000 (load 3.47 3.70 5.45)
+image rtt10 clients=5 2001201 B (816x817): upload p50 36 p95 39; decoded p50 90 p95 116 (n=20, failures 0)
+
+== image rtt50 2 200000 (load 4.04 3.82 5.45)
+image rtt50 clients=2 200043 B (258x258): upload p50 75 p95 77; decoded p50 194 p95 204 (n=20, failures 0)
+
+== image rtt50 2 2000000 (load 3.88 3.80 5.41)
+image rtt50 clients=2 2001201 B (816x817): upload p50 74 p95 78; decoded p50 201 p95 206 (n=20, failures 0)
+
+== image rtt50 5 200000 (load 5.26 4.13 5.47)
+image rtt50 clients=5 200043 B (258x258): upload p50 69 p95 79; decoded p50 195 p95 206 (n=20, failures 0)
+
+== image rtt50 5 2000000 (load 5.96 4.34 5.51)
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.waitForURL: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for navigation until "load"
+============================================================
+    at openViewer (/work/tests/perf/src/browser-lib.ts:110:14)
+    at async runImage (/work/tests/perf/src/image.ts:72:20)
+    at async <anonymous> (/work/tests/perf/src/image.ts:245:13) {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v24.21.0
+
+== ping after (load 5.31 4.38 5.48)
+
+results: /home/techsphere/Documents/project/realtimedocs/tests/perf/results/20261110T224854Z

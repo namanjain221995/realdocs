@@ -1,0 +1,64 @@
+/* Transparent, natively resizable probe window (diagnostics only). */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.rdb-root {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  border: 2px dashed var(--rd-accent);
+  border-radius: 12px;
+  background: rgb(13 20 24 / 0.72);
+  color: var(--rd-text);
+  font-family: var(--rd-font-ui);
+  font-size: var(--rd-text-md);
+}
+
+.rdb-drag {
+  flex: none;
+  padding: var(--rd-space-2) var(--rd-space-3);
+  border-bottom: 1px solid var(--rd-border-strong);
+  font-weight: 600;
+  app-region: drag;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.rdb-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-2);
+  min-height: 0;
+  overflow: auto;
+  /* Leave the outer few pixels free so the native resize edges stay grabbable. */
+  padding: var(--rd-space-3) var(--rd-space-4);
+}
+
+.rdb-body p {
+  margin: 0;
+}
+
+.rdb-size {
+  font-family: var(--rd-font-mono);
+  font-size: var(--rd-text-sm);
+}
+
+.rdb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+}
+
+.rdb-previous {
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+}

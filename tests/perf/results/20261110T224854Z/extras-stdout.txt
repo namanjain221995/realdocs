@@ -1,0 +1,31 @@
+reconnect connection-cut N=10: live 348 saved 752 viewers 352/353/354 outage 383 mismatched 0
+reconnect connection-cut N=10: live 49 saved 454 viewers 54/53/53 outage 348 mismatched 0
+reconnect connection-cut N=10: live 501 saved 916 viewers 505/507/507 outage 353 mismatched 0
+reconnect connection-cut N=10: live 543 saved 947 viewers 548/550/547 outage 371 mismatched 0
+reconnect connection-cut N=10: live 743 saved 1148 viewers 750/749/749 outage 366 mismatched 0
+reconnect connection-cut N=100: live 586 saved 991 viewers 591/590/591 outage 515 mismatched 0
+reconnect connection-cut N=100: live 372 saved 776 viewers 376/378/376 outage 592 mismatched 0
+reconnect connection-cut N=100: live 476 saved 880 viewers 480/483/480 outage 474 mismatched 0
+reconnect connection-cut N=100: live 627 saved 1036 viewers 632/630/630 outage 538 mismatched 0
+reconnect connection-cut N=100: live 556 saved 961 viewers 563/560/560 outage 532 mismatched 0
+reconnect connection-cut N=1000: live 86 saved 489 viewers 89/89/89 outage 2046 mismatched 0
+reconnect connection-cut N=1000: live 2959 saved 3371 viewers 2966/2966/2965 outage 1864 mismatched 0
+reconnect connection-cut N=1000: live 2450 saved 2852 viewers 2452/2452/2455 outage 1941 mismatched 0
+reconnect connection-cut N=1000: live 1684 saved 2098 viewers 1688/1688/1688 outage 1995 mismatched 0
+reconnect connection-cut N=1000: live 1829 saved 2241 viewers 1832/1831/1831 outage 2288 mismatched 0
+reconnect server-restart N=100: live 945 saved 1350 viewers 1148/948/948 outage 965 mismatched 0
+reconnect server-restart N=100: live 1171 saved 1580 viewers 1178/1357/1178 outage 877 mismatched 0
+reconnect server-restart N=100: live 75 saved 489 viewers 79/1087/80 outage 897 mismatched 0
+reconnect server-restart N=1000: live 117 saved 527 viewers 2663/1200/1668 outage 2457 mismatched 0
+reconnect server-restart N=1000: live 335 saved 739 viewers 373/1876/1932 outage 2254 mismatched 0
+reconnect server-restart N=1000: live 2228 saved 2634 viewers 2831/2234/2717 outage 2433 mismatched 0
+local loopback small: p50 1.70 p95 2.10 p99 2.40 n=320 conn=live
+local loopback large: p50 2.10 p95 2.60 p99 2.80 n=320 conn=live
+local rtt50 small: p50 1.60 p95 2.10 p99 2.70 n=320 conn=live
+local rtt50 large: p50 2.20 p95 2.70 p99 3.10 n=320 conn=live
+local offline small: p50 1.80 p95 2.10 p99 2.50 n=320 conn=reconnecting
+local offline large: p50 2.20 p95 2.60 p99 2.80 n=320 conn=reconnecting
+resources small: server cpu 5.8% rss 216384->294432 kB; viewer heap 18816144->20028968 B; edits/s 66.0
+resources medium: server cpu 4.9% rss 294984->295868 kB; viewer heap 7965836->9659444 B; edits/s 65.7
+resources huge: server cpu 5.0% rss 304484->298368 kB; viewer heap 8631360->10299812 B; edits/s 65.3
+EXTRAS-DONE

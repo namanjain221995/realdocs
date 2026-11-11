@@ -1,0 +1,13 @@
+node_modules
+dist
+out
+build
+coverage
+.toolchain
+.stage
+pnpm-lock.yaml
+playwright-report
+test-results
+data
+*.min.js
+RealtimeDocs_Claude_Code_Master_Prompt.txt

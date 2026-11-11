@@ -1,0 +1,53 @@
+{
+  "name": "realtimedocs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "RealtimeDocs: self-hosted real-time rich documents with share links and a floating desktop companion",
+  "packageManager": "pnpm@12.18.0",
+  "engines": {
+    "node": ">=24.11.0 <25"
+  },
+  "scripts": {
+    "setup:env": "node scripts/init-env.mjs",
+    "db:up": "docker compose up -d --wait db",
+    "db:down": "docker compose stop db",
+    "db:migrate": "pnpm --filter @realtimedocs/server run migrate",
+    "bootstrap:admin": "pnpm --filter @realtimedocs/server run bootstrap:admin",
+    "reset:password": "pnpm --filter @realtimedocs/server run reset:password",
+    "seed:sample": "pnpm --filter @realtimedocs/server run seed:sample",
+    "cleanup": "pnpm --filter @realtimedocs/server run cleanup",
+    "dev": "concurrently -k -n server,web -c blue,magenta \"pnpm --filter @realtimedocs/server run dev\" \"pnpm --filter @realtimedocs/web run dev\"",
+    "dev:server": "pnpm --filter @realtimedocs/server run dev",
+    "dev:web": "pnpm --filter @realtimedocs/web run dev",
+    "build": "pnpm --filter @realtimedocs/web run build && pnpm --filter @realtimedocs/server run build",
+    "start": "pnpm --filter @realtimedocs/server run start",
+    "typecheck": "pnpm -r --no-bail run typecheck",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:integration": "pnpm --filter @realtimedocs/server run test:integration",
+    "test:backup-restore": "pnpm --filter @realtimedocs/server run test:backup-restore",
+    "test:e2e": "pnpm --filter @realtimedocs/e2e run test",
+    "perf": "pnpm --filter @realtimedocs/perf run perf",
+    "desktop:dev": "pnpm --filter @realtimedocs/desktop run dev",
+    "desktop:build": "pnpm --filter @realtimedocs/desktop run build",
+    "desktop:package": "pnpm --filter @realtimedocs/desktop run package",
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "concurrently": "10.0.7",
+    "eslint": "10.14.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.14.0",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0"
+  }
+}

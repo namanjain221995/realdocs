@@ -1,0 +1,3 @@
+{"browser":"firefox","version":"157.0","passed":2,"failed":0,"skipped":0,"notes":{}}
+{"name":"scroll-stability-manual","status":"pass","detail":"same scenario with native anchoring disabled: the manual fallback kept the reader within 0.2px","ms":2634}
+{"name":"callout-toolbar","status":"pass","detail":"insert (current block), change variant (mouse + keyboard), remove, undo/redo; CSS label; viewer has no control","ms":2198}

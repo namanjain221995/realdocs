@@ -1,0 +1,37 @@
+# RealtimeDocs: Cloudflare Tunnel connector for the public address.
+#
+# An overlay for the base docker-compose.yml: it adds one service, `tunnel`, to
+# the same project ("realtimedocs") and the same private network. Use it through
+# the wrapper scripts in this directory (deploy/up.sh, deploy/status.sh, ...),
+# which run, from the repository root:
+#
+#   docker compose --env-file deploy/.env.production \
+#     -f docker-compose.yml -f deploy/docker-compose.tunnel.yml <command>
+#
+# Paths in this file are relative to the PROJECT DIRECTORY, which is the
+# directory of the first -f file (the repository root), not to this file.
+#
+# Traffic: browser --HTTPS--> Cloudflare edge --tunnel--> cloudflared (this
+# container) --plain HTTP--> http://server:4310 inside the Docker network.
+# cloudflared only makes outbound connections: no port is published here.
+services:
+  tunnel:
+    # Pinned release. Checked on 2026-11-11: `cloudflare/cloudflared:latest` on
+    # this host was the older 2026.8.3, so the explicit tag is the newer one.
+    image: cloudflare/cloudflared:2026.9.3
+    restart: unless-stopped
+    # The connector token is read from the environment variable TUNNEL_TOKEN
+    # (see env_file). It must never be written on this command line.
+    command: tunnel --no-autoupdate run
+    env_file:
+      - deploy/.env.tunnel
+    depends_on:
+      server:
+        condition: service_healthy
+    # Least privilege: cloudflared runs as an unprivileged user in the image and
+    # needs neither a writable file system nor any capability.
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

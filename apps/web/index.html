@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="application-name" content="RealtimeDocs" />
+    <title>RealtimeDocs</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Runs before the app: validator setup and the saved theme. An external
+         file, because the Content-Security-Policy allows no inline scripts. -->
+    <script src="/boot.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>RealtimeDocs needs JavaScript. Turn it on for this site, then reload.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

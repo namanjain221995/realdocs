@@ -1,0 +1,77 @@
+# RealtimeDocs: PostgreSQL + server (API, collaboration, web app).
+#
+#   pnpm setup:env                       # writes .env with generated secrets
+#   docker compose up -d --build --wait
+#   docker compose exec server realtimedocs bootstrap-admin --email you@example.com --name "You"
+#
+# Both services are published on 127.0.0.1 only. Put a TLS-terminating reverse
+# proxy in front of the server for anything beyond local use.
+name: realtimedocs
+
+# Container logs are rotated: without limits the json-file driver grows without bound.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '5'
+
+services:
+  db:
+    image: postgres:17.11-alpine
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      POSTGRES_USER: realtimedocs
+      POSTGRES_DB: realtimedocs
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is not set. Run `pnpm setup:env` first.}
+    volumes:
+      - rd_pgdata:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:${RD_DB_PORT:-54310}:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    stop_grace_period: 30s
+
+  server:
+    build:
+      context: .
+      target: ${RD_BUILD_TARGET:-runtime}
+    image: ${RD_IMAGE:-realtimedocs-server:local}
+    restart: unless-stopped
+    logging: *default-logging
+    init: true
+    depends_on:
+      db:
+        condition: service_healthy
+    # Optional settings (limits, retention, origins …) come from the env file.
+    env_file:
+      - ${RD_COMPOSE_ENV_FILE:-.env}
+    environment:
+      # Fixed inside the container, whatever the env file says about the host.
+      NODE_ENV: production
+      RD_HOST: 0.0.0.0
+      RD_PORT: 4310
+      ASSET_DIR: /data/assets
+      WEB_DIST_DIR: /app/web
+      DOWNLOAD_DIR: /data/downloads
+      DATABASE_URL: postgres://realtimedocs:${POSTGRES_PASSWORD}@db:5432/realtimedocs
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is not set. Run `pnpm setup:env` first.}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://127.0.0.1:4310}
+    volumes:
+      - rd_assets:/data/assets
+      - rd_downloads:/data/downloads
+    ports:
+      - '127.0.0.1:${RD_PORT:-4310}:4310'
+    stop_grace_period: 20s
+
+volumes:
+  # Database files.
+  rd_pgdata:
+  # Uploaded images and attachments (private: only served through the authorized API).
+  rd_assets:
+  # Packaged desktop app downloads served at /download/<file> (may be empty).
+  rd_downloads:

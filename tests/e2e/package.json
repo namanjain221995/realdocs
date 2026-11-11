@@ -1,0 +1,17 @@
+{
+  "name": "@realtimedocs/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node run.mjs",
+    "stack:up": "node stack.mjs up",
+    "stack:down": "node stack.mjs down"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.11.3",
+    "@playwright/test": "1.64.1",
+    "@realtimedocs/contracts": "workspace:*"
+  }
+}

@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+  - tests/*
+
+# `pnpm add` records exact versions (no range prefix). Upgrades are deliberate.
+savePrefix: ''
+
+# pnpm blocks dependency lifecycle scripts unless they are listed here.
+# esbuild: downloads/validates its platform binary.
+allowBuilds:
+  esbuild: true

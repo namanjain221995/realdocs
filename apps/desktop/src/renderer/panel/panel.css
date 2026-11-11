@@ -1,0 +1,673 @@
+/*
+ * Floating panel chrome.
+ *
+ * The window is genuinely transparent (BrowserWindow `transparent: true`), so
+ * everything outside `.rdp-root` and every non-opaque pixel inside it shows
+ * the desktop behind. Transparency is the alpha of the surface COLOUR
+ * (`--rdp-alpha`), never `opacity` on an element or on the window: text and
+ * images therefore stay fully opaque at any setting.
+ *
+ * Uses only the UI kit's `--rd-*` tokens plus the panel's own `--rdp-*` ones.
+ */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.rdp-root {
+  /* Surface and hairline colours as RGB triplets so alpha can be applied per use. */
+  --rdp-surface: 13 20 24;
+  --rdp-edge: 209 225 233;
+  --rdp-alpha: 0.86;
+  --rdp-strip: 44px; /* keep in sync with PANEL.collapsedHeight */
+  --rdp-radius: 12px;
+
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  container-type: inline-size;
+  border-radius: var(--rdp-radius);
+  background: rgb(var(--rdp-surface) / var(--rdp-alpha));
+  box-shadow: inset 0 0 0 1px rgb(var(--rdp-edge) / 0.24);
+  color: var(--rd-text);
+  font-family: var(--rd-font-ui);
+  font-size: var(--rd-text-md);
+}
+
+[data-theme='light'] .rdp-root {
+  --rdp-surface: 250 250 247;
+  --rdp-edge: 20 30 36;
+}
+
+.rdp-root--loading,
+.rdp-root--standalone {
+  align-items: center;
+  justify-content: center;
+  padding: var(--rd-space-5);
+}
+
+/* ------------------------------------------------------------ Title strip */
+
+.rdp-header {
+  flex: 0 0 var(--rdp-strip);
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  /* A little more solid than the body so the controls stay legible. */
+  background: rgb(var(--rdp-surface) / min(1, calc(var(--rdp-alpha) + 0.16)));
+  border-bottom: 1px solid rgb(var(--rdp-edge) / 0.16);
+}
+
+.rdp-root[data-collapsed='true'] .rdp-header {
+  border-bottom-color: transparent;
+}
+
+/*
+ * The drag strip. `app-region: drag` hands the area to the operating system:
+ * it moves the window and receives no pointer events, so nothing selectable or
+ * clickable lives inside it. Controls sit in separate no-drag regions.
+ */
+.rdp-drag {
+  flex: 1 1 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  min-width: 0;
+  padding: 0 var(--rd-space-2) 0 var(--rd-space-1);
+  app-region: drag;
+  -webkit-app-region: drag;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.rdp-drag-grip {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--rd-text-faint);
+}
+
+.rdp-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+
+.rdp-status {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  /* Hoverable (tooltips), therefore not part of the drag region. */
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+.rdp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--rd-text-sm);
+  white-space: nowrap;
+}
+
+.rdp-save {
+  font-size: var(--rd-text-sm);
+  color: var(--rd-text-muted);
+  white-space: nowrap;
+}
+
+.rdp-controls {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: var(--rd-space-2);
+  padding-left: var(--rd-space-2);
+  border-left: 1px solid rgb(var(--rdp-edge) / 0.18);
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+.rdp-root[data-click-through='true'] .rdp-controls,
+.rdp-root[data-click-through='true'] .rdp-status {
+  opacity: 0.35;
+}
+
+@container (max-width: 560px) {
+  .rdp-chip-label,
+  .rdp-save {
+    display: none;
+  }
+}
+
+@container (max-width: 440px) {
+  .rdp-access {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- Notices */
+
+.rdp-notices {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-2);
+  padding: var(--rd-space-2) var(--rd-space-3) 0;
+}
+
+.rdp-notices:empty {
+  display: none;
+}
+
+.rdp-banner-actions {
+  display: inline-flex;
+  gap: var(--rd-space-2);
+}
+
+/* ------------------------------------------------------------ Document area */
+
+.rdp-main {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+}
+
+/* Collapsed: the document stays mounted, and connected, but takes no space. */
+.rdp-main[hidden] {
+  display: none;
+}
+
+/*
+ * The document. The editor brings its own stylesheet and scrolls inside
+ * itself; this is only the frame it fills. Its background is transparent
+ * (`--rd-doc-bg`, set on this element), so the panel surface above, with the
+ * opacity the user chose, is what shows behind the text.
+ */
+.rdp-document {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.rdp-document-editor {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.rdp-document-editor[hidden] {
+  display: none;
+}
+
+/* Session notices (access changed, restored, recovery draft) above the document. */
+.rdp-document > .rd-banners {
+  flex: none;
+  padding: var(--rd-space-2) var(--rd-space-3) 0;
+}
+
+.rdp-draft {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.rdp-draft-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  padding: var(--rd-space-2) var(--rd-space-3);
+  border-bottom: 1px solid rgb(var(--rdp-edge) / 0.16);
+  font-size: var(--rd-text-sm);
+}
+
+.rdp-draft-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--rd-text-muted);
+}
+
+.rdp-draft-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.rdp-draft-missing {
+  padding: var(--rd-space-4);
+  color: var(--rd-text-muted);
+}
+
+.rdp-empty {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rd-space-4);
+  min-width: 0;
+  overflow: auto;
+  padding: var(--rd-space-4) var(--rd-space-5);
+}
+
+.rdp-paste {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rd-space-2);
+  width: min(100%, 460px);
+}
+
+.rdp-paste > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/*
+ * Readability aids for a see-through background, applied to the document text
+ * (`.rd-doc` is the editor's content element). Both are drawn in the surface
+ * colour, so they follow the light/dark text choice.
+ *   outline: a halo hugging every glyph;
+ *   scrim:   a soft plate behind each block of text.
+ * A very low opacity gets a faint halo even when the aid is off.
+ */
+.rdp-root[data-low-alpha='true'][data-readability='off'] .rdp-document .rd-doc {
+  text-shadow: 0 0 2px rgb(var(--rdp-surface) / 0.85);
+}
+
+.rdp-root[data-readability='outline'] .rdp-document .rd-doc {
+  text-shadow:
+    0 0 1px rgb(var(--rdp-surface)),
+    0 0 2px rgb(var(--rdp-surface)),
+    0 0 3px rgb(var(--rdp-surface)),
+    0 0 6px rgb(var(--rdp-surface) / 0.9),
+    0 1px 10px rgb(var(--rdp-surface) / 0.75);
+}
+
+.rdp-root[data-readability='scrim']
+  .rdp-document
+  .rd-doc
+  :where(h1, h2, h3, h4, h5, h6, p, blockquote) {
+  padding: 0.1em 0.5em;
+  border-radius: var(--rd-radius-md);
+  background: rgb(var(--rdp-surface) / max(0.82, var(--rdp-alpha)));
+}
+
+/* Left-aligned blocks hug their text; aligned ones keep their full width so the alignment holds. */
+.rdp-root[data-readability='scrim']
+  .rdp-document
+  .rd-doc
+  :where(h1, h2, h3, h4, h5, h6, p, blockquote):not([style*='text-align']) {
+  width: fit-content;
+  max-width: 100%;
+}
+
+/* --------------------------------------------------------- Click-through */
+
+.rdp-root[data-click-through='true'] {
+  box-shadow:
+    inset 0 0 0 2px var(--rd-accent),
+    inset 0 0 0 3px rgb(var(--rdp-surface) / 0.6);
+}
+
+.rdp-click-through {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  box-sizing: border-box;
+  max-width: calc(100% - 16px);
+  min-height: 32px;
+  padding: 3px var(--rd-space-3);
+  transform: translateX(-50%);
+  border-radius: var(--rd-radius-full);
+  background: var(--rd-accent);
+  color: var(--rd-accent-contrast);
+  font-size: var(--rd-text-sm);
+  line-height: 1.3;
+  box-shadow: var(--rd-shadow-2);
+}
+
+.rdp-click-through-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.rdp-click-through-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rdp-click-through .rd-kbd {
+  margin: 0 1px;
+  border-color: rgb(0 0 0 / 0.35);
+  background: rgb(255 255 255 / 0.35);
+  color: inherit;
+}
+
+.rdp-click-through-exit {
+  flex: none;
+  padding: 3px var(--rd-space-2);
+  border: 1px solid rgb(0 0 0 / 0.4);
+  border-radius: var(--rd-radius-full);
+  background: rgb(255 255 255 / 0.3);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rdp-click-through-exit:hover {
+  background: rgb(255 255 255 / 0.5);
+}
+
+@container (max-width: 620px) {
+  .rdp-click-through-exit {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------- Resize grips */
+
+.rdp-grips {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.rdp-grip {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  app-region: no-drag;
+  -webkit-app-region: no-drag;
+}
+
+.rdp-grip--n,
+.rdp-grip--s {
+  left: 14px;
+  right: 14px;
+  height: 5px;
+  cursor: ns-resize;
+}
+.rdp-grip--n {
+  top: 0;
+}
+.rdp-grip--s {
+  bottom: 0;
+}
+
+.rdp-grip--e,
+.rdp-grip--w {
+  top: 14px;
+  bottom: 14px;
+  width: 5px;
+  cursor: ew-resize;
+}
+.rdp-grip--e {
+  right: 0;
+}
+.rdp-grip--w {
+  left: 0;
+}
+
+.rdp-grip--nw,
+.rdp-grip--ne,
+.rdp-grip--sw,
+.rdp-grip--se {
+  width: 14px;
+  height: 14px;
+}
+.rdp-grip--nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+.rdp-grip--ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+.rdp-grip--sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+.rdp-grip--se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+  /* The one visible affordance: three short diagonal strokes in the corner. */
+  background: linear-gradient(
+      135deg,
+      transparent 0 46%,
+      rgb(var(--rdp-edge) / 0.5) 46% 54%,
+      transparent 54% 64%,
+      rgb(var(--rdp-edge) / 0.5) 64% 72%,
+      transparent 72% 82%,
+      rgb(var(--rdp-edge) / 0.5) 82% 90%,
+      transparent 90%
+    )
+    no-repeat 100% 100% / 11px 11px;
+}
+
+/* ----------------------------------------------------- Appearance popover */
+
+.rdp-appearance {
+  display: grid;
+  gap: var(--rd-space-3);
+  width: 288px;
+  max-width: calc(100vw - 24px);
+  padding: var(--rd-space-3);
+}
+
+.rdp-appearance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-3);
+}
+
+.rdp-appearance-row--stacked {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--rd-space-1);
+}
+
+.rdp-appearance-label {
+  font-size: var(--rd-text-sm);
+  color: var(--rd-text-muted);
+}
+
+.rdp-appearance-hint {
+  margin: 0;
+  font-size: var(--rd-text-xs);
+  line-height: var(--rd-leading-normal);
+  color: var(--rd-text-faint);
+}
+
+/* ------------------------------------------------ Normal-window mode */
+
+/* The ordinary window has an operating-system frame: square, opaque, no strip to drag. */
+.rdp-root[data-mode='normal'] {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.rdp-titlebar {
+  flex: 1 1 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  min-width: 0;
+  padding: 0 var(--rd-space-2) 0 var(--rd-space-3);
+}
+
+/* ------------------------------------------------ Private-mode chip */
+
+.rdp-privacy-chip {
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid rgb(var(--rdp-edge) / 0.22);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--rd-text-sm);
+  cursor: pointer;
+}
+
+.rdp-privacy-chip:focus-visible {
+  outline: 2px solid var(--rd-accent);
+  outline-offset: 1px;
+}
+
+.rdp-privacy-icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.rdp-chip-secondary {
+  color: var(--rd-text-muted);
+}
+
+.rdp-chip-secondary::before {
+  content: '·';
+  margin-right: 4px;
+}
+
+@container (max-width: 720px) {
+  .rdp-chip-secondary {
+    display: none;
+  }
+}
+
+.rdp-privacy-explain {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-2);
+  max-width: 360px;
+  padding: var(--rd-space-3);
+  font-size: var(--rd-text-sm);
+}
+
+.rdp-privacy-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rd-space-2);
+}
+
+.rdp-privacy-secondary {
+  color: var(--rd-text-muted);
+}
+
+.rdp-privacy-line {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.rdp-privacy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+}
+
+/* ------------------------------------------------ Safe Share Guide card */
+
+.rdp-guide-card {
+  flex: none;
+  max-height: 60%;
+  overflow: auto;
+  margin: var(--rd-space-2) var(--rd-space-3) 0;
+  padding: var(--rd-space-3);
+  border: 1px solid rgb(var(--rdp-edge) / 0.22);
+  border-radius: 10px;
+  background: rgb(var(--rdp-surface) / max(0.92, var(--rdp-alpha)));
+}
+
+.rdp-guide-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--rd-space-2);
+}
+
+.rd-guide {
+  font-size: var(--rd-text-sm);
+  line-height: 1.5;
+}
+
+.rd-guide-title {
+  margin: 0 0 var(--rd-space-2);
+  font-size: var(--rd-text-md);
+}
+
+.rd-guide-subtitle {
+  margin: var(--rd-space-3) 0 var(--rd-space-1);
+  font-size: var(--rd-text-sm);
+}
+
+.rd-guide-steps {
+  margin: 0;
+  padding-left: 1.4em;
+}
+
+.rd-guide-step + .rd-guide-step {
+  margin-top: 4px;
+}
+
+.rd-guide-link {
+  margin-left: var(--rd-space-1);
+}
+
+.rd-guide-platform {
+  margin: 0 0 var(--rd-space-1);
+}
+
+.rd-guide-notes {
+  margin: var(--rd-space-2) 0 0;
+  padding-left: 1.2em;
+  color: var(--rd-text-muted);
+}
+
+/* ------------------------------------------------ Reading density (this computer only) */
+
+.rdp-root[data-density='compact'] .rdp-document .rd-doc {
+  line-height: 1.45;
+}
+
+.rdp-root[data-density='compact'] .rdp-document .rd-doc > * + * {
+  margin-top: 0.4em;
+}
+
+.rdp-root[data-density='spacious'] .rdp-document .rd-doc {
+  line-height: 1.85;
+}
+
+.rdp-root[data-density='spacious'] .rdp-document .rd-doc > * + * {
+  margin-top: 1.1em;
+}
