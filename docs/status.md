@@ -3,7 +3,7 @@
 _Last updated: 2026-11-12, after the enterprise upgrade was committed, pushed and deployed. The public site
 runs the upgraded server image (deployed 2026-11-12 10:28 UTC) and serves desktop release 0.1.0 (unsigned)._
 
-_Desktop 0.1.1 was published on 2026-11-13 (panel in front of full-screen applications, margins and ruler in the panel); see [desktop-release.md](desktop-release.md), "Release 0.1.1". Its full-screen behaviour is not verified on Windows or macOS._
+_Desktop 0.1.2 is the current release (2026-11-13): paragraph indents on the ruler (document schema 3), panel in front of full-screen browsers (checked on native Windows and macOS runners), margins in the panel; see [desktop-release.md](desktop-release.md). The live server runs the same code._
 
 ## How to resume
 
@@ -31,7 +31,7 @@ REQUIRES CREDENTIAL, PARTIALLY IMPLEMENTED, BLOCKED WITH EXACT REASON.
 | Upload queue (automatic retry, pause on rate limit, de-duplication)                                     | IMPLEMENTED AND VERIFIED                                                                                                                                   |
 | Unsupported content (named, pauses editing in that window, clears itself)                               | IMPLEMENTED AND VERIFIED in unit tests; PARTIALLY IMPLEMENTED against the request (no per-node placeholders, no browser check of the notice)               |
 | Interview session API, API keys, idempotency, webhooks, OpenAPI, `/docs` portal, admin pages            | IMPLEMENTED AND VERIFIED (server); portal and admin pages have unit tests only, no browser spec                                                            |
-| Page settings, margins, ruler, print                                                                    | IMPLEMENTED AND VERIFIED; printing on paper or to PDF not checked; no indent markers, no pagination                                                        |
+| Page settings, margins, ruler, print                                                                    | IMPLEMENTED AND VERIFIED; printing on paper or to PDF not checked; paragraph indent markers since 2026-11-13; no pagination                                |
 | Version history (attributed log, timeline, diff, preview, restore, copy, export, attachment retention)  | IMPLEMENTED AND VERIFIED                                                                                                                                   |
 | Release store, manifest and update endpoints, OS-aware download, publish script                         | IMPLEMENTED AND VERIFIED                                                                                                                                   |
 | Desktop release 0.1.0 (stable), all unsigned and not notarised: ten files built by CI on native runners | PUBLISHED on the live site; downloaded from the public URL and checked (see below); the `.exe` installers were not produced                                |

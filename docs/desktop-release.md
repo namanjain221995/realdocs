@@ -310,3 +310,28 @@ in CI; every published zip downloaded from the public address with matching SHA-
 `unzip -t`. **Not checked:** whether the panel really stays in front of a full-screen browser or meeting
 window on Windows and on macOS. That behaviour cannot be observed on this host or in the launch check and
 needs a person at each kind of computer.
+
+## Release 0.1.2 (2026-11-13)
+
+Built by workflow run 43316396227 from commit `501258e`, unsigned and not notarised. Published with
+`scripts/publish-release.mjs --minimum-supported 0.1.2` (the files of the run, checksums identical to the
+run's `SHA256SUMS`), so the update check tells 0.1.0 and 0.1.1 that the update is required. It was
+published to the live server before the server itself was upgraded to document schema 3.
+
+Changes: paragraphs and headings carry a left, right and first-line indent (millimetres); the ruler
+shows three markers for the paragraph of the caret or every selected block, next to the two page-margin
+handles, in the web editor and in the desktop panel. Document schema version 3: an older client would
+erase the new attributes from paragraphs it edits, so it is disconnected (close code 4426) from a
+document at a newer schema and told to update.
+
+Checked on native runners in CI: the launch check on Windows x64, macOS arm64 and macOS x64; the pinned
+panel was topmost and in front of a full-screen Microsoft Edge window on Windows in three readings
+(`apps/desktop/scripts/fullscreen-check.mjs`); on macOS arm64 and x64 the panel was at window level 1000
+and on screen while Safari was in native full screen (`fullscreen-check-mac.mjs`). Checked on Linux: unit
+tests (1,941), server integration (226), acceptance (42 + 12), web mocked (949, 2 skipped), web real
+stack (69 + 18), editor browser checks in three engines, desktop smoke (64) and real stack (22).
+
+**Not checked:** meeting applications, capture exclusion, a full-screen browser extension, a pointer drag
+of an indent marker inside the desktop panel (keyboard there; pointer in the web checks), Windows arm64.
+**Open:** the editor check `follow-latest-manual` failed once in 30 isolated Chromium runs on this code
+and passed 10 of 10 on the previous commit; too few runs to tell a rare flake from a regression.

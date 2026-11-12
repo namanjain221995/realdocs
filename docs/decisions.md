@@ -207,6 +207,8 @@ Dates are 2026-11-10 unless noted.
 
 ## Desktop distribution: versioned releases, verified downloads, no silent self-update (2026-11-12)
 
+**Update 2026-11-13:** implemented as document schema 3 (`indentLeft`, `indentRight`, `indentFirstLine` on paragraphs and headings, three ruler markers); older clients are disconnected from a schema-3 document and told to update.
+
 - **Files on disk, not a database.** Releases are directories under `DOWNLOAD_DIR` written by an operator
   script; the server only reads and verifies them. The only database addition is an anonymous counter table
   (`release_download_counts`: day, channel, version, platform, arch, format, count). Rollback is a pointer
