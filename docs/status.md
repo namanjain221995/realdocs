@@ -3,6 +3,8 @@
 _Last updated: 2026-11-12, after the enterprise upgrade was committed, pushed and deployed. The public site
 runs the upgraded server image (deployed 2026-11-12 10:28 UTC) and serves desktop release 0.1.0 (unsigned)._
 
+_Desktop 0.1.1 was published on 2026-11-13 (panel in front of full-screen applications, margins and ruler in the panel); see [desktop-release.md](desktop-release.md), "Release 0.1.1". Its full-screen behaviour is not verified on Windows or macOS._
+
 ## How to resume
 
 1. `. scripts/dev-env.sh` (pinned Node 24.22.2 + pnpm 12.18.0 in `.toolchain/`), then

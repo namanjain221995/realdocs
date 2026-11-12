@@ -290,3 +290,23 @@ checksums matched.
    be withdrawn at once, point the channel to a previous version; a hash mismatch also withdraws a
    file automatically.
 3. Raise `minimumSupportedVersion` in a new release to force old apps to update.
+
+## Release 0.1.1 (2026-11-13)
+
+Built by workflow run 43297554555 from commit `59bb292` on the same four runners as 0.1.0, unsigned and
+not notarised. Published to the live server (release directory first, channel pointer last) and as GitHub
+release `v0.1.1`. Release 0.1.0 stays on disk; `scripts/publish-release.mjs --rollback 0.1.0` points the
+channel back.
+
+Changes: the pinned panel defaults to the `screen-saver` window level and is visible on every workspace
+and on full-screen applications (preference files written before version 3 take these defaults once); on
+Windows the pin is applied again when the panel loses focus and every 1.5 seconds; the panel shows the
+document ruler with the shared left and right margins; the "Follow latest changes" button left the panel
+header (the setting stays in Settings, Behaviour).
+
+Checked: desktop unit tests (706), Xvfb smoke (64), the real-stack suite (21, including margin
+synchronisation in both directions) on Linux; the launch check on Windows x64, macOS arm64 and macOS x64
+in CI; every published zip downloaded from the public address with matching SHA-256 and a clean
+`unzip -t`. **Not checked:** whether the panel really stays in front of a full-screen browser or meeting
+window on Windows and on macOS. That behaviour cannot be observed on this host or in the launch check and
+needs a person at each kind of computer.
