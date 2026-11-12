@@ -11,7 +11,8 @@
 //      the fuses and, for macOS, delete the usage-description strings that
 //      Electron's stock Info.plist files declare (camera, microphone, ...);
 //   4. sign / notarize when the host and the environment allow it;
-//   5. archive (.zip everywhere, .dmg on macOS hosts) and inspect the result.
+//   5. archive (.zip everywhere, .tar.gz on Linux, .dmg on macOS hosts) and inspect the result.
+//      Archives are named RealtimeDocs-<version>-<windows|macos|linux>-<arch>.<ext>.
 //
 // Signing is driven only by environment variables; nothing secret is in source.
 //
@@ -40,7 +41,12 @@ import { fileURLToPath } from 'node:url';
 import { FuseV1Options, FuseVersion, flipFuses } from '@electron/fuses';
 import { packager } from '@electron/packager';
 import { buildApp, readManifest } from './build.mjs';
-import { inspectArchive, inspectPackage, printInspection } from './inspect-package.mjs';
+import {
+  inspectArchive,
+  inspectPackage,
+  inspectTarGz,
+  printInspection,
+} from './inspect-package.mjs';
 import {
   APP_ID,
   APP_NAME,
@@ -48,6 +54,7 @@ import {
   LINUX_EXECUTABLE,
   PLATFORMS,
   URL_SCHEME,
+  artifactFileName,
   fuseSettings,
   macSigningPlan,
 } from './lib/app-config.mjs';
@@ -192,9 +199,8 @@ function windowsSigning() {
 }
 
 function archive(appDirectory, platform, arch, version, outDirectory) {
-  const base = `${APP_NAME}-${version}-${platform}-${arch}`;
   const results = [];
-  const zipPath = path.join(outDirectory, `${base}.zip`);
+  const zipPath = path.join(outDirectory, artifactFileName(version, platform, arch, 'zip'));
   fs.rmSync(zipPath, { force: true });
   const folder = path.basename(appDirectory);
   const parent = path.dirname(appDirectory);
@@ -210,10 +216,17 @@ function archive(appDirectory, platform, arch, version, outDirectory) {
     else console.error('  ditto failed: no .zip written.');
   } else if (process.platform === 'win32') {
     // bsdtar ships with Windows 10 and later; `-a` picks the format from the file name.
-    const zipped = spawnSync('tar', ['-a', '-c', '-f', zipPath, folder], {
-      cwd: parent,
-      stdio: 'inherit',
-    });
+    // Named by full path: under Git Bash (GitHub's Windows runners) a bare `tar` is GNU tar, which
+    // cannot write a .zip.
+    const bsdtar = path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe');
+    const zipped = spawnSync(
+      fs.existsSync(bsdtar) ? bsdtar : 'tar',
+      ['-a', '-c', '-f', zipPath, folder],
+      {
+        cwd: parent,
+        stdio: 'inherit',
+      },
+    );
     if (zipped.status === 0) results.push(zipPath);
     else console.error('  tar failed: no .zip written.');
   } else {
@@ -226,8 +239,18 @@ function archive(appDirectory, platform, arch, version, outDirectory) {
     else console.error('  zip failed or is not installed: no .zip written.');
   }
 
+  if (platform === 'linux') {
+    // A tar.gz keeps the executable bits and needs no extra tooling. An AppImage needs appimagetool,
+    // which this pipeline does not install; see docs/linux-client.md.
+    const tarPath = path.join(outDirectory, artifactFileName(version, platform, arch, 'tar.gz'));
+    fs.rmSync(tarPath, { force: true });
+    const packed = spawnSync('tar', ['-czf', tarPath, '-C', parent, folder], { stdio: 'inherit' });
+    if (packed.status === 0) results.push(tarPath);
+    else console.error('  tar failed: no .tar.gz written.');
+  }
+
   if (platform === 'darwin') {
-    const dmgPath = path.join(outDirectory, `${base}.dmg`);
+    const dmgPath = path.join(outDirectory, artifactFileName(version, platform, arch, 'dmg'));
     if (process.platform === 'darwin') {
       fs.rmSync(dmgPath, { force: true });
       const dmgRoot = path.join(stage, `dmg-${arch}`);
@@ -403,8 +426,10 @@ async function packageOne({
     const inspection = await inspectPackage(appDirectory, platform, arch);
     printInspection(inspection);
     ok = inspection.ok;
-    for (const file of archives.filter((name) => name.endsWith('.zip'))) {
-      const archiveInspection = inspectArchive(file, platform, arch);
+    for (const file of archives.filter((name) => /\.(zip|tar\.gz)$/.test(name))) {
+      const archiveInspection = file.endsWith('.zip')
+        ? inspectArchive(file, platform, arch)
+        : inspectTarGz(file, platform, arch);
       printInspection(archiveInspection);
       ok = ok && archiveInspection.ok;
     }

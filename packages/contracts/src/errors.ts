@@ -29,6 +29,10 @@ export const ErrorCode = z.enum([
   'update_required',
   'server_busy',
   'storage_unavailable',
+  'idempotency_conflict',
+  'idempotency_in_progress',
+  'session_closed',
+  'RELEASE_NOT_AVAILABLE',
   'internal',
 ]);
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -58,6 +62,10 @@ export const HTTP_STATUS_BY_CODE: Record<ErrorCode, number> = {
   update_required: 426,
   server_busy: 503,
   storage_unavailable: 503,
+  idempotency_conflict: 409,
+  idempotency_in_progress: 409,
+  session_closed: 410,
+  RELEASE_NOT_AVAILABLE: 404,
   internal: 500,
 };
 

@@ -22,6 +22,8 @@ export type ShareFailureKind =
   | 'invalid'
   | 'expired'
   | 'revoked'
+  /** The interview this link belongs to has ended. */
+  | 'session_closed'
   /** The link is fine but its document is in the trash or was deleted. */
   | 'document_unavailable'
   | 'rate_limited'
@@ -39,6 +41,7 @@ export function isFinalShareFailure(kind: ShareFailureKind): boolean {
     kind === 'invalid' ||
     kind === 'expired' ||
     kind === 'revoked' ||
+    kind === 'session_closed' ||
     kind === 'document_unavailable'
   );
 }
@@ -57,6 +60,8 @@ function failureFrom(error: unknown, online: boolean): ShareExchangeOutcome {
       return { ok: false, kind: 'expired', requestId };
     case 'share_revoked':
       return { ok: false, kind: 'revoked', requestId };
+    case 'session_closed':
+      return { ok: false, kind: 'session_closed', requestId };
     case 'document_trashed':
       return { ok: false, kind: 'document_unavailable', requestId };
     case 'rate_limited':

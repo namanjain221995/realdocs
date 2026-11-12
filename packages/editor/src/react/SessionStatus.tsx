@@ -293,7 +293,7 @@ export function ParticipantStack({ session, max = 4 }: { session: CollabSession;
         id: participant.id,
         name: participant.name,
         color: /^#[0-9a-f]{6}$/i.test(participant.color) ? participant.color : undefined,
-        title: `${participant.name}${participant.id === selfId ? ' (you)' : ''} · ${ROLE_LABEL[participant.role]}`,
+        title: `${participant.name}${participant.roleLabel ? ` — ${participant.roleLabel}` : ''}${participant.id === selfId ? ' (you)' : ''} · ${ROLE_LABEL[participant.role]}`,
       }))}
     />
   );

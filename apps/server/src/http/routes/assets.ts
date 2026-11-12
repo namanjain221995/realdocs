@@ -25,7 +25,10 @@ export function registerAssetRoutes(app: FastifyInstance, { ctx, limits }: Route
   app.post('/api/documents/:documentId/assets', async (request, reply): Promise<AssetResponse> => {
     const access = await documentAccess(ctx, request, param(request, 'documentId'));
     requireEdit(access);
-    await limits.upload.consume(request, access.actor.sessionId);
+    await limits.upload.consume(request, access.actor.sessionId).catch((error: unknown) => {
+      ctx.metrics.uploads.inc({ outcome: 'rate_limited' });
+      throw error;
+    });
 
     if (!request.isMultipart()) {
       throw errors.unsupportedMediaType('Uploads must be sent as multipart/form-data.');
@@ -58,6 +61,7 @@ export function registerAssetRoutes(app: FastifyInstance, { ctx, limits }: Route
       },
     ).catch(async (error: unknown) => {
       part.file.resume();
+      ctx.metrics.uploads.inc({ outcome: 'rejected' });
       // Rejected active content is a security-relevant event; record it without the file.
       if ((error as { reason?: string } | null)?.reason === 'active_content') {
         await tryAudit(db, ctx.logger, {
@@ -72,6 +76,8 @@ export function registerAssetRoutes(app: FastifyInstance, { ctx, limits }: Route
       throw error;
     });
 
+    ctx.metrics.uploads.inc({ outcome: 'stored' });
+    ctx.metrics.uploadBytes.inc({}, Number(asset.sizeBytes));
     reply.code(201);
     return { asset: toApiAsset(asset) };
   });

@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 import {
   DOC_IDS,
@@ -11,21 +12,59 @@ import {
 } from './support/test';
 
 const WIDTHS = [1280, 820, 360] as const;
+const LANDING_WIDTHS = [320, 375, 768, 1024, 1440, 1920] as const;
+const REQUIRED_SENTENCE =
+  'OS-assisted capture exclusion. Verify your exact meeting and capture setup before relying on it.';
+const UA = {
+  windows:
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+  macos:
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15',
+  linux:
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+} as const;
 const THEMES: readonly ThemeName[] = ['dark', 'light'];
 
-const artifact = (
-  platform: 'windows' | 'macos',
-  arch: 'x64' | 'arm64',
-  bytes: number,
+// Downloads are offered per detected platform; unless a test says otherwise this is a Linux browser.
+test.use({ userAgent: UA.linux });
+
+const DIGEST = (digit: string) => digit.repeat(64);
+
+const file = (
+  platform: 'windows' | 'macos' | 'linux',
+  arch: 'x64' | 'arm64' | 'universal',
+  format: 'zip' | 'exe' | 'dmg' | 'appimage' | 'tar.gz',
+  sizeBytes: number,
   digit: string,
-) => ({
-  file: `realtimedocs-${platform}-${arch}.zip`,
-  platform,
-  arch,
-  bytes,
-  sha256: digit.repeat(64),
-  modifiedAt: '2026-11-10T10:00:00.000Z',
-  url: `/download/realtimedocs-${platform}-${arch}.zip`,
+  signatureStatus: 'signed' | 'unsigned' | 'notarized' | 'dev-signed' = 'unsigned',
+) => {
+  const fileName = `RealtimeDocs-1.0.0-${platform}-${arch}.${format === 'appimage' ? 'AppImage' : format}`;
+  return {
+    platform,
+    arch,
+    format,
+    fileName,
+    sizeBytes,
+    sha256: DIGEST(digit),
+    minimumOsVersion: `${platform} test requirement`,
+    signatureStatus,
+    downloadUrl: `/download/releases/stable/1.0.0/${fileName}`,
+  };
+};
+
+const releaseOf = (artifacts: ReturnType<typeof file>[], version = '1.0.0') => ({
+  channel: 'stable' as const,
+  releases: [
+    {
+      version,
+      channel: 'stable' as const,
+      publishedAt: '2026-11-12T10:00:00.000Z',
+      notes: '- First public build.',
+      minimumSupportedVersion: null,
+      current: true,
+      artifacts,
+    },
+  ],
 });
 
 test.describe('home page', () => {
@@ -36,15 +75,10 @@ test.describe('home page', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'Private presenter notes with OS-supported screen-share exclusion.',
+        name: 'Collaborative documents with a private presenter panel.',
       }),
     ).toBeVisible();
-    await expect(page.getByTestId('hero-second')).toHaveText(
-      'Verify your exact meeting setup before relying on privacy mode.',
-    );
-    await expect(page.getByTestId('hero-caveat')).toHaveText(
-      'Behavior depends on your operating system, meeting application, capture mode, and version. Verify your setup before relying on it.',
-    );
+    await expect(page.getByTestId('hero-caveat')).toHaveText(REQUIRED_SENTENCE);
     await expect(page.getByTestId('landing')).toContainText('RealtimeDocs');
     await expect(page.getByTestId('hero-download')).toHaveAttribute('href', '/#download');
   });
@@ -76,10 +110,10 @@ test.describe('home page', () => {
     await page.goto('/');
     const footer = page.getByRole('navigation', { name: 'Footer' });
     for (const [href, slug] of [
-      ['/docs/readme', 'readme'],
-      ['/docs/windows-client', 'windows-client'],
-      ['/docs/macos-client', 'macos-client'],
-      ['/docs/security', 'security'],
+      ['/guides/readme', 'readme'],
+      ['/guides/windows-client', 'windows-client'],
+      ['/guides/macos-client', 'macos-client'],
+      ['/guides/security', 'security'],
     ] as const) {
       await expect(footer.locator(`a[href="${href}"]`)).toHaveCount(1);
       await footer.locator(`a[href="${href}"]`).click();
@@ -88,6 +122,18 @@ test.describe('home page', () => {
       await expect(page.getByTestId('landing')).toBeVisible();
     }
     await expect(footer.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
+  });
+
+  test('/docs is the developer portal and old guide links under /docs redirect to /guides', async ({
+    page,
+  }) => {
+    await page.goto('/docs');
+    await expect(page.getByTestId('developers-page')).toHaveAttribute('data-section', 'overview');
+    await page.goto('/docs/webhooks');
+    await expect(page.getByTestId('developers-page')).toHaveAttribute('data-section', 'webhooks');
+    await page.goto('/docs/security');
+    await expect(page).toHaveURL('/guides/security');
+    await expect(page.getByTestId('docs-article')).toHaveAttribute('data-doc', 'security');
   });
 });
 
@@ -109,7 +155,7 @@ test.describe('landing copy', () => {
       expect(text).toContain(sentence);
     }
     // The sure method comes first.
-    expect(text.indexOf('The sure way')).toBeLessThan(text.indexOf('Private mode'));
+    expect(text.indexOf('The sure way')).toBeLessThan(text.indexOf('On Windows 10 (version 2004)'));
 
     // The owner's exact sentences, the guide and the test center.
     await expect(page.getByTestId('presenter-caveat')).toHaveText(
@@ -148,6 +194,11 @@ test.describe('landing copy', () => {
       'guaranteed',
       'bypass',
       'hidden from every',
+      '100%',
+      'proctoring',
+      'proctor',
+      'undetect',
+      'invisib',
     ]) {
       expect(text, word).not.toContain(word);
     }
@@ -156,93 +207,169 @@ test.describe('landing copy', () => {
 });
 
 test.describe('downloads', () => {
-  test('lists only the published builds, with version, size and SHA-256', async ({ page, api }) => {
-    api.downloads = {
-      release: { version: '0.1.0', notes: 'First public build.', signed: false },
-      artifacts: [
-        artifact('macos', 'arm64', 91_234_567, 'b'),
-        artifact('windows', 'x64', 84_300_000, 'a'),
-      ],
-    };
+  test('offers the build for the detected platform with version, size, SHA-256 and signature', async ({
+    page,
+    api,
+  }) => {
+    api.desktopReleases = releaseOf([
+      file('windows', 'x64', 'zip', 84_300_000, 'a'),
+      file('linux', 'x64', 'tar.gz', 91_234_567, 'b'),
+      file('macos', 'arm64', 'zip', 70_000_000, 'c'),
+    ]);
     await page.goto('/');
-    const rows = page.getByTestId('download-build');
-    await expect(rows).toHaveCount(2);
-    await expect(page.getByTestId('release-version')).toHaveText('Version 0.1.0');
-    await expect(page.getByTestId('release-notes')).toHaveText('First public build.');
-
-    // Stable order: Windows before macOS, whatever order the server answered in.
-    await expect(rows.nth(0)).toContainText('Windows x64');
-    await expect(rows.nth(1)).toContainText('macOS Apple Silicon (arm64)');
-    const windows = page.locator('[data-file="realtimedocs-windows-x64.zip"]');
-    await expect(windows.getByTestId('download-link')).toHaveAttribute(
+    // The test browser reports Linux.
+    const primary = page.getByTestId('download-primary');
+    await expect(primary).toHaveAttribute('data-platform', 'linux');
+    await expect(page.getByTestId('release-version')).toHaveText('Version 1.0.0');
+    const link = primary.getByTestId('download-link');
+    await expect(link).toHaveText('Download for Linux');
+    await expect(link).toHaveAttribute(
       'href',
-      '/download/realtimedocs-windows-x64.zip',
+      '/download/releases/stable/1.0.0/RealtimeDocs-1.0.0-linux-x64.tar.gz',
     );
-    await expect(windows).toContainText('84.3 MB');
-    await expect(windows.getByTestId('download-sha256')).toHaveText('a'.repeat(64));
-    await expect(
-      page.locator('[data-file="realtimedocs-macos-arm64.zip"]').getByTestId('download-link'),
-    ).toContainText('91.2 MB');
-
-    // Nothing that is not published is listed, and nothing is invented.
-    await expect(page.locator('#download')).not.toContainText('Windows arm64');
-    await expect(page.locator('#download')).not.toContainText('Intel');
-    await expect(page.getByText('Not published yet')).toHaveCount(0);
-    expect(await page.locator('#download a[href^="/download/"]').count()).toBe(2);
+    await expect(primary).toContainText('91.2 MB');
+    await expect(primary.getByTestId('download-sha256')).toHaveValue(DIGEST('b'));
+    await expect(primary.getByTestId('download-signature')).toContainText('Not code-signed');
+    await expect(primary).toContainText('linux test requirement');
+    await expect(page.locator('#download')).toContainText('capture');
+    // Nothing is installed automatically and the page never says it is.
+    await expect(page.locator('#download')).not.toContainText(
+      /install(s|ed)? automatically for you/i,
+    );
   });
 
-  test('says the release is not published when the list is empty', async ({ page }) => {
+  test('"Choose another platform" lists every file, each with its own link', async ({
+    page,
+    api,
+  }) => {
+    api.desktopReleases = releaseOf([
+      file('macos', 'arm64', 'zip', 91_234_567, 'b'),
+      file('windows', 'x64', 'zip', 84_300_000, 'a'),
+      file('linux', 'x64', 'tar.gz', 1000, 'c'),
+    ]);
+    await page.goto('/');
+    await expect(page.getByTestId('download-all')).toHaveCount(0);
+    await page.getByTestId('download-choose-other').click();
+    const rows = page.getByTestId('download-build');
+    await expect(rows).toHaveCount(3);
+    // Stable order: Windows, macOS, Linux.
+    await expect(rows.nth(0)).toContainText('Windows');
+    await expect(rows.nth(1)).toContainText('macOS Apple Silicon');
+    await expect(rows.nth(2)).toContainText('Linux');
+    await expect(rows.nth(0)).toContainText('Unsigned build — Windows SmartScreen will warn you');
+    await expect(rows.nth(1)).toContainText('macOS Gatekeeper');
+  });
+
+  test.describe('on Windows', () => {
+    test.use({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    });
+    test('prefers the signed installer and says when only an unsigned zip exists', async ({
+      page,
+      api,
+    }) => {
+      api.desktopReleases = releaseOf([
+        file('windows', 'x64', 'zip', 84_300_000, 'a'),
+        file('windows', 'x64', 'exe', 90_000_000, 'd', 'signed'),
+      ]);
+      await page.goto('/');
+      await expect(page.getByTestId('download-link')).toHaveAttribute(
+        'href',
+        /RealtimeDocs-1\.0\.0-windows-x64\.exe$/,
+      );
+      await expect(page.getByTestId('download-signature')).toHaveText('Signed build.');
+      api.desktopReleases = releaseOf([file('windows', 'x64', 'zip', 84_300_000, 'a')]);
+      await page.goto('/');
+      await expect(page.getByTestId('download-signature')).toContainText(
+        'Unsigned build — Windows SmartScreen will warn you',
+      );
+    });
+  });
+
+  test.describe('on a phone', () => {
+    test.use({
+      userAgent:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+    });
+    test('says the app is not available for this device and keeps the manual list', async ({
+      page,
+      api,
+    }) => {
+      api.desktopReleases = releaseOf([file('windows', 'x64', 'zip', 1000, 'a')]);
+      await page.goto('/');
+      await expect(page.getByTestId('download-unsupported')).toContainText(
+        'not available for this device',
+      );
+      await expect(page.getByTestId('download-primary')).toHaveCount(0);
+      await page.getByTestId('download-choose-other').click();
+      await expect(page.getByTestId('download-build')).toHaveCount(1);
+    });
+  });
+
+  test('says "No release published for Linux yet" with no dead link when only Windows exists', async ({
+    page,
+    api,
+  }) => {
+    api.desktopReleases = releaseOf([file('windows', 'x64', 'zip', 1000, 'a')]);
+    await page.goto('/');
+    const missing = page.getByTestId('download-unavailable');
+    await expect(missing).toContainText('No release published for Linux yet');
+    await expect(page.getByTestId('download-link')).toHaveCount(0);
+    await expect(page.locator('#download a[href^="/download/"]')).toHaveCount(0);
+  });
+
+  test('says the release is not published when nothing is listed', async ({ page }) => {
     await page.goto('/');
     const empty = page.getByTestId('downloads-empty');
-    await expect(empty).toContainText(
-      'Release not published — build the desktop app locally (see the Windows and macOS guides)',
-    );
+    await expect(empty).toContainText('Release not published');
     await expect(empty.getByRole('link', { name: 'Windows' })).toHaveAttribute(
       'href',
-      '/docs/windows-client',
+      '/guides/windows-client',
     );
     await expect(empty.getByRole('link', { name: 'macOS' })).toHaveAttribute(
       'href',
-      '/docs/macos-client',
+      '/guides/macos-client',
+    );
+    await expect(empty.getByRole('link', { name: 'Linux' })).toHaveAttribute(
+      'href',
+      '/guides/linux-client',
     );
     await expect(page.getByTestId('download-build')).toHaveCount(0);
     await expect(page.locator('#download a[href^="/download/"]')).toHaveCount(0);
   });
 
-  test('shows the unsigned notice unless the release is stated to be signed', async ({
-    page,
-    api,
-  }) => {
-    api.downloads = {
-      release: { version: '1.0.0', notes: null, signed: true },
-      artifacts: [artifact('windows', 'x64', 1000, 'c')],
-    };
-    await page.goto('/');
-    await expect(page.getByTestId('download-build')).toHaveCount(1);
-    await expect(page.getByTestId('unsigned-notice')).toHaveCount(0);
-  });
-
-  test('names the unsigned-app warnings, links the guides and never says to turn protection off', async ({
+  test('a server that still has only the legacy flat files keeps working, signature unstated', async ({
     page,
     api,
   }) => {
     api.downloads = {
       release: { version: '0.1.0', notes: null, signed: null },
-      artifacts: [artifact('windows', 'x64', 1000, 'c')],
+      artifacts: [
+        {
+          file: 'realtimedocs-windows-x64.zip',
+          platform: 'windows',
+          arch: 'x64',
+          bytes: 84_300_000,
+          sha256: DIGEST('a'),
+          modifiedAt: '2026-11-10T10:00:00.000Z',
+          url: '/download/realtimedocs-windows-x64.zip',
+        },
+      ],
     };
     await page.goto('/');
-    const notice = page.getByTestId('unsigned-notice');
-    await expect(notice).toContainText('SmartScreen');
-    await expect(notice).toContainText('Gatekeeper');
-    await expect(notice).toContainText('Leave those protections switched on');
-    await expect(notice.getByRole('link', { name: 'Windows guide' })).toHaveAttribute(
+    await page.getByTestId('download-choose-other').click();
+    const row = page.locator('[data-file="realtimedocs-windows-x64.zip"]');
+    await expect(row.getByTestId('download-link-row')).toHaveAttribute(
       'href',
-      '/docs/windows-client',
+      '/download/realtimedocs-windows-x64.zip',
     );
-    await expect(notice.getByRole('link', { name: 'macOS guide' })).toHaveAttribute(
-      'href',
-      '/docs/macos-client',
-    );
+    await expect(row).toContainText('Signature not stated');
+    await expect(row).toContainText(DIGEST('a'));
+  });
+
+  test('links the sign-in and browser alternatives', async ({ page }) => {
+    await page.goto('/');
     const section = page.locator('#download');
     await expect(section).toContainText('No install? Open your share link in any modern browser.');
     await expect(section).toContainText('Or just use it in your browser');
@@ -250,9 +377,30 @@ test.describe('downloads', () => {
     await expect(page).toHaveURL('/login');
   });
 
-  test('with no release.json the unsigned notice still shows', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByTestId('unsigned-notice')).toBeVisible();
+  test('/download lists the requirements and links the release notes; /releases/:version shows them', async ({
+    page,
+    api,
+  }) => {
+    api.desktopReleases = releaseOf([
+      file('windows', 'x64', 'zip', 84_300_000, 'a'),
+      file('linux', 'x64', 'tar.gz', 1000, 'c'),
+    ]);
+    await page.goto('/download');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Download RealtimeDocs Desktop',
+    );
+    const requirements = page.getByTestId('download-requirements');
+    await expect(requirements).toContainText('windows test requirement');
+    await expect(requirements).toContainText('No release published for macOS yet.');
+    await page.getByTestId('release-history').getByRole('link', { name: 'Version 1.0.0' }).click();
+    await expect(page).toHaveURL('/releases/1.0.0');
+    await expect(page.getByTestId('release-notes-body')).toContainText('First public build.');
+    await expect(page.getByTestId('download-build')).toHaveCount(2);
+  });
+
+  test('an unknown release is a not-found page', async ({ page }) => {
+    await page.goto('/releases/9.9.9');
+    await expect(page.getByRole('heading', { name: /not found/i }).first()).toBeVisible();
   });
 });
 
@@ -384,7 +532,9 @@ test.describe('faq and facts', () => {
   test('answers whether participants can see the notes, honestly', async ({ page }) => {
     await page.goto('/');
     const first = page.getByTestId('faq').locator('details').first();
-    await expect(first.locator('summary')).toHaveText('Can meeting participants see my notes?');
+    await expect(first.locator('summary')).toHaveText(
+      'Can other participants see the presenter panel?',
+    );
     await first.locator('summary').click();
     const text = (await first.innerText()).replace(/\s+/g, ' ');
     expect(text).toContain('operating system, meeting application, version and sharing mode');
@@ -399,28 +549,40 @@ test.describe('faq and facts', () => {
       'no microphone, camera or screen-recording permission',
     );
     await expect(page.getByTestId('privacy')).toContainText('stay on your computer');
-    await expect(page.getByTestId('security')).toContainText('hash');
-    await expect(page.getByTestId('security')).toContainText('view-only by default');
-    await expect(page.getByTestId('security')).toContainText('disconnects');
+    await expect(page.getByTestId('security')).toContainText('SHA-256 hashes');
+    await expect(page.getByTestId('security')).toContainText('disconnects open connections');
     await expect(page.getByTestId('limitations')).toContainText('has not been verified');
-    await expect(page.getByTestId('limitations')).toContainText('phone camera');
+    await expect(page.getByTestId('limitations')).toContainText('not end-to-end encrypted');
   });
 
-  test('shows the five-step workflow', async ({ page }) => {
+  test('explains the session workflow and keeps candidates out of the desktop app', async ({
+    page,
+  }) => {
     await page.goto('/');
-    const steps = page.getByTestId('workflow').locator('li');
-    await expect(steps).toHaveCount(5);
-    await expect(steps.nth(0)).toContainText('Create');
-    await expect(steps.nth(1)).toContainText('Share');
-    await expect(steps.nth(2)).toContainText('Paste the link');
-    await expect(steps.nth(3)).toContainText('Open Presenter Mode');
-    await expect(steps.nth(4)).toContainText('Verify the meeting setup');
+    const section = page.locator('#sessions');
+    await expect(section.locator('ol li')).toHaveCount(3);
+    await expect(section).toContainText('One request, one document.');
+    await expect(section).toContainText('Aarav — Candidate');
+    await expect(section).toContainText('Naman — Interviewer');
+    await expect(section).toContainText('No desktop app and no download controls');
+  });
+
+  test('the FAQ answers the honest questions', async ({ page }) => {
+    await page.goto('/');
+    const faq = page.getByTestId('faq');
+    const text = ((await faq.textContent()) ?? '').replace(/\s+/g, ' ');
+    expect(text).toContain('We make no claim about detection.');
+    expect(text).toContain('No. The button downloads a file.');
+    expect(text).toContain('Nothing is installed automatically.');
+    expect(text).toContain('Whatever the release manifest on this server says.');
+    expect(text).toContain('Use presenter notes in line with your office and meeting policies.');
+    await expect(page.getByTestId('landing')).toContainText(REQUIRED_SENTENCE);
   });
 });
 
 test.describe('layout and motion', () => {
   for (const theme of THEMES) {
-    for (const width of WIDTHS) {
+    for (const width of LANDING_WIDTHS) {
       test(`the landing page does not scroll sideways at ${width}px (${theme})`, async ({
         page,
       }) => {
@@ -431,19 +593,20 @@ test.describe('layout and motion', () => {
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
         expect(await hasHorizontalOverflow(page)).toBe(false);
         // The hero keeps the 16px gutter at phone width.
-        if (width === 360) {
+        if (width === 320) {
           const left = await page
             .getByRole('heading', { level: 1 })
             .evaluate((element) => element.getBoundingClientRect().left);
           expect(left).toBeGreaterThanOrEqual(16);
         }
       });
-
+    }
+    for (const width of WIDTHS) {
       test(`the documents do not scroll sideways at ${width}px (${theme})`, async ({ page }) => {
         await setSavedTheme(page, theme);
         await page.setViewportSize({ width, height: 800 });
         for (const slug of ['readme', 'windows-client', 'macos-client', 'security']) {
-          await page.goto(`/docs/${slug}`);
+          await page.goto(`/guides/${slug}`);
           await expect(page.getByTestId('docs-article')).toBeVisible();
           expect(await hasHorizontalOverflow(page), slug).toBe(false);
         }
@@ -451,26 +614,149 @@ test.describe('layout and motion', () => {
     }
   }
 
-  test('the hero picture animates by default and is still when motion is reduced', async ({
-    page,
-  }) => {
+  test('the demonstration plays, pauses and jumps between scenes', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.goto('/');
-    const line = page.locator('.land-line').first();
-    await expect(line).toBeVisible();
-    expect(await line.evaluate((el) => getComputedStyle(el).animationName)).toBe('land-type');
+    const demo = page.getByTestId('product-demo');
+    await demo.scrollIntoViewIfNeeded();
+    await expect(demo).toBeVisible();
+    const play = page.getByTestId('demo-play');
+    await expect(play).toHaveAttribute('aria-pressed', 'false');
+    await expect(demo).toHaveAttribute('data-playing', 'true');
+    // The animated stage is decorative for assistive technology.
+    await expect(demo.locator('.demo__stage')).toHaveAttribute('aria-hidden', 'true');
+    await play.focus();
+    await page.keyboard.press('Enter');
+    await expect(play).toHaveAttribute('aria-pressed', 'true');
+    await expect(demo).toHaveAttribute('data-playing', 'false');
+    await demo.getByRole('button', { name: 'Presenter' }).click();
+    await expect(demo).toHaveAttribute('data-scene', '3');
+    await expect(demo.locator('.demo__panel')).toContainText('OS protection accepted');
+    await expect(demo.locator('.demo__panel')).toContainText('Manual verification required');
+    await demo.getByRole('button', { name: 'Saving' }).click();
+    await expect(demo.locator('.demo__save-b')).toHaveCSS('opacity', '1');
+    await page.getByTestId('demo-next').click();
+    await expect(demo).toHaveAttribute('data-scene', '5');
+    await page.getByTestId('demo-next').click();
+    await expect(demo).toHaveAttribute('data-scene', '0');
+    // Paused means paused: it stays on its scene.
+    await page.waitForTimeout(800);
+    await expect(demo).toHaveAttribute('data-scene', '0');
+  });
 
+  test('the demonstration advances by itself when motion is allowed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/');
+    const demo = page.getByTestId('product-demo');
+    await expect(demo).toBeVisible();
+    // Off-screen it does not play.
+    await expect(demo).toHaveAttribute('data-playing', 'false');
+    await page.waitForTimeout(5200);
+    await expect(demo).toHaveAttribute('data-scene', '0');
+    await demo.scrollIntoViewIfNeeded();
+    await expect(demo).toHaveAttribute('data-scene', '1', { timeout: 9000 });
+  });
+
+  test('with reduced motion nothing plays and the scenes are stepped through', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    for (const selector of ['.land-line', '.land-caret', '.land-panel', '.land-hero__copy']) {
-      const names = await page
+    await page.goto('/');
+    const demo = page.getByTestId('product-demo');
+    await expect(demo).toBeVisible();
+    await expect(page.getByTestId('demo-play')).toHaveCount(0);
+    await expect(demo).toHaveAttribute('data-playing', 'false');
+    await page.waitForTimeout(5500);
+    await expect(demo).toHaveAttribute('data-scene', '0');
+    await page.getByTestId('demo-next').click();
+    await expect(demo).toHaveAttribute('data-scene', '1');
+    for (const selector of ['.demo__line > span', '.demo__panel', '.demo__roster']) {
+      const durations = await demo
         .locator(selector)
-        .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
-      expect(names.length).toBeGreaterThan(0);
-      expect(new Set(names), selector).toEqual(new Set(['none']));
+        .evaluateAll((els) => els.map((el) => getComputedStyle(el).transitionDuration));
+      expect(new Set(durations), selector).toEqual(new Set(['0s']));
     }
-    // Static: every line is fully shown.
-    const clip = await line.evaluate((el) => getComputedStyle(el).clipPath);
-    expect(clip === 'none' || clip === 'inset(0px)').toBe(true);
+    // Scroll reveals are off: nothing is waiting to fade in.
+    await expect(page.locator('[data-reveal="pending"]')).toHaveCount(0);
+  });
+
+  test('the navigation collapses into a disclosure menu on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 760 });
+    await page.goto('/');
+    const toggle = page.getByRole('button', { name: 'Open menu' });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('nav-menu')).toBeHidden();
+    await toggle.click();
+    await expect(page.getByRole('button', { name: 'Close menu' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    const menu = page.getByTestId('nav-menu');
+    for (const name of ['Product', 'Sessions', 'History', 'API', 'Security', 'Download']) {
+      await expect(menu.getByRole('link', { name })).toBeVisible();
+    }
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('nav-menu')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Open menu' })).toBeFocused();
+  });
+});
+
+test.describe('OS-aware download button', () => {
+  for (const [name, ua, label] of [
+    ['Windows', UA.windows, 'Download for Windows'],
+    ['macOS', UA.macos, 'Download for macOS'],
+    ['Linux', UA.linux, 'Download for Linux'],
+  ] as const) {
+    test.describe(`on ${name}`, () => {
+      test.use({ userAgent: ua });
+      test(`the navigation and the hero offer "${label}" and the manual chooser works`, async ({
+        page,
+        api,
+      }) => {
+        api.desktopReleases = releaseOf([
+          file('windows', 'x64', 'exe', 90_000_000, 'a', 'signed'),
+          file('macos', 'universal', 'dmg', 70_000_000, 'b'),
+          file('linux', 'x64', 'tar.gz', 91_234_567, 'c'),
+        ]);
+        await page.goto('/');
+        await expect(page.getByTestId('nav-download')).toHaveText(label);
+        await expect(page.getByTestId('nav-download')).toHaveAttribute('href', '/#download');
+        await expect(page.getByTestId('hero-download-link')).toHaveText(label);
+        await expect(page.getByTestId('hero-download-signature')).toBeVisible();
+        // The hero's chooser lists every platform; choosing one changes the offer.
+        await page.getByTestId('hero-download-choose-other').click();
+        await page.getByTestId('hero-download-all').getByRole('button', { name: 'macOS' }).click();
+        await expect(page.getByTestId('hero-download-link')).toHaveText('Download for macOS');
+        await expect(page.getByTestId('hero-download-build')).toHaveCount(3);
+      });
+    });
+  }
+
+  test.describe('on Linux without a Linux build', () => {
+    test.use({ userAgent: UA.linux });
+    test('says so in the hero without a dead link and the navigation stays plain', async ({
+      page,
+      api,
+    }) => {
+      api.desktopReleases = releaseOf([file('windows', 'x64', 'exe', 1000, 'a')]);
+      await page.goto('/');
+      await expect(page.getByTestId('hero-download-unavailable')).toContainText(
+        'No release published for Linux yet',
+      );
+      await expect(page.getByTestId('hero-download-link')).toHaveCount(0);
+      await expect(page.getByTestId('nav-download')).toHaveText('Download');
+      await expect(page.locator('main a[href^="/download/"]')).toHaveCount(0);
+    });
+  });
+
+  test('required sentence is prominent and the compatibility table says Not tested', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await expect(page.getByTestId('hero-caveat')).toBeInViewport();
+    const rows = page.getByTestId('platform-table').locator('tbody tr');
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(2)).toContainText('depends on the display server');
+    await expect(rows.nth(2)).toContainText('may be unavailable');
+    for (const row of await rows.all()) await expect(row).toContainText('Not tested');
   });
 });
 
@@ -483,9 +769,9 @@ test.describe('documents', () => {
   ] as const;
 
   for (const [slug, spelling, heading] of PAGES) {
-    test(`/docs/${slug} renders, also spelled ${spelling}`, async ({ page }) => {
+    test(`/guides/${slug} renders, also spelled ${spelling}`, async ({ page }) => {
       for (const name of [slug, spelling]) {
-        await page.goto(`/docs/${name}`);
+        await page.goto(`/guides/${name}`);
         const article = page.getByTestId('docs-article');
         await expect(article).toHaveAttribute('data-doc', slug);
         await expect(article.getByRole('heading', { level: 1 }).first()).toContainText(heading);
@@ -496,7 +782,7 @@ test.describe('documents', () => {
 
   test('puts nothing but text and plain elements on the page', async ({ page }) => {
     for (const slug of ['readme', 'windows-client', 'macos-client', 'security']) {
-      await page.goto(`/docs/${slug}`);
+      await page.goto(`/guides/${slug}`);
       const article = page.getByTestId('docs-article');
       await expect(article).toBeVisible();
       expect(
@@ -522,19 +808,19 @@ test.describe('documents', () => {
   });
 
   test('links between the documents stay in the app', async ({ page }) => {
-    await page.goto('/docs/readme');
+    await page.goto('/guides/readme');
     await page
       .getByTestId('docs-article')
-      .locator('a[href="/docs/windows-client"]')
+      .locator('a[href="/guides/windows-client"]')
       .first()
       .click();
-    await expect(page).toHaveURL('/docs/windows-client');
+    await expect(page).toHaveURL('/guides/windows-client');
     await expect(page.getByTestId('docs-article')).toHaveAttribute('data-doc', 'windows-client');
   });
 
   test('an unknown name gets the not-found screen', async ({ page }) => {
     for (const name of ['nope', 'readme.txt', 'docs', 'security.md.md']) {
-      await page.goto(`/docs/${name}`);
+      await page.goto(`/guides/${name}`);
       await expect(page.getByTestId('not-found')).toBeVisible();
     }
   });
@@ -715,4 +1001,81 @@ test.describe('reading mode', () => {
     // Reading mode itself still works.
     await expect(page.getByTestId('reading-bar')).toBeVisible();
   });
+});
+
+test.describe('keyboard and accessibility', () => {
+  test('the keyboard reaches navigation, the download button, the demo controls and the FAQ', async ({
+    page,
+    api,
+  }) => {
+    api.desktopReleases = releaseOf([file('linux', 'x64', 'tar.gz', 91_234_567, 'c')]);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/');
+    await expect(page.getByTestId('hero-download-link')).toBeVisible();
+    const seen: string[] = [];
+    let focusedDemoPlay = false;
+    let focusedFaq = false;
+    for (let step = 0; step < 90 && !focusedFaq; step += 1) {
+      await page.keyboard.press('Tab');
+      const where = await page.evaluate(() => {
+        const element = document.activeElement as HTMLElement | null;
+        return {
+          text: (element?.textContent ?? '').trim().slice(0, 40),
+          testid: element?.dataset.testid ?? '',
+          tag: element?.tagName ?? '',
+          outline: element ? getComputedStyle(element).outlineStyle : 'none',
+        };
+      });
+      seen.push(where.testid || where.text);
+      if (where.testid === 'demo-play') focusedDemoPlay = true;
+      if (where.tag === 'SUMMARY') {
+        focusedFaq = true;
+        expect(where.outline).not.toBe('none');
+      }
+    }
+    expect(seen).toContain('nav-download');
+    expect(seen).toContain('hero-download-link');
+    expect(focusedDemoPlay).toBe(true);
+    expect(focusedFaq).toBe(true);
+    expect(seen.indexOf('nav-download')).toBeLessThan(seen.indexOf('hero-download-link'));
+    expect(seen.indexOf('hero-download-link')).toBeLessThan(seen.indexOf('demo-play'));
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.land-faq__item[open]')).toHaveCount(1);
+  });
+
+  for (const theme of THEMES) {
+    test(`axe finds no serious or critical problems (${theme})`, async ({ page, api }) => {
+      await setSavedTheme(page, theme);
+      api.signupEnabled = true;
+      api.desktopReleases = releaseOf([file('linux', 'x64', 'tar.gz', 91_234_567, 'c')]);
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.goto('/');
+      await expect(page.getByTestId('hero-download-link')).toBeVisible();
+      const demo = page.getByTestId('product-demo');
+      await demo.scrollIntoViewIfNeeded();
+      await page.getByTestId('demo-play').click();
+      await demo.getByRole('button', { name: 'Presence' }).click();
+      const height = await page.evaluate(() => document.documentElement.scrollHeight);
+      for (let y = 0; y < height; y += 600) {
+        await page.evaluate((top) => window.scrollTo(0, top), y);
+        await page.waitForTimeout(30);
+      }
+      for (const summary of await page.locator('.land-faq__item summary').all()) {
+        await summary.click();
+      }
+      await page.waitForTimeout(1500);
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+      const blocking = results.violations.filter(
+        (violation) => violation.impact === 'serious' || violation.impact === 'critical',
+      );
+      expect(
+        blocking.map((violation) => ({
+          rule: violation.id,
+          targets: violation.nodes.slice(0, 4).map((node) => node.target.join(' ')),
+        })),
+      ).toEqual([]);
+    });
+  }
 });

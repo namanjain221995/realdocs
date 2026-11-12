@@ -6,7 +6,9 @@ import {
   APP_ID,
   ARCHS,
   PLATFORMS,
+  PUBLIC_PLATFORM,
   URL_SCHEME,
+  artifactFileName,
   fuseSettings,
   macSigningPlan,
   type PackagePlatform,
@@ -207,5 +209,24 @@ describe('Windows installer configuration', () => {
     expect(read('package.json')).toContain(
       '"package:win:installer": "node scripts/build-installer.mjs"',
     );
+  });
+});
+
+describe('published artifact names', () => {
+  it('use windows, macos or linux, never the packager platform names', () => {
+    expect(artifactFileName('1.2.3', 'win32', 'x64', 'zip')).toBe(
+      'RealtimeDocs-1.2.3-windows-x64.zip',
+    );
+    expect(artifactFileName('1.2.3', 'win32', 'arm64', 'exe')).toBe(
+      'RealtimeDocs-1.2.3-windows-arm64.exe',
+    );
+    expect(artifactFileName('1.2.3', 'darwin', 'universal', 'dmg')).toBe(
+      'RealtimeDocs-1.2.3-macos-universal.dmg',
+    );
+    expect(artifactFileName('1.2.3', 'linux', 'arm64', 'tar.gz')).toBe(
+      'RealtimeDocs-1.2.3-linux-arm64.tar.gz',
+    );
+    expect(PUBLIC_PLATFORM).toEqual({ win32: 'windows', darwin: 'macos', linux: 'linux' });
+    expect(() => artifactFileName('1.0.0', 'freebsd' as never, 'x64', 'zip')).toThrow();
   });
 });

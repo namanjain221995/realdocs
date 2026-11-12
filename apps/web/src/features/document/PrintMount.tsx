@@ -5,6 +5,7 @@
  * machinery. One of the few files that import `@realtimedocs/editor`.
  */
 import '@realtimedocs/editor/styles.css';
+import { normalizePageSettings, type PageSettings } from '@realtimedocs/contracts';
 import { type DocJSON, StaticDocument } from '@realtimedocs/editor';
 import { Skeleton } from '@realtimedocs/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -17,6 +18,8 @@ export interface PrintMountProps {
   documentId: string;
   /** Called when the content is laid out and the page is safe to print. */
   onReady?: () => void;
+  /** The document's page settings, once the export has arrived. */
+  onPageSettings?: (settings: PageSettings) => void;
 }
 
 /** How long to wait for images and diagrams before printing is offered anyway. */
@@ -44,12 +47,22 @@ function isSettled(root: HTMLElement): boolean {
   return drawn && images.every((image) => image.complete);
 }
 
-async function loadContent(documentId: string): Promise<DocJSON> {
-  // The same content collaborators see right now, as ProseMirror JSON (view access is enough).
-  return JSON.parse(await api.documents.exportText(documentId, 'json')) as DocJSON;
+interface PrintContent {
+  doc: DocJSON;
+  pageSettings: PageSettings;
 }
 
-export function PrintMount({ documentId, onReady }: PrintMountProps) {
+async function loadContent(documentId: string): Promise<PrintContent> {
+  // The same content collaborators see right now, as ProseMirror JSON (view access is enough),
+  // with the page settings beside it. An older server sends none: defaults.
+  const json = JSON.parse(await api.documents.exportText(documentId, 'json')) as DocJSON & {
+    pageSettings?: unknown;
+  };
+  const { pageSettings, ...doc } = json;
+  return { doc: doc as DocJSON, pageSettings: normalizePageSettings(pageSettings) };
+}
+
+export function PrintMount({ documentId, onReady, onPageSettings }: PrintMountProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const content = useQuery({
     queryKey: [...queryKeys.document(documentId), 'print'],
@@ -60,6 +73,10 @@ export function PrintMount({ documentId, onReady }: PrintMountProps) {
     refetchOnWindowFocus: false,
   });
   const loaded = content.data !== undefined;
+  const settings = content.data?.pageSettings;
+  useEffect(() => {
+    if (settings) onPageSettings?.(settings);
+  }, [settings, onPageSettings]);
 
   // Printing before images and diagrams have arrived would put gaps on paper.
   useEffect(() => {
@@ -103,7 +120,7 @@ export function PrintMount({ documentId, onReady }: PrintMountProps) {
   return (
     <div ref={rootRef} className="print-body" data-testid="print-body">
       <StaticDocument
-        content={content.data}
+        content={content.data.doc}
         api={api}
         documentId={documentId}
         // Paper sets the width; the sheet is always light.

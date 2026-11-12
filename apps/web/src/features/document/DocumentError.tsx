@@ -21,6 +21,7 @@ export const ACCESS_ENDED: readonly ErrorScreenKind[] = [
   'link_invalid',
   'link_expired',
   'link_revoked',
+  'session_closed',
   'update_required',
 ];
 

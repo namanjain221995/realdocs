@@ -1,0 +1,94 @@
+# Load test summary (2026-11-12T02:59:12.292Z, topology C)
+
+## 2. 250 docs x 4 collaborators typing (topology C) [ok]
+
+Started 2026-11-12T02:56:08.556Z, ended 2026-11-12T02:59:10.257Z.
+
+```json
+{
+ "docs": 250,
+ "perDoc": 4,
+ "rate": 1,
+ "rampS": 40,
+ "warmupS": 15,
+ "durationS": 120
+}
+```
+
+#### connect (40 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| ticketMs | 1000 | 4.7 | 7.9 | 10.3 | 14.7 | 5.0 |
+| connect | 1000 | 33.7 | 45.5 | 56.7 | 89.1 | 34.9 |
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 13.5 | 20.1 | 314 | 151 | 484 | 194 | 121 | 10 / 10 | 0 (0.0) | 22.0 | 0 | 0.8 | 0 |
+| :4451 | 16.8 | 22.9 | 314 | 160 | 516 | 176 | 129 | 10 / 10 | 0 (0.0) | 21.8 | 0 | 0.7 | 0 |
+
+Server :4450 persist append: n=437 mean 3.3 ms, p95 <= 5.0 ms, p99 <= 10.0 ms; yjs updates 437; HTTP /api (server-side) n=686 mean 6.7 ms, p95 <= 25.0 ms; ws outcomes accepted=437, forwarded=190
+
+Server :4451 persist append: n=470 mean 3.2 ms, p95 <= 5.0 ms, p99 <= 10.0 ms; yjs updates 470; HTTP /api (server-side) n=1,128 mean 4.3 ms, p95 <= 10.0 ms; ws outcomes accepted=470, forwarded=174
+
+Generator (4 worker processes): CPU % per worker 4/4/4/4; event-loop lag p99 max 11.2 ms (max 36.2 ms); host load1 max 21.4
+
+```json
+{
+ "firstAttempt": {
+  "ok": 1000
+ }
+}
+```
+
+#### typing (120 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| remote | 120016 | 0.7 | 2.1 | 3.9 | 17.8 | 0.9 |
+| ack | 120016 | 4.0 | 7.2 | 10.2 | 29.3 | 4.4 |
+
+Client counters: edits=120018
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 35.5 | 49.1 | 335 | 176 | 484 | 194 | 121 | 10 / 10 | 0 (0.0) | 22.0 | 112 | 1.4 | 0 |
+| :4451 | 35.4 | 50.6 | 346 | 178 | 516 | 176 | 129 | 10 / 10 | 0 (0.0) | 22.2 | 112 | 1.1 | 0 |
+
+Server :4450 persist append: n=58,017 mean 3.4 ms, p95 <= 10.0 ms, p99 <= 10.0 ms; compact: n=242 mean 3.5 ms, p95 <= 10.0 ms, p99 <= 10.0 ms; yjs updates 58,095; HTTP /api (server-side) n=0 mean n/a ms, p95 <= n/a ms; ws outcomes accepted=0, forwarded=0
+
+Server :4451 persist append: n=61,929 mean 3.4 ms, p95 <= 10.0 ms, p99 <= 10.0 ms; compact: n=258 mean 3.5 ms, p95 <= 5.0 ms, p99 <= 10.0 ms; yjs updates 61,939; HTTP /api (server-side) n=0 mean n/a ms, p95 <= n/a ms; ws outcomes accepted=0, forwarded=0
+
+Generator (4 worker processes): CPU % per worker 15/15/15/15; event-loop lag p99 max 11.1 ms (max 21.9 ms); host load1 max 15.0
+
+```json
+{
+ "editsPerSecondAchieved": 1000.1,
+ "targetEditsPerSecond": 1000,
+ "completedFullDuration": true
+}
+```
+
+### Results
+
+```json
+{
+ "quiesce": {
+  "ok": true,
+  "unacked": 0,
+  "waitedMs": 501
+ },
+ "verification": {
+  "docs": 250,
+  "checked": 135210,
+  "missing": 0,
+  "missingSamples": [],
+  "unackedAtEnd": 0,
+  "exportErrors": 0
+ }
+}
+```
+
+### Notes
+
+- Host load average (1 min) peaked at 21.4 during the run so far.

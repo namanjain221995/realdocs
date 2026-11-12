@@ -36,6 +36,7 @@ import {
   Minus,
   Paperclip,
   Redo2,
+  FileText,
   Search,
   SquareCode,
   Strikethrough,
@@ -207,6 +208,8 @@ export interface EditorToolbarProps {
   onFind: () => void;
   /** Opens the link editor for the current selection. */
   onLink: () => void;
+  /** Opens "Page setup" (page layout only). */
+  onPageSetup?: () => void;
   /** Accepted by the file pickers (from the server limits). */
   imageAccept: string;
   attachmentAccept: string;
@@ -216,6 +219,7 @@ function EditorToolbarInner({
   editor,
   onFind,
   onLink,
+  onPageSetup,
   imageAccept,
   attachmentAccept,
 }: EditorToolbarProps) {
@@ -606,6 +610,14 @@ function EditorToolbarInner({
           onClick={onFind}
           testId="rd-tool-find"
         />
+        {onPageSetup ? (
+          <ToolButton
+            label="Page setup"
+            icon={<FileText size={16} />}
+            onClick={onPageSetup}
+            testId="rd-tool-page-setup"
+          />
+        ) : null}
       </ToolbarGroup>
       <input
         ref={imageInput}

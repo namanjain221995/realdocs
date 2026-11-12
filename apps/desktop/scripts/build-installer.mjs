@@ -20,7 +20,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { APP_NAME } from './lib/app-config.mjs';
+import { APP_NAME, artifactFileName } from './lib/app-config.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const script = 'build/windows/installer.nsi';
@@ -81,7 +81,7 @@ function main() {
 
   for (const arch of options.arch) {
     const folder = `${APP_NAME}-win32-${arch}`;
-    const outName = `${APP_NAME}-${version}-win32-${arch}-setup.exe`;
+    const outName = artifactFileName(version, 'win32', arch, 'exe');
     if (!fs.existsSync(path.join(root, 'out', folder, `${APP_NAME}.exe`))) {
       console.error(`FAILED ${arch}: out/${folder} is missing. Run package:win first.`);
       failed = true;

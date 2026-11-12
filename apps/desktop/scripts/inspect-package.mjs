@@ -15,7 +15,14 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { FuseState, FuseV1Options, getCurrentFuseWire } from '@electron/fuses';
-import { APP_ID, APP_NAME, LINUX_EXECUTABLE, URL_SCHEME, fuseSettings } from './lib/app-config.mjs';
+import {
+  APP_ID,
+  APP_NAME,
+  LINUX_EXECUTABLE,
+  PUBLIC_PLATFORM,
+  URL_SCHEME,
+  fuseSettings,
+} from './lib/app-config.mjs';
 import { NATIVE_MANIFEST_NAME, NATIVE_MODULE_FILE } from './lib/native-artifacts.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -601,6 +608,41 @@ export function inspectArchive(zipPath, platform, arch) {
   return context.report;
 }
 
+/** List a Linux `.tar.gz` and check that the launcher and the app archive are in it. */
+export function inspectTarGz(tarPath, platform, arch) {
+  const context = createReport(`archive: ${path.relative(process.cwd(), tarPath)}`);
+  if (!fs.existsSync(tarPath)) {
+    context.fail('archive exists');
+    return context.report;
+  }
+  const listing = spawnSync('tar', ['-tzvf', tarPath], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  if (listing.error || listing.status !== 0) {
+    context.note('tar is not available here: the archive was not listed.');
+    return context.report;
+  }
+  // "-rwxr-xr-x user/group 1234 2026-11-12 10:00 name"; names may contain spaces.
+  const entries = listing.stdout
+    .split('\n')
+    .map((text) => /^([-dlh][-rwxsStT]{9})\s+\S+\s+\d+\s+\S+\s+\S+\s(.*?)(?: -> .*)?$/.exec(text))
+    .filter((match) => match !== null)
+    .map((match) => ({ mode: match[1], name: match[2].replace(/\/$/, '') }));
+  context.check(entries.length > 0, 'archive listing readable', `${entries.length} entries`);
+  const folder = `${APP_NAME}-${platform}-${arch}`;
+  const names = new Map(entries.map((entry) => [entry.name, entry.mode]));
+  for (const name of [`${folder}/${LINUX_EXECUTABLE}`, `${folder}/resources/app.asar`]) {
+    context.check(names.has(name), `archive contains ${name}`);
+  }
+  context.check(
+    (names.get(`${folder}/${LINUX_EXECUTABLE}`) ?? '').includes('x'),
+    'archive keeps the executable bit',
+  );
+  context.note(`${(fs.statSync(tarPath).size / 1024 / 1024).toFixed(1)} MB`);
+  return context.report;
+}
+
 export function printInspection(report) {
   console.log(`\n  inspect ${report.title}`);
   for (const check of report.checks) {
@@ -641,8 +683,14 @@ async function main() {
     ok = ok && report.ok;
     const parent = path.dirname(directory);
     for (const name of fs.readdirSync(parent).sort()) {
-      if (name.startsWith(`${APP_NAME}-`) && name.endsWith(`-${platform}-${arch}.zip`)) {
-        const archiveReport = inspectArchive(path.join(parent, name), platform, arch);
+      const suffix = `-${PUBLIC_PLATFORM[platform]}-${arch}`;
+      if (
+        name.startsWith(`${APP_NAME}-`) &&
+        (name.endsWith(`${suffix}.zip`) || name.endsWith(`${suffix}.tar.gz`))
+      ) {
+        const archiveReport = name.endsWith('.zip')
+          ? inspectArchive(path.join(parent, name), platform, arch)
+          : inspectTarGz(path.join(parent, name), platform, arch);
         printInspection(archiveReport);
         ok = ok && archiveReport.ok;
       }

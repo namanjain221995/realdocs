@@ -68,10 +68,21 @@ Two forms exist, for each of the two processor types (x64 for ordinary 64-bit In
 arm64 for Windows on ARM). They are built by the packaging commands described below, and sit in
 `apps/desktop/out/` on the build server:
 
-| Form                          | File name (x64 and arm64)                                                            | Size as built on Linux  |
-| ----------------------------- | ------------------------------------------------------------------------------------ | ----------------------- |
-| Installer (per-user, NSIS)    | `RealtimeDocs-0.1.0-win32-x64-setup.exe`, `RealtimeDocs-0.1.0-win32-arm64-setup.exe` | 112.2 MiB and 104.5 MiB |
-| Portable zip (unpack and run) | `RealtimeDocs-0.1.0-win32-x64.zip`, `RealtimeDocs-0.1.0-win32-arm64.zip`             | 153.1 MiB and 151.2 MiB |
+| Form                          | File name (x64 and arm64)                                                    | Size as built on Linux  |
+| ----------------------------- | ---------------------------------------------------------------------------- | ----------------------- |
+| Installer (per-user, NSIS)    | `RealtimeDocs-0.1.0-windows-x64.exe`, `RealtimeDocs-0.1.0-windows-arm64.exe` | 112.2 MiB and 104.5 MiB |
+| Portable zip (unpack and run) | `RealtimeDocs-0.1.0-windows-x64.zip`, `RealtimeDocs-0.1.0-windows-arm64.zip` | 153.1 MiB and 151.3 MiB |
+
+These are the public artifact names (`RealtimeDocs-<version>-windows-<arch>.<ext>`, see
+[desktop-release.md](desktop-release.md)); the packager's own folders keep the Electron platform name
+`win32`. The installers were built earlier under the old name `...-win32-<arch>-setup.exe` and were
+not rebuilt under the new one on the host that renamed the scripts (the NSIS step needs Docker or
+Windows); the zips were rebuilt and inspected. **Updates:** the app checks the server for new versions
+and, when you ask, downloads the new file and verifies its SHA-256; it never installs by itself
+(Settings -> Updates, [desktop-release.md](desktop-release.md#updates-in-the-desktop-app)). The
+download page of your server (`/download`) shows the build for your PC with its size, checksum and
+signature status, and says "Unsigned build — Windows SmartScreen will warn you before it opens" when
+that is the case.
 
 The unpacked folders next to them are `RealtimeDocs-win32-x64` and `RealtimeDocs-win32-arm64`, with
 `RealtimeDocs.exe` in them. **All four files were built on the Linux server, are unsigned and were
@@ -85,11 +96,11 @@ What "unsigned, built on Linux, never executed on Windows" means in practice:
   and cannot detect whether they were altered on the way to you. Take them only from the person who
   built them, over a channel you trust. To compare a file with what was built, ask that person for
   its SHA-256 checksum (on the Linux build server:
-  `sha256sum apps/desktop/out/RealtimeDocs-0.1.0-win32-x64-setup.exe`) and compute yours in
+  `sha256sum apps/desktop/out/RealtimeDocs-0.1.0-windows-x64.exe`) and compute yours in
   PowerShell:
 
   ```powershell
-  Get-FileHash .\RealtimeDocs-0.1.0-win32-x64-setup.exe -Algorithm SHA256
+  Get-FileHash .\RealtimeDocs-0.1.0-windows-x64.exe -Algorithm SHA256
   ```
 
 - **A SmartScreen prompt is to be expected.** Microsoft Defender SmartScreen warns about

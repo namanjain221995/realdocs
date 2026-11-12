@@ -1,0 +1,105 @@
+/* API keys, interview sessions and webhooks (administrators). */
+.service-form,
+.service-filters,
+.service-inline-form {
+  display: grid;
+  gap: var(--rd-space-3);
+  margin-bottom: var(--rd-space-4);
+}
+
+.service-form {
+  max-width: 640px;
+}
+
+.service-filters {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: end;
+}
+
+.service-filters__actions {
+  display: flex;
+  gap: var(--rd-space-2);
+}
+
+.service-inline-form {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  max-width: 760px;
+}
+
+.service-fieldset {
+  display: grid;
+  gap: var(--rd-space-2);
+  margin: 0;
+  padding: var(--rd-space-3);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+}
+
+.service-fieldset legend {
+  padding: 0 var(--rd-space-1);
+  font-weight: 600;
+}
+
+.service-once {
+  max-width: 720px;
+  margin: var(--rd-space-4) 0;
+}
+
+.service-once__caption {
+  margin: 0 0 var(--rd-space-1);
+  color: var(--rd-text-muted);
+}
+
+.service-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--rd-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.service-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rd-space-2);
+}
+
+.service-more {
+  margin: var(--rd-space-3) 0;
+}
+
+.service-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--rd-space-3);
+  margin: 0;
+}
+
+.service-fact dt {
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+}
+
+.service-fact dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.service-url {
+  overflow-wrap: anywhere;
+}
+
+.service-deliveries {
+  display: grid;
+  gap: var(--rd-space-3);
+  margin-top: var(--rd-space-3);
+}
+
+@media (max-width: 639px) {
+  .service-inline-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -8,10 +8,14 @@ import {
   openStorage,
 } from './bootstrap';
 import { CollabServer } from './collab/server';
-import { TicketStore } from './collab/tickets';
+import { Cluster, clusterSecret } from './cluster/cluster';
+import { TicketStore, type Tickets } from './collab/tickets';
+import { Metrics } from './metrics';
+import { emitDocumentFirstEdited } from './service/sessions';
 import { describeConfig } from './config';
 import type { AppContext } from './context';
 import { buildApp } from './http/app';
+import { WebhookWorker } from './service/webhooks';
 import { SERVER_VERSION } from './version';
 
 async function main(): Promise<void> {
@@ -31,6 +35,13 @@ async function main(): Promise<void> {
   if (!config.webDistDir) {
     logger.info('no built web application found (WEB_DIST_DIR): serving the API only');
   }
+  if (config.trustProxy === true) {
+    logger.warn(
+      'TRUST_PROXY=true believes any X-Forwarded-For value a client sends: per-address limits and ' +
+        'API-key address restrictions can then be evaded. Set it to the number of proxies in front ' +
+        'of the server (1 behind one proxy or tunnel).',
+    );
+  }
   if (config.nodeEnv === 'production' && !config.cookieSecure) {
     logger.warn('session cookies are not marked Secure: PUBLIC_ORIGIN is not https');
   }
@@ -38,8 +49,38 @@ async function main(): Promise<void> {
   await ensureSchema(foundation);
   const workspace = await loadWorkspace(db);
   const storage = await openStorage(config);
-  const tickets = new TicketStore(config.collab.ticketTtlMs);
-  const collab = new CollabServer({ config, db, logger, workspaceId: workspace.id, tickets });
+  const metrics = new Metrics();
+  // With REDIS_URL this instance coordinates with others; without it, it runs alone.
+  let cluster: Cluster | null = null;
+  if (config.cluster.redisUrl) {
+    cluster = new Cluster({
+      redisUrl: config.cluster.redisUrl,
+      internalUrl: config.cluster.internalUrl,
+      leaseTtlMs: config.cluster.leaseTtlMs,
+      ticketTtlMs: config.collab.ticketTtlMs,
+      secret: clusterSecret(config.sessionSecret),
+      logger: logger.child({ component: 'cluster' }),
+    });
+    await cluster.start();
+  }
+  const tickets: Tickets = cluster ? cluster.tickets : new TicketStore(config.collab.ticketTtlMs);
+  const collab = new CollabServer({
+    config,
+    db,
+    logger,
+    workspaceId: workspace.id,
+    tickets,
+    cluster,
+    metrics,
+    // First edit after a document was loaded: tells an interview session's
+    // integration that work has begun. The claim in the database makes the
+    // event fire once per session, however many instances or reloads there are.
+    onFirstEdit: (documentId) => {
+      emitDocumentFirstEdited({ db, workspace }, documentId).catch((err: unknown) =>
+        logger.warn({ err, documentId }, 'first-edit event could not be queued'),
+      );
+    },
+  });
   const ctx: AppContext = {
     config,
     db,
@@ -47,10 +88,33 @@ async function main(): Promise<void> {
     workspace,
     storage,
     tickets,
+    cluster,
+    metrics,
     collab,
     accessDeps: { db, sessionTtl: config.sessions, workspaceId: workspace.id },
     version: SERVER_VERSION,
   };
+
+  metrics.gauge(
+    'rd_db_pool_connections',
+    'PostgreSQL connections open in the pool.',
+    () => db.pool.totalCount,
+  );
+  metrics.gauge(
+    'rd_db_pool_idle',
+    'Idle PostgreSQL connections in the pool.',
+    () => db.pool.idleCount,
+  );
+  metrics.gauge(
+    'rd_db_pool_waiting',
+    'Requests waiting for a PostgreSQL connection (pool saturation).',
+    () => db.pool.waitingCount,
+  );
+  metrics.gauge(
+    'rd_db_pool_max',
+    'Configured size of the PostgreSQL pool.',
+    () => config.db.poolMax,
+  );
 
   const app = await buildApp(ctx);
   collab.attach(app.server);
@@ -65,6 +129,15 @@ async function main(): Promise<void> {
       'no account exists yet: create the first administrator with `pnpm bootstrap:admin`',
     );
   }
+
+  const webhookWorker = new WebhookWorker({
+    db,
+    logger,
+    config,
+    workspaceId: workspace.id,
+    onOutcome: (outcome) => metrics.webhookDeliveries.inc({ outcome }),
+  });
+  webhookWorker.start();
 
   let cleanupTimer: NodeJS.Timeout | null = null;
   if (config.retention.cleanupIntervalMinutes > 0) {
@@ -90,16 +163,26 @@ async function main(): Promise<void> {
     const hardStop = setTimeout(() => {
       logger.error('graceful shutdown timed out; exiting');
       process.exit(1);
-    }, 15_000);
+    }, 15_000 + config.shutdownDrainMs);
     hardStop.unref();
     void (async () => {
       try {
         if (cleanupTimer) clearInterval(cleanupTimer);
+        // Readiness answers 503 from now on. Give the load balancer time to stop
+        // sending new connections here before the open ones are closed.
+        collab.beginDrain();
+        if (config.shutdownDrainMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, config.shutdownDrainMs));
+        }
+        await webhookWorker.stop();
         // Flushes the durable logs. Correctness never depends on this: anything
         // not acknowledged is still held by the clients and re-sent on reconnect.
         await collab.shutdown();
         await app.close();
         tickets.close();
+        // Leases are given back last, when nothing is served here any more.
+        await cluster?.stop();
+        metrics.close();
         await db.close();
         logger.info('stopped');
         process.exit(0);

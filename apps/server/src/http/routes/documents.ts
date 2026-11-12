@@ -25,7 +25,7 @@ import {
   toAccessInfo,
   toDocumentSummary,
 } from '../../documents/store';
-import { encodeInitialState, stateToJson } from '../../documents/ydoc';
+import { encodeInitialState, pageSettingsFromState, stateToJson } from '../../documents/ydoc';
 import { errors } from '../../errors';
 import type { RouteDeps } from '../app';
 import { documentAccess, requireAccount, requireAdmin, requireManage } from '../auth';
@@ -205,7 +205,11 @@ export function registerDocumentRoutes(app: FastifyInstance, { ctx }: RouteDeps)
       for (const copy of copies) await storage.copy(copy.asset.storageKey, copy.key);
       const mapping = new Map(copies.map((copy) => [copy.asset.id, copy.id]));
       // A new Yjs history: the copy shares nothing with the source document.
-      const state = encodeInitialState(rewriteAssetIds(json, mapping), false);
+      const state = encodeInitialState(
+        rewriteAssetIds(json, mapping),
+        false,
+        pageSettingsFromState(durable.state, durable.updates),
+      );
       const title = `Copy of ${source.title}`.slice(0, DEFAULT_LIMITS.titleMaxLength);
 
       created = await db.tx(async (tx) => {

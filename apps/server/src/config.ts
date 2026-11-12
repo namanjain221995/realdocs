@@ -3,6 +3,7 @@
  * value stops the process with a message that names the variable. Secrets are
  * never included in error messages or in `describeConfig`.
  */
+import { hostname } from 'node:os';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
@@ -52,6 +53,10 @@ export interface RateLimitConfig {
   wsUpgradePerMinute: number;
   /** All API requests per IP address per minute. */
   apiPerMinute: number;
+  /** Requests per service API key per minute. */
+  apiKeyPerMinute: number;
+  /** Release artifact downloads (GET) per IP address per 10 minutes. */
+  downloadPerIp: number;
 }
 
 export interface Config {
@@ -71,6 +76,20 @@ export interface Config {
   webDistDir: string | null;
   /** Directory the desktop app downloads are served from, or null when none is configured. */
   downloadDir: string | null;
+  /**
+   * Coordination between several server instances (docs/scaling.md). `redisUrl`
+   * null: this server runs alone and nothing below is used.
+   */
+  cluster: {
+    redisUrl: string | null;
+    /** Address other instances reach this one at (private network). */
+    internalUrl: string;
+    leaseTtlMs: number;
+  };
+  /** Bearer token for `GET /metrics`; null disables the endpoint. */
+  metricsToken: string | null;
+  /** Time between "not ready" and closing connections on shutdown, for a load balancer to notice. */
+  shutdownDrainMs: number;
   /** True when anyone may create a (member) account without an invitation. */
   allowSignup: boolean;
   logLevel: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' | 'silent';
@@ -92,6 +111,8 @@ export interface Config {
     preRestoreSnapshotDays: number;
     auditDays: number;
     sessionDays: number;
+    /** Days of version history kept; 0 keeps everything. */
+    historyDays: number;
     /** 0 disables the in-process cleanup timer (run `cleanup` from cron instead). */
     cleanupIntervalMinutes: number;
   };
@@ -110,6 +131,22 @@ export interface Config {
     sweepIntervalMs: number;
     /** Committed log rows after which the next store hook compacts the log. */
     compactAfterUpdates: number;
+  };
+  history: {
+    /** Record an attributed, append-only history of every committed change. */
+    enabled: boolean;
+    /** History rows after which a compaction also stores a complete checkpoint. */
+    checkpointEvery: number;
+    /** Days history is kept; 0 keeps everything. */
+    retentionDays: number;
+  };
+  webhooks: {
+    /** How often the delivery worker looks for due deliveries. 0 disables the worker. */
+    pollMs: number;
+    /** Seconds to wait after the 1st, 2nd, … failed attempt; one more failure after the last is `dead`. */
+    retryScheduleSeconds: number[];
+    /** Seconds before an unanswered delivery attempt is abandoned. */
+    timeoutMs: number;
   };
   db: {
     poolMax: number;
@@ -236,6 +273,29 @@ const EnvSchema = z.object({
     }),
   WEB_DIST_DIR: z.string().trim().optional(),
   DOWNLOAD_DIR: z.string().trim().optional(),
+  REDIS_URL: z
+    .string()
+    .trim()
+    .regex(/^rediss?:\/\//, 'REDIS_URL must start with redis:// or rediss://')
+    .optional()
+    .or(z.literal('')),
+  CLUSTER_INTERNAL_URL: z
+    .string()
+    .trim()
+    .regex(
+      /^https?:\/\/[^/]+$/,
+      'CLUSTER_INTERNAL_URL must be an origin such as http://server-1:4310',
+    )
+    .optional()
+    .or(z.literal('')),
+  CLUSTER_LEASE_TTL_SECONDS: int('CLUSTER_LEASE_TTL_SECONDS', 10, 3, 300),
+  METRICS_TOKEN: z
+    .string()
+    .trim()
+    .min(24, 'METRICS_TOKEN must be at least 24 characters')
+    .optional()
+    .or(z.literal('')),
+  SHUTDOWN_DRAIN_SECONDS: int('SHUTDOWN_DRAIN_SECONDS', 0, 0, 120),
   ALLOW_SIGNUP: bool('ALLOW_SIGNUP', false),
   LOG_LEVEL: z.enum(LOG_LEVELS).optional().default('info'),
   AUTO_MIGRATE: bool('AUTO_MIGRATE', true),
@@ -306,6 +366,30 @@ const EnvSchema = z.object({
   COLLAB_SWEEP_INTERVAL_SECONDS: int('COLLAB_SWEEP_INTERVAL_SECONDS', 30, 1, 3600),
   COLLAB_COMPACT_AFTER_UPDATES: int('COLLAB_COMPACT_AFTER_UPDATES', 200, 1, 1_000_000),
 
+  HISTORY_ENABLED: bool('HISTORY_ENABLED', true),
+  HISTORY_CHECKPOINT_EVERY: int('HISTORY_CHECKPOINT_EVERY', 500, 1, 1_000_000),
+  HISTORY_RETENTION_DAYS: int('HISTORY_RETENTION_DAYS', 0, 0, 36_500),
+
+  WEBHOOK_POLL_MS: int('WEBHOOK_POLL_MS', 2_000, 0, 3_600_000),
+  WEBHOOK_TIMEOUT_MS: int('WEBHOOK_TIMEOUT_MS', 10_000, 100, 120_000),
+  WEBHOOK_RETRY_SCHEDULE_SECONDS: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value, ctx) => {
+      const text = value === undefined || value === '' ? '60,300,1800,7200,21600,86400' : value;
+      const parts = text.split(',').map((part) => Number(part.trim()));
+      if (parts.length === 0 || parts.some((n) => !Number.isInteger(n) || n < 0 || n > 604_800)) {
+        ctx.addIssue({
+          code: 'custom',
+          message:
+            'WEBHOOK_RETRY_SCHEDULE_SECONDS must be comma-separated whole seconds (0 to 604800)',
+        });
+        return z.NEVER;
+      }
+      return parts;
+    }),
+
   DB_POOL_MAX: int('DB_POOL_MAX', 10, 2, 200),
   DB_STATEMENT_TIMEOUT_MS: int('DB_STATEMENT_TIMEOUT_MS', 15_000, 100, 600_000),
   DB_LOCK_TIMEOUT_MS: int('DB_LOCK_TIMEOUT_MS', 5_000, 100, 600_000),
@@ -320,9 +404,11 @@ const EnvSchema = z.object({
   RATE_SIGNUP_PER_EMAIL: int('RATE_SIGNUP_PER_EMAIL', 3, 1, 1_000_000),
   RATE_DESKTOP_REDEEM_PER_IP: int('RATE_DESKTOP_REDEEM_PER_IP', 20, 1, 1_000_000),
   RATE_COLLAB_TICKET_PER_MINUTE: int('RATE_COLLAB_TICKET_PER_MINUTE', 120, 1, 1_000_000),
-  RATE_UPLOAD_PER_MINUTE: int('RATE_UPLOAD_PER_MINUTE', 60, 1, 1_000_000),
+  RATE_UPLOAD_PER_MINUTE: int('RATE_UPLOAD_PER_MINUTE', 240, 1, 1_000_000),
   RATE_WS_UPGRADE_PER_MINUTE: int('RATE_WS_UPGRADE_PER_MINUTE', 120, 1, 1_000_000),
   RATE_API_PER_MINUTE: int('RATE_API_PER_MINUTE', 1200, 1, 10_000_000),
+  RATE_API_KEY_PER_MINUTE: int('RATE_API_KEY_PER_MINUTE', 600, 1, 10_000_000),
+  RATE_DOWNLOAD_PER_IP: int('RATE_DOWNLOAD_PER_IP', 60, 1, 1_000_000),
 });
 
 function resolveDir(value: string): string {
@@ -386,6 +472,15 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     webDistDir,
     downloadDir:
       e.DOWNLOAD_DIR !== undefined && e.DOWNLOAD_DIR !== '' ? resolveDir(e.DOWNLOAD_DIR) : null,
+    cluster: {
+      redisUrl: e.REDIS_URL ? e.REDIS_URL : null,
+      internalUrl: e.CLUSTER_INTERNAL_URL
+        ? e.CLUSTER_INTERNAL_URL
+        : `http://${hostname()}:${e.RD_PORT}`,
+      leaseTtlMs: e.CLUSTER_LEASE_TTL_SECONDS * 1000,
+    },
+    metricsToken: e.METRICS_TOKEN ? e.METRICS_TOKEN : null,
+    shutdownDrainMs: e.SHUTDOWN_DRAIN_SECONDS * 1000,
     allowSignup: e.ALLOW_SIGNUP,
     logLevel: e.LOG_LEVEL,
     autoMigrate: e.AUTO_MIGRATE,
@@ -417,6 +512,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       preRestoreSnapshotDays: e.PRE_RESTORE_SNAPSHOT_RETENTION_DAYS,
       auditDays: e.AUDIT_RETENTION_DAYS,
       sessionDays: e.SESSION_RETENTION_DAYS,
+      historyDays: e.HISTORY_RETENTION_DAYS,
       cleanupIntervalMinutes: e.CLEANUP_INTERVAL_MINUTES,
     },
     collab: {
@@ -429,6 +525,16 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       idleTimeoutMs: e.COLLAB_IDLE_TIMEOUT_SECONDS * 1000,
       sweepIntervalMs: e.COLLAB_SWEEP_INTERVAL_SECONDS * 1000,
       compactAfterUpdates: e.COLLAB_COMPACT_AFTER_UPDATES,
+    },
+    history: {
+      enabled: e.HISTORY_ENABLED,
+      checkpointEvery: e.HISTORY_CHECKPOINT_EVERY,
+      retentionDays: e.HISTORY_RETENTION_DAYS,
+    },
+    webhooks: {
+      pollMs: e.WEBHOOK_POLL_MS,
+      retryScheduleSeconds: e.WEBHOOK_RETRY_SCHEDULE_SECONDS,
+      timeoutMs: e.WEBHOOK_TIMEOUT_MS,
     },
     db: {
       poolMax: e.DB_POOL_MAX,
@@ -449,6 +555,8 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
       uploadPerMinute: e.RATE_UPLOAD_PER_MINUTE,
       wsUpgradePerMinute: e.RATE_WS_UPGRADE_PER_MINUTE,
       apiPerMinute: e.RATE_API_PER_MINUTE,
+      apiKeyPerMinute: e.RATE_API_KEY_PER_MINUTE,
+      downloadPerIp: e.RATE_DOWNLOAD_PER_IP,
     },
   };
 }

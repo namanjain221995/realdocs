@@ -114,29 +114,54 @@ only after the server has confirmed access to a document.
 is unchanged and linked from the page (header, hero, download section, footer). `/s/:grantId`,
 `/invite/:invitationId` and `/d/:documentId` are untouched.
 
-**Landing page** (`features/landing/`). Tokens only (`--rd-*`), dark by default, light works,
-responsive from 360px. Wording that is fixed by the owner: the headline ("Private presenter notes
-with OS-supported screen-share exclusion."), the second line ("Verify your exact meeting setup
-before relying on privacy mode."), the caveat sentence ("Behavior depends on your operating
-system, meeting application, capture mode, and version. Verify your setup before relying on it.",
-under the headline and in the screen-sharing section) and the macOS whole-display sentence (same
-text as `MACOS_WHOLE_DISPLAY_WARNING` in the desktop package). Sections, in order: hero, what it
-does, meeting notes, the five-step workflow (create, share, paste the link, open Presenter Mode,
-verify the meeting setup), feature grid (live collaboration, rich documents, secure links, Windows,
-macOS, offline recovery, snapshots, privacy verification), presenter panel and screen sharing (the
-sure method first, then private mode per platform, the Safe Share Guide, the Privacy Test Center),
-compatibility with the matrix, downloads, get started (sign in, invitation links, sign-up when on),
-FAQ (`<details>`, no script), privacy / security / limitations, footer. None of the banned words
-("invisible", "undetectable", "guaranteed", "bypass", "100% invisible", "Bypasses every meeting
-app", "Cannot be recorded", "Hidden from all monitoring", "Guaranteed on macOS", "Proctoring-proof")
-appears anywhere; `test-browser/landing.spec.ts` scans the rendered text, closed FAQ answers
-included. The hero picture is a drawn illustration (a shared document with a checklist, a table and
-a second person's cursor, and a translucent presenter panel mirroring it), built from CSS only; its
-lines are typed in once, and `prefers-reduced-motion: reduce` turns every landing animation off
-(tested through computed styles). No third-party assets or fonts. What the page says about the
-desktop app's Safe Share Guide and Privacy Test Center follows the lead's brief and the desktop
-contract (`apps/desktop/src/shared/privacy/status.ts`); `docs/status.md` still lists the Privacy Test
-Center UI as being wired, so confirm it ships before the page is promoted.
+**Landing page** (`features/landing/`, redesigned 2026-11-12). Dark by default, light works; tokens
+are the global `--rd-*` set plus landing-scoped `--lp-*` under `.rd-landing` (display scale, glass
+and glow values, paper colour of the demo page). System font stack, tight tracking on headlines, no
+web fonts, no animation library, no inline `<style>`. Files: `LandingPage.tsx` (composition),
+`LandingNav.tsx` (sticky nav; below 1000px a disclosure menu with `aria-expanded`, Escape closes and
+returns focus; the nav button says "Download for <OS>" only when the server publishes a build for the
+detected computer, otherwise "Download", and always goes to `#download`), `Hero.tsx`,
+`hero/DemoSlot.tsx` + `hero/ProductDemo.tsx` + `hero/demo.css`, `sections/*.tsx` (Product, Presenter,
+Sessions, History, ApiSection, Security, Reliability, Platforms, Faq, GetStarted), `copy.ts`
+(required sentence, owner caveats, the protection vocabulary copied from
+`apps/desktop/src/shared/privacy/status.ts`; a unit test compares them), `useReveal.ts`,
+`useReducedMotion.ts`. Section order: hero (headline, sub-copy, the required sentence "OS-assisted
+capture exclusion. Verify your exact meeting and capture setup before relying on it.", compact
+download picker, sign in, API docs), demo, collaboration, Presenter Mode (capabilities, way back and
+shortcuts, the eight protection states in two layers, the sure way, per-platform lines, Safe Share
+Guide), interview sessions, version history, developer API (real `POST /api/v1/interview-sessions`
+request and response shape with a copy button), security (only what `docs/security.md` states),
+performance and reliability (no figures: `docs/performance.md` is not a bundled guide and there is no
+load-test report, so the page says so), platform compatibility (table plus the matrix), download,
+get started, FAQ (`<details>`), footer. Skip link is the app-wide one in `RootLayout`.
+
+**Demo.** The only moving thing on the page. `DemoSlot` reserves the box (aspect ratio, no layout
+shift) and loads `ProductDemo` with `React.lazy` once the box is within 200px of the viewport
+(IntersectionObserver); its chunk is separate. Six scenes (typing, two labelled collaborators,
+margin marker dragged with the text following, translucent Presenter panel showing "OS protection
+accepted" and "Manual verification required", Saving… to Saved, people joining) are one number of
+React state; CSS classes `s0`..`sN` mark the scenes reached and only `transform`, `opacity` and
+`clip-path` change. Play/pause (`aria-pressed`), previous/next and one button per scene. It pauses
+while off-screen or the tab is hidden. With `prefers-reduced-motion: reduce` there is no play button,
+no transition and no auto-advance; the visitor steps through. The stage is `aria-hidden`; a
+screen-reader paragraph describes it. Scroll reveal (`data-reveal`) fades each block in once, only
+below the fold, never under reduced motion. The nav, hero and download picker share one
+`useDesktopRelease` query. `DownloadPicker` got a `compact` prop (hero) which only changes classes
+and prefixes its test ids with `hero-`; `compatibility.tsx` got `data-label` on cells so tables stack
+as cards below 720px.
+
+**Wording that stays fixed** (owner): the required sentence above, the caveat "Behavior depends on
+your operating system, meeting application, capture mode, and version. Verify your setup before
+relying on it." in the Presenter section, the macOS whole-display sentence, and the sure-way text.
+The old h1 ("Private presenter notes with OS-supported screen-share exclusion.") was replaced by
+"Collaborative documents with a private presenter panel." The banned words ("invisible",
+"undetectable", "guaranteed", "100%", "bypass", "proctoring", ...) appear nowhere, not even negated;
+`landing.spec.ts` scans the rendered text including closed FAQ answers and `landing.test.tsx` scans
+the static sections. Tests: `landing.spec.ts` (OS labels for Windows, macOS and Linux user agents,
+chooser, unavailable state without a link, six widths x two themes with no sideways scroll,
+reduced motion, nav menu, keyboard path, axe), `landing-screenshots.spec.ts` (dark and light at 1440,
+1024 and 375 into `.stage/screenshots/landing-*.png`). Default Playwright "Desktop Chrome" reports
+Windows, so specs that publish one platform set their own `userAgent`.
 
 **Compatibility matrix** (`compatibility.tsx`, `verified-configurations.json`). Windows and macOS
 times Zoom, Microsoft Teams, Google Meet, Webex, Lark and Amazon Chime times tab, window,
@@ -452,6 +477,23 @@ Found by running the real stack and by looking at the pictures.
 - Archived documents: role capped at viewer; management is still offered when
   `access.via === 'workspace_admin'`; rename and snapshot save/restore are not offered.
 
+## Page setup and print (enterprise phase 3)
+
+- `EditorMount` passes `layout="reading"` in reading mode and `layout="page"` otherwise, plus the controlled
+  `pageSetupOpen` / `onPageSetupOpenChange`. The document header has a "Page setup" button (icon-only below
+  1180 px, an item in the phone overflow menu), shown when `capabilities.canEdit`; the editor toolbar has the
+  same button. The dialog lives in `@realtimedocs/editor` (`PageSetupDialog`).
+- The normal document screen is now a sheet (A4, 25.4 mm margins by default) with a ruler for editors. Reading
+  mode no longer changes with the per-user reading width (the document screen forces `normal`; the preference is stored and still applies to the desktop panel). The per-user `readingWidth` preference no longer changes the editor
+  screen; it applies to reading mode and the desktop panel.
+- `/d/:id/print`: `PrintMount` reads `pageSettings` from the JSON export (defaults when absent, e.g. an older
+  server), `PrintPage` sets `--print-page-width` and `--print-m*` on the sheet and `usePrintPageRule` inserts
+  the `@page` rule (`printPage.ts`). The static `@page` in `app.css` stays as the fallback.
+- Not verified here: the web mocked and real-stack Playwright suites (`apps/web/test-browser`, `test-real`)
+  were not run in this pass; they assert on the document screen and print view, and the screen's geometry
+  changed. Unit project `web`: all tests pass except `test/errors.test.ts`, which fails because of new error
+  codes added elsewhere in the upgrade (not this work).
+
 ## Known gaps
 
 - **The mocked suite cannot show a document.** Without a collaboration server its document pages
@@ -519,3 +561,43 @@ use the kit's `rd-link`; the anchor handler of `MenuItem` is typed as an anchor'
 was not replaced by the kit's `Sheet`: it has to be a docked, non-modal region on wide screens
 and a modal sheet on narrow ones with the same DOM node, so that a share link shown once
 survives a resize; `Sheet` is always modal.
+
+## Version history (`features/history`)
+
+Administrator screen at `/d/:documentId/history` (lazy route inside the signed-in layout; the page
+fetches the document and shows the forbidden screen unless `documentCapabilities(...).canManage`).
+Entry points: `HistoryHeaderLink` / `HistoryMenuItem` (`HistoryLinks.tsx`), used by `DocumentHeader`.
+User and admin guide: `docs/version-history.md`.
+
+- `model.ts`: pure helpers (operation labels, summaries, day/editor grouping, interleaving of
+  administrative events, diff folding). `test/history.test.ts` fails when a value of
+  `HISTORY_OPERATIONS` has no label.
+- `HistoryPage.tsx` (filters, infinite query, `?rev=` selects a revision so Back works on a phone),
+  `Timeline.tsx` (list of buttons, Up/Down/Home/End, one tab stop), `RevisionDetail.tsx` (facts,
+  Changes/Preview tabs, name / restore / copy / download), `RevisionPreview.tsx` (lazy chunk with
+  `StaticDocument`).
+- Restore is `api.history.name` (automatic name) followed by `api.snapshots.restore`; there is no
+  history-specific restore endpoint.
+- Mocked suite: handlers in `test-browser/support/mockApi.ts` (`history`, `historyEvents`,
+  `historyPageSize`, `historyRetentionDays`), data in `test-browser/support/historyFixtures.ts`,
+  spec `test-browser/history.spec.ts`.
+
+## Desktop download (phase 5)
+
+- `features/landing/platform.ts` (pure, `test/platform.test.ts`): `navigator.userAgentData` (platform, then
+  `getHighEntropyValues(['architecture','bitness'])`) -> user-agent parsing -> unknown. `navigator.platform` is
+  never read. Phones, tablets (an iPad in desktop mode is told apart by touch points) and Chromebooks get
+  "not available for this device". A Mac's architecture is never claimed as detected (Apple Silicon reports
+  Intel): the page defaults to Apple Silicon or universal, says so, and always offers "Choose another platform".
+- `features/landing/downloads.ts` picks the file with `pickArtifact` from `@realtimedocs/contracts` (same rules as
+  the server: `.exe` only if signed, `.dmg` only if notarised, Windows on Arm may get x64, macOS may get
+  universal). A platform without a build shows "No release published for <platform> yet" and no link. The
+  legacy `GET /api/downloads` listing is used when the versioned list is empty (signature then shown as "not
+  stated").
+- Pages: `DownloadSection` (landing), `/download` (`DownloadPage`: every file, requirements, release history),
+  `/releases/:version` (`ReleaseNotesPage`, notes rendered by the guide Markdown renderer; only absolute https
+  links), `/admin/releases` (`AdminReleasesPage`, read-only, with the operator workflow).
+- Mocked suite: `test-browser/support/mockApi.ts` gained `desktopReleases` and `adminReleases`; the landing
+  specs were rewritten (`landing.spec.ts` "downloads"). **Not run:** the mocked Playwright container
+  `rd-web-pw` / port 4435 was in use by another agent when this was finished. `tsc` and `vitest --project web`
+  were run.

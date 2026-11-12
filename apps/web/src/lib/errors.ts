@@ -15,6 +15,7 @@ export type ErrorScreenKind =
   | 'link_invalid'
   | 'link_expired'
   | 'link_revoked'
+  | 'session_closed'
   | 'invite_invalid'
   | 'invite_expired'
   | 'rate_limited'
@@ -53,6 +54,8 @@ export function errorScreenKind(error: unknown, env: ErrorEnvironment): ErrorScr
       return 'link_expired';
     case 'share_revoked':
       return 'link_revoked';
+    case 'session_closed':
+      return 'session_closed';
     case 'invite_invalid':
       return 'invite_invalid';
     case 'invite_expired':
@@ -119,6 +122,8 @@ export function errorMessage(
       return 'That no longer exists, or you no longer have access to it.';
     case 'document_trashed':
       return 'This document is in the trash.';
+    case 'session_closed':
+      return 'This interview has ended.';
     case 'conflict':
       return error.message || 'That conflicts with a newer change. Reload and try again.';
     case 'validation_failed': {

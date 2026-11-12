@@ -3,6 +3,7 @@
  * origin and CSRF rules, structured errors, the `/api` routes and the built
  * web application.
  */
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import fastifyCookie from '@fastify/cookie';
@@ -23,8 +24,11 @@ import { allowedOrigins } from '../config';
 import type { AppContext } from '../context';
 import { isDbUnavailable } from '../db/pool';
 import { AppError, errors } from '../errors';
+import { statusClass } from '../metrics';
 import { getAuth, verifyCsrf } from './auth';
+import { isV1Url, toV1Body, v1RequestId } from '../service/v1-errors';
 import { createLimiters, type Limiters } from './rate-limits';
+import { registerApiKeyRoutes } from './routes/api-keys';
 import { registerAssetRoutes } from './routes/assets';
 import { registerAuditRoutes } from './routes/audit';
 import { registerDownloadRoutes } from './routes/download';
@@ -36,9 +40,12 @@ import { registerExportRoutes } from './routes/export';
 import { registerInvitationRoutes } from './routes/invitations';
 import { registerMemberRoutes } from './routes/members';
 import { registerMetaRoutes } from './routes/meta';
+import { registerReleaseRoutes } from './routes/releases';
 import { registerShareRoutes } from './routes/shares';
+import { registerHistoryRoutes } from './routes/history';
 import { registerSnapshotRoutes } from './routes/snapshots';
 import { registerUserRoutes } from './routes/users';
+import { registerV1Routes } from './routes/v1';
 
 declare module 'fastify' {
   interface FastifyContextConfig {
@@ -133,9 +140,10 @@ export async function buildApp(ctx: AppContext): Promise<FastifyInstance> {
         ? (_address: string, hop: number) => hop < (config.trustProxy as number)
         : config.trustProxy,
     bodyLimit: config.limits.maxJsonBodyBytes,
-    // Inbound request ids are not trusted; every request gets a fresh one.
+    // Inbound request ids are not trusted; every request gets a fresh one. The service API
+    // (`/api/v1`) alone accepts a well-formed `X-Request-Id` so integrators can correlate.
     requestIdHeader: false,
-    genReqId: () => randomUUID(),
+    genReqId: (request) => (isV1Url(request.url) ? v1RequestId(request) : randomUUID()),
     // Collaboration sockets are handled on the raw server, outside Fastify.
     forceCloseConnections: true,
   });
@@ -169,7 +177,12 @@ export async function buildApp(ctx: AppContext): Promise<FastifyInstance> {
   });
 
   await app.register(fastifyCookie);
-  await app.register(fastifyRateLimit, { global: false });
+  // One instance: counters in memory. Several instances: counters in Redis, so a
+  // limit is the same whichever instance a request reaches.
+  await app.register(fastifyRateLimit, {
+    global: false,
+    ...(ctx.cluster ? { redis: ctx.cluster.redis, nameSpace: 'rd:rl:' } : {}),
+  });
   await app.register(fastifyMultipart, {
     throwFileSizeLimit: false,
     limits: { files: 1, fields: 4, parts: 6, headerPairs: 64, fieldSize: 1024 },
@@ -237,10 +250,58 @@ export async function buildApp(ctx: AppContext): Promise<FastifyInstance> {
     return reply
       .code(appError.status)
       .type('application/json; charset=utf-8')
-      .send(appError.toBody(request.id));
+      .send(isV1Url(request.url) ? toV1Body(appError, request.id) : appError.toBody(request.id));
   });
 
   const deps: RouteDeps = { ctx, limits };
+  // Request counts and durations by route pattern (never by concrete URL: ids
+  // would make an unbounded number of series and would name documents).
+  app.addHook('onResponse', async (request, reply) => {
+    const route = request.routeOptions.url ?? 'unmatched';
+    const labels = {
+      method: request.method,
+      route: isApiPath(route) || route === '/metrics' ? route : 'static',
+      status: statusClass(reply.statusCode),
+    };
+    ctx.metrics.httpRequests.inc(labels);
+    ctx.metrics.httpDuration.observe(reply.elapsedTime / 1000, {
+      method: labels.method,
+      route: labels.route,
+    });
+  });
+
+  // Prometheus scrape endpoint. Off unless METRICS_TOKEN is set; then it needs
+  // that token. It is not under /api: no cookie, no session, no rate limit.
+  const redisLatency = ctx.metrics.settable(
+    'rd_redis_ping_seconds',
+    'Round trip of a Redis PING at scrape time (0 without Redis).',
+  );
+  const redisUp = ctx.metrics.settable(
+    'rd_redis_up',
+    '1 when Redis answered the last scrape-time PING, 0 when not, 1 without Redis.',
+  );
+  redisUp.set(1);
+  app.get('/metrics', async (request, reply) => {
+    const expected = config.metricsToken;
+    const given = request.headers.authorization ?? '';
+    // Digests have one length whatever was sent, so the comparison can neither
+    // throw nor tell how long the token is.
+    const digest = (value: string): Buffer => createHash('sha256').update(value).digest();
+    if (!expected || !timingSafeEqual(digest(given), digest(`Bearer ${expected}`))) {
+      throw errors.notFound();
+    }
+    if (ctx.cluster) {
+      const ping = await ctx.cluster.ping(1_000);
+      redisLatency.set(ping.latencyMs / 1000);
+      redisUp.set(ping.ok ? 1 : 0);
+      if (!ping.ok) ctx.metrics.redisErrors.inc();
+    }
+    return reply
+      .header('content-type', 'text/plain; version=0.0.4; charset=utf-8')
+      .header('cache-control', 'no-store')
+      .send(ctx.metrics.render());
+  });
+
   registerMetaRoutes(app, deps);
   registerAuthRoutes(app, deps);
   registerUserRoutes(app, deps);
@@ -252,9 +313,13 @@ export async function buildApp(ctx: AppContext): Promise<FastifyInstance> {
   registerAssetRoutes(app, deps);
   registerExportRoutes(app, deps);
   registerSnapshotRoutes(app, deps);
+  registerHistoryRoutes(app, deps);
   registerDesktopRoutes(app, deps);
   registerAuditRoutes(app, deps);
   registerDownloadRoutes(app, deps);
+  registerApiKeyRoutes(app, deps);
+  registerV1Routes(app, deps);
+  registerReleaseRoutes(app, deps);
 
   const webDist = config.webDistDir;
   if (webDist) {
@@ -292,10 +357,11 @@ export async function buildApp(ctx: AppContext): Promise<FastifyInstance> {
     if (wantsPage) {
       return reply.header('cache-control', 'no-cache').sendFile('index.html');
     }
+    const notFound = errors.notFound('Not found.');
     return reply
       .code(404)
       .type('application/json; charset=utf-8')
-      .send(errors.notFound('Not found.').toBody(request.id));
+      .send(isV1Url(request.url) ? toV1Body(notFound, request.id) : notFound.toBody(request.id));
   });
 
   return app;

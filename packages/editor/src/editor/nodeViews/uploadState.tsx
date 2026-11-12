@@ -77,7 +77,10 @@ export function UploadPlaceholder({
   if (!snapshot) {
     status = stale ? 'Upload interrupted' : 'Uploading on another device…';
   } else if (snapshot.phase === 'queued') {
-    status = 'Waiting to upload…';
+    status =
+      snapshot.retryAt !== null
+        ? `Waiting to retry (attempt ${snapshot.attempt + 1})…`
+        : 'Waiting to upload…';
   } else if (snapshot.phase === 'uploading') {
     status = percent >= 100 ? 'Processing…' : `Uploading… ${percent}%`;
   } else if (snapshot.phase === 'done') {

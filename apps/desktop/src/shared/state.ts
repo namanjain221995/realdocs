@@ -17,6 +17,7 @@ import type {
 import type { PresenceState } from './presence';
 import type { ServerTransport } from './server-origin';
 import type { DesktopPlatform, ShortcutAction } from './shortcuts';
+import { panelUpdateView, type UpdateSnapshot } from './updates';
 
 export const SETTINGS_TABS = [
   'connection',
@@ -24,6 +25,7 @@ export const SETTINGS_TABS = [
   'behaviour',
   'privacy',
   'privacy-test-center',
+  'updates',
   'diagnostics',
 ] as const;
 export type SettingsTab = (typeof SETTINGS_TABS)[number];
@@ -232,6 +234,8 @@ export interface AppState {
   probe: { open: boolean; record: ProbeRecord | null };
   /** True when the preference file was damaged or outdated and had to be repaired on load. */
   preferencesRepaired: boolean;
+  /** Update check and download state (the app never installs by itself). */
+  updates: UpdateSnapshot;
 }
 
 /** One-off events (not state). */
@@ -297,5 +301,6 @@ export function panelView(state: AppState): AppState {
     capture: { ...state.capture, native: null },
     displays: [],
     probe: { open: state.probe.open, record: null },
+    updates: panelUpdateView(state.updates),
   };
 }

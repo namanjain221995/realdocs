@@ -1,0 +1,296 @@
+# Load test summary (2026-11-12T03:13:33.778Z, topology A)
+
+## 12. temporary database pause (topology A) [ok]
+
+Started 2026-11-12T03:11:18.189Z, ended 2026-11-12T03:13:08.656Z.
+
+```json
+{
+ "docs": 100,
+ "clients": 400,
+ "typingRate": 1,
+ "pauseS": 10
+}
+```
+
+#### database paused for 10 s during typing (60 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| ack | 24025 | 3.4 | 7100.5 | 9514.6 | 10040.4 | 854.8 |
+| remote | 24028 | 0.6 | 1.0 | 1.3 | 8.5 | 0.6 |
+
+Client counters: edits=24028, save_error_storage_unavailable=2121, persistence_degraded=360, persistence_ok=360
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 18.3 | 21.9 | 343 | 180 | 400 | 0 | 100 | 10 / 10 | 99 (13.6) | 21.2 | 102,828 | 0.0 | 0 |
+
+Server :4450 persist append: n=20,206 mean 28.8 ms, p95 <= 5.0 ms, p99 <= 50.0 ms; compact: n=100 mean 3.0 ms, p95 <= 5.0 ms, p99 <= 5.0 ms; yjs updates 24,032; HTTP /api (server-side) n=0 mean n/a ms, p95 <= n/a ms; ws outcomes accepted=0
+
+Generator (4 worker processes): CPU % per worker 4/4/4/4; event-loop lag p99 max 10.9 ms (max 12.9 ms); host load1 max 5.3
+
+```json
+{
+ "pausedAt": "2026-11-12T03:12:13.498Z",
+ "resumedAt": "2026-11-12T03:12:23.528Z"
+}
+```
+
+### Results
+
+```json
+{
+ "quiesce": {
+  "ok": true,
+  "unacked": 0,
+  "waitedMs": 0
+ },
+ "verification": {
+  "docs": 100,
+  "checked": 36043,
+  "missing": 0,
+  "missingSamples": [],
+  "unackedAtEnd": 0,
+  "exportErrors": 0
+ }
+}
+```
+
+### Notes
+
+- Host load average (1 min) peaked at 6.8 during the run so far.
+
+## 15. large documents (topology A) [ok]
+
+Started 2026-11-12T03:13:10.679Z, ended 2026-11-12T03:13:31.776Z.
+
+```json
+{
+ "targetsMiB": [
+  1,
+  5,
+  20
+ ],
+ "paragraphBytes": 1000,
+ "batchParagraphs": 100,
+ "serverEnvOverrides": {}
+}
+```
+
+#### fresh clients opening the 1 MiB document (3 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| u / ack | 19 | 3.3 | 4.9 | 4.9 | 4.9 | 3.3 |
+| u / remote | 15 | 0.6 | 0.8 | 0.8 | 0.8 | 0.5 |
+| seed / ticketMs | 1 | 2.7 | 2.7 | 2.7 | 2.7 | 2.7 |
+| seed / connect | 1 | 37.1 | 37.1 | 37.1 | 37.1 | 37.1 |
+| reader / ticketMs | 5 | 3.4 | 3.6 | 3.6 | 3.6 | 3.3 |
+| reader / connect | 5 | 53.2 | 70.9 | 70.9 | 70.9 | 55.8 |
+| ALL / ack | 19 | 3.3 | 4.9 | 4.9 | 4.9 | 3.3 |
+| ALL / remote | 15 | 0.6 | 0.8 | 0.8 | 0.8 | 0.5 |
+| ALL / ticketMs | 6 | 3.2 | 3.6 | 3.6 | 3.6 | 3.2 |
+| ALL / connect | 6 | 50.3 | 70.9 | 70.9 | 70.9 | 52.7 |
+
+Client counters: edits=15
+
+WebSocket close codes seen: 1005=406
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 9.1 | 15.9 | 360 | 150 | 0 | 0 | 1 | 10 / 10 | 0 (0.0) | 21.1 | 0 | 0.0 | 0 |
+
+Server :4450 persist append: n=0 mean n/a ms, p95 <= n/a ms, p99 <= n/a ms; compact: n=1 mean 31.5 ms, p95 <= 50.0 ms, p99 <= 50.0 ms; yjs updates 0; HTTP /api (server-side) n=10 mean 10.0 ms, p95 <= 50.0 ms; ws outcomes accepted=5
+
+Generator (4 worker processes): CPU % per worker 9/1/1/1; event-loop lag p99 max 13.5 ms (max 17.9 ms); host load1 max 3.0
+
+#### fresh clients opening the 5 MiB document (3 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| seed / ticketMs | 1 | 1.8 | 1.8 | 1.8 | 1.8 | 1.8 |
+| seed / connect | 1 | 28.0 | 28.0 | 28.0 | 28.0 | 28.0 |
+| reader / ticketMs | 5 | 2.8 | 3.9 | 3.9 | 3.9 | 2.9 |
+| reader / connect | 5 | 120.9 | 167.3 | 167.3 | 167.3 | 122.7 |
+| ALL / ticketMs | 6 | 2.6 | 3.9 | 3.9 | 3.9 | 2.7 |
+| ALL / connect | 6 | 119.1 | 167.3 | 167.3 | 167.3 | 106.9 |
+
+WebSocket close codes seen: 1005=6
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 30.8 | 30.8 | 457 | 136 | 0 | 0 | 1 | 10 / 10 | 0 (0.0) | 58.2 | 0 | 0.0 | 0 |
+
+Server :4450 persist append: n=0 mean n/a ms, p95 <= n/a ms, p99 <= n/a ms; compact: n=1 mean 123.8 ms, p95 <= 250.0 ms, p99 <= 250.0 ms; yjs updates 0; HTTP /api (server-side) n=10 mean 6.8 ms, p95 <= 25.0 ms; ws outcomes accepted=5
+
+Generator (4 worker processes): CPU % per worker 30/0/0/0; event-loop lag p99 max 26.4 ms (max 41.9 ms); host load1 max 2.9
+
+#### fresh clients opening the 20 MiB document (5 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| seed / ticketMs | 1 | 2.7 | 2.7 | 2.7 | 2.7 | 2.7 |
+| seed / connect | 1 | 29.5 | 29.5 | 29.5 | 29.5 | 29.5 |
+| reader / ticketMs | 5 | 3.7 | 4.3 | 4.3 | 4.3 | 3.4 |
+| reader / connect | 5 | 428.6 | 453.5 | 453.5 | 453.5 | 402.9 |
+| ALL / ticketMs | 6 | 2.7 | 4.3 | 4.3 | 4.3 | 3.3 |
+| ALL / connect | 6 | 408.6 | 453.5 | 453.5 | 453.5 | 340.7 |
+
+WebSocket close codes seen: 1005=6
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 45.7 | 55.7 | 554 | 161 | 0 | 0 | 1 | 10 / 10 | 0 (0.0) | 78.1 | 0 | 0.0 | 0 |
+
+Server :4450 persist append: n=0 mean n/a ms, p95 <= n/a ms, p99 <= n/a ms; compact: n=1 mean 419.8 ms, p95 <= 500.0 ms, p99 <= 500.0 ms; yjs updates 0; HTTP /api (server-side) n=10 mean 7.2 ms, p95 <= 25.0 ms; ws outcomes accepted=5
+
+Generator (4 worker processes): CPU % per worker 123/0/1/1; event-loop lag p99 max 71.4 ms (max 155.1 ms); host load1 max 2.7
+
+### Results
+
+```json
+{
+ "documents": [
+  {
+   "mib": 1,
+   "seed": {
+    "ok": true,
+    "stateBytes": 1144025,
+    "batches": 11,
+    "ms": 161.821044921875,
+    "paragraphs": 1102
+   },
+   "probe": [
+    {
+     "ms": 70.90869140625,
+     "stateBytes": 1144025,
+     "blocks": 1102
+    },
+    {
+     "ms": 53.222412109375,
+     "stateBytes": 1144025,
+     "blocks": 1102
+    },
+    {
+     "ms": 55.369873046875,
+     "stateBytes": 1144025,
+     "blocks": 1102
+    },
+    {
+     "ms": 50.373291015625,
+     "stateBytes": 1144025,
+     "blocks": 1102
+    },
+    {
+     "ms": 49.127685546875,
+     "stateBytes": 1144025,
+     "blocks": 1102
+    }
+   ],
+   "rssMb": [
+    {
+     "port": 4450,
+     "beforeSeed": 344.2,
+     "afterSeed": 359.7,
+     "afterProbes": 352.1
+    }
+   ]
+  },
+  {
+   "mib": 5,
+   "seed": {
+    "ok": true,
+    "stateBytes": 5328347,
+    "batches": 51,
+    "ms": 975.764892578125,
+    "paragraphs": 5102
+   },
+   "probe": [
+    {
+     "ms": 66.629150390625,
+     "stateBytes": 5328347,
+     "blocks": 5102
+    },
+    {
+     "ms": 139.803466796875,
+     "stateBytes": 5328347,
+     "blocks": 5102
+    },
+    {
+     "ms": 120.896240234375,
+     "stateBytes": 5328347,
+     "blocks": 5102
+    },
+    {
+     "ms": 167.281005859375,
+     "stateBytes": 5328347,
+     "blocks": 5102
+    },
+    {
+     "ms": 119.177001953125,
+     "stateBytes": 5328347,
+     "blocks": 5102
+    }
+   ],
+   "rssMb": [
+    {
+     "port": 4450,
+     "beforeSeed": 352.1,
+     "afterSeed": 391.3,
+     "afterProbes": 456.9
+    }
+   ]
+  },
+  {
+   "mib": 20,
+   "seed": {
+    "ok": true,
+    "stateBytes": 21018348,
+    "batches": 201,
+    "ms": 8817.53076171875,
+    "paragraphs": 20102
+   },
+   "probe": [
+    {
+     "ms": 272.28564453125,
+     "stateBytes": 21018348,
+     "blocks": 20102
+    },
+    {
+     "ms": 453.510009765625,
+     "stateBytes": 21018348,
+     "blocks": 20102
+    },
+    {
+     "ms": 451.510498046875,
+     "stateBytes": 21018348,
+     "blocks": 20102
+    },
+    {
+     "ms": 428.628662109375,
+     "stateBytes": 21018348,
+     "blocks": 20102
+    },
+    {
+     "ms": 408.64208984375,
+     "stateBytes": 21018348,
+     "blocks": 20102
+    }
+   ],
+   "rssMb": [
+    {
+     "port": 4450,
+     "beforeSeed": 456.9,
+     "afterSeed": 449.2,
+     "afterProbes": 553.9
+    }
+   ]
+  }
+ ]
+}
+```
+
+### Notes
+
+- Host load average (1 min) peaked at 6.8 during the run so far.

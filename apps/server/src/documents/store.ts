@@ -148,6 +148,8 @@ export function toAccessInfo(access: AccessGranted): AccessInfo {
     via: access.via,
     expiresAt: access.expiresAt ? access.expiresAt.toISOString() : null,
     accountId: access.accountId,
+    participant: access.participant,
+    capabilities: access.capabilities,
   };
 }
 

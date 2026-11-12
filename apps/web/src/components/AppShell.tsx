@@ -7,7 +7,17 @@ import {
   type Theme,
   useTheme,
 } from '@realtimedocs/ui';
-import { ChevronDown, FileText, LogOut, Settings, UsersRound } from 'lucide-react';
+import {
+  CalendarClock,
+  ChevronDown,
+  FileText,
+  KeyRound,
+  LogOut,
+  PackageOpen,
+  Settings,
+  UsersRound,
+  Webhook,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router';
 import { useMediaQuery } from '../lib/hooks';
@@ -28,7 +38,13 @@ interface NavItem {
 
 function navItems(isAdmin: boolean): NavItem[] {
   const items: NavItem[] = [{ to: '/', label: 'Documents', icon: <FileText />, end: true }];
-  if (isAdmin) items.push({ to: '/admin/users', label: 'People', icon: <UsersRound /> });
+  if (isAdmin) {
+    items.push({ to: '/admin/users', label: 'People', icon: <UsersRound /> });
+    items.push({ to: '/admin/releases', label: 'Releases', icon: <PackageOpen /> });
+    items.push({ to: '/admin/interview-sessions', label: 'Interviews', icon: <CalendarClock /> });
+    items.push({ to: '/admin/api-keys', label: 'API keys', icon: <KeyRound /> });
+    items.push({ to: '/admin/webhooks', label: 'Webhooks', icon: <Webhook /> });
+  }
   return items;
 }
 
@@ -101,8 +117,13 @@ function UserMenu({ items, showNav }: { items: NavItem[]; showNav: boolean }) {
 /** Frame of the signed-in app: wordmark, navigation, account menu, page content. */
 export function AppShell({ children }: { children: ReactNode }) {
   const { isAdmin } = useSession();
-  const narrow = useMediaQuery('(max-width: 639px)');
+  const phone = useMediaQuery('(max-width: 639px)');
+  const tablet = useMediaQuery('(max-width: 1023px)');
   const items = navItems(isAdmin);
+  // An administrator has six destinations: they fit beside the wordmark and the
+  // account button on a laptop, not on a tablet. Below that they live in the
+  // account menu, as all of them do on a phone.
+  const narrow = phone || (items.length > 2 && tablet);
   return (
     <div className="app-shell">
       <header className="app-topbar">

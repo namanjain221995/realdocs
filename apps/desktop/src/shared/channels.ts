@@ -49,6 +49,11 @@ export const CH = {
   shortcutsReset: 'rd:shortcuts:reset',
   shortcutsRecording: 'rd:shortcuts:recording',
 
+  updatesCheck: 'rd:updates:check',
+  updatesDownload: 'rd:updates:download',
+  updatesDefer: 'rd:updates:defer',
+  updatesOpen: 'rd:updates:open',
+
   externalOpen: 'rd:external:open',
   diagnosticsGet: 'rd:diagnostics:get',
   probeOpen: 'rd:probe:open',

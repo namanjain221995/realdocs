@@ -17,7 +17,12 @@ import { newId } from '../../auth/tokens';
 import type { Queryable } from '../../db/pool';
 import { SNAPSHOT_COLUMNS, type SnapshotRow } from '../../db/rows';
 import { loadDurableState, toAccessInfo, toDocumentSummary } from '../../documents/store';
-import { mergeToState, reencodeFresh, stateToJson } from '../../documents/ydoc';
+import {
+  mergeToState,
+  pageSettingsFromState,
+  reencodeFresh,
+  stateToJson,
+} from '../../documents/ydoc';
 import { errors } from '../../errors';
 import type { RouteDeps } from '../app';
 import { documentAccess, requireManage } from '../auth';
@@ -170,7 +175,11 @@ export function registerSnapshotRoutes(app: FastifyInstance, { ctx }: RouteDeps)
         // content, so it shares no struct ids with the abandoned generation.
         const oldGeneration = durable.generation;
         const newGeneration = oldGeneration + 1;
-        const state = reencodeFresh(stateToJson(source.state), source.state);
+        const state = reencodeFresh(
+          stateToJson(source.state),
+          source.state,
+          pageSettingsFromState(source.state),
+        );
         await tx.query(
           `UPDATE documents
               SET generation = $1, head_seq = 0, content_updated_at = now(), updated_at = now()

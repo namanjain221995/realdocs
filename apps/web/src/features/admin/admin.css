@@ -155,3 +155,40 @@
     justify-content: space-between;
   }
 }
+
+/* Desktop releases */
+.admin-release {
+  margin: var(--rd-space-4) 0;
+  padding: var(--rd-space-4);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+}
+
+.admin-release h3 {
+  margin: 0 0 4px;
+  font-size: var(--rd-text-lg);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--rd-text-sm);
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rd-border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.admin-workflow ol {
+  line-height: 1.6;
+  max-width: 80ch;
+}

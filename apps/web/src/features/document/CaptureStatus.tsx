@@ -7,7 +7,7 @@ export const BROWSER_CAPTURE_LABEL = 'Browser mode: capture exclusion unavailabl
 
 export interface CaptureStatusProps {
   /** Starts the Open in Desktop flow from the guidance dialog. */
-  onOpenInDesktop: () => void;
+  onOpenInDesktop?: () => void;
 }
 
 /**
@@ -44,15 +44,17 @@ export function CaptureStatus({ onOpenInDesktop }: CaptureStatusProps) {
             <Button variant="ghost" onClick={() => setOpen(false)}>
               Close
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                setOpen(false);
-                onOpenInDesktop();
-              }}
-            >
-              Open in Desktop
-            </Button>
+            {onOpenInDesktop ? (
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setOpen(false);
+                  onOpenInDesktop();
+                }}
+              >
+                Open in Desktop
+              </Button>
+            ) : null}
           </>
         }
       >

@@ -7,7 +7,8 @@ Compose, how the product is used day to day, and where everything else is docume
 ## What it is
 
 RealtimeDocs is a self-hosted product for rich documents that update live for everyone who has
-them open, with a desktop presenter panel for private meeting notes. It has three parts:
+them open, with a desktop presenter panel for private meeting notes and a service API for creating
+interview documents from other systems. It has three parts:
 
 - **A server** (Fastify for the HTTP API, Hocuspocus and Yjs for live collaboration, PostgreSQL for
   storage, a private directory for uploaded files). It also serves the web app.
@@ -15,7 +16,8 @@ them open, with a desktop presenter panel for private meeting notes. It has thre
   dashboard, the document editor and viewer, sharing controls, snapshots, exports and account
   administration. A share link opens in any modern browser, so the browser is also the fallback for
   people without the desktop app.
-- **A desktop app** (Electron) for Windows and macOS. A document opens either in a normal window or
+- **A desktop app** (Electron) for Windows and macOS. Linux packages are built as well, but Linux is a
+  test platform only (see [docs/linux-client.md](docs/linux-client.md)). A document opens either in a normal window or
   in **Private Presenter Mode**: a small, frameless, see-through panel that floats above other
   applications, can be collapsed, hidden or made click-through (with a way back that is always
   available), and by default asks the operating system to leave it out of screen capture. It has a
@@ -25,6 +27,19 @@ An administrator creates a document, lets colleagues edit it, and hands out link
 a link see the document at once and see later edits without reloading. A link is view-only unless
 the administrator explicitly creates it with edit access. The rich editor includes tables, code
 blocks, images, Mermaid diagrams and callouts.
+
+### Feature overview
+
+| Feature                      | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | More                                                                                             |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Interview-session API        | A system with an API key (`/admin/api-keys`) creates an interview session with `POST /api/v1/interview-sessions`: one document, a personal link for the candidate and each interviewer, a generated title, role-scoped permissions (a candidate cannot export or use the desktop app unless allowed), idempotent creation, lifecycle calls, link rotation, signed webhooks, an OpenAPI document at `/api/openapi.json` and a developer portal at `/docs`. Sessions are created through the API only; the admin pages list and manage them | [docs/session-integration.md](docs/session-integration.md), [docs/webhooks.md](docs/webhooks.md) |
+| Page setup and ruler         | Paper size (A4 or Letter), orientation, margins (default 25.4 mm), unit and page colour are stored in the document, so they sync live, survive restore and duplicate, and drive the print view. A ruler with draggable margin markers. One continuous sheet: no on-screen pagination, no indent markers, no headers or footers                                                                                                                                                                                                            | [docs/known-limitations.md](docs/known-limitations.md)                                           |
+| Version history              | For administrators: who changed what and when (server time), grouped by day and person, with a text comparison, a read-only preview, naming, restore as the new current version, restore as a copy and export. History starts at the first change after the upgrade                                                                                                                                                                                                                                                                       | [docs/version-history.md](docs/version-history.md)                                               |
+| Uploads that wait            | Uploads that hit a limit or a network problem are retried with growing delays instead of failing; identical files are sent once                                                                                                                                                                                                                                                                                                                                                                                                           | [docs/troubleshooting.md](docs/troubleshooting.md)                                               |
+| Content from a newer version | A document that holds content the app does not know is never rewritten: the window names the content and pauses editing until the app is current                                                                                                                                                                                                                                                                                                                                                                                          | [docs/known-limitations.md](docs/known-limitations.md)                                           |
+| OS-aware downloads           | The landing page and `/download` pick the desktop file for the visitor's system and architecture, show version, size, SHA-256 and signature status, and say honestly when nothing is published. The desktop app checks for updates, verifies a download and never installs by itself. Builds are unsigned until signing credentials exist                                                                                                                                                                                                 | [docs/desktop-release.md](docs/desktop-release.md)                                               |
+| Multi-instance mode          | Optional. With `REDIS_URL`, several server instances behind one load balancer share rooms, tickets, rate limits and revocation. Without it the server runs as one process, as today                                                                                                                                                                                                                                                                                                                                                       | [docs/scaling.md](docs/scaling.md)                                                               |
+| Metrics and health           | `GET /metrics` (Prometheus text, off unless `METRICS_TOKEN` is set), `GET /api/health`, `GET /api/ready` (database, Redis and shutdown state)                                                                                                                                                                                                                                                                                                                                                                                             | [docs/observability.md](docs/observability.md)                                                   |
 
 **A live deployment exists** at <https://realdocs.techsarasolutions.com>, published through a
 Cloudflare Tunnel from the build server. How it is run is in [deploy/README.md](deploy/README.md).
@@ -53,8 +68,13 @@ It publishes no desktop build yet: the download section of its landing page says
   basis; what could not be kept is named in a paste report.
 - **It sends no email.** Invitation links and share links are copied and sent by a person. A
   forgotten password is reset by the operator with a command.
-- **It runs as one server process.** Running several instances needs coordination that is not
-  built; see [docs/deployment.md](docs/deployment.md#scaling-boundary).
+- **It is single-process by default, and multi-instance mode is limited.** Several instances need Redis
+  and shared storage for uploads and releases (there is no S3 adapter), and were verified on one host
+  only; see [docs/scaling.md](docs/scaling.md). No capacity figure is claimed in this file.
+- **It does not back itself up.** Nothing runs backups automatically and there is no point-in-time recovery;
+  see [docs/incident-response.md](docs/incident-response.md).
+- **It has no malware scanning, no multi-factor authentication and no tracing.** See
+  [docs/security-checklist.md](docs/security-checklist.md) and [docs/known-limitations.md](docs/known-limitations.md).
 
 ## Requirements
 
@@ -76,6 +96,25 @@ On the build host itself, Node.js and pnpm live inside the project (`.toolchain/
 
 On any other machine, install Node.js 24.22.2 and run `corepack enable` once, as the project's
 `Dockerfile` does; `scripts/dev-env.sh` then changes nothing and can be skipped.
+
+## Production warning: the build server runs the live deployment
+
+The host that holds this repository **is production**. The Compose project `realtimedocs` (containers
+`realtimedocs-db-1`, `realtimedocs-server-1`, `realtimedocs-tunnel-1` and `realtimedocs-volume-guard`) serves
+<https://realdocs.techsarasolutions.com> on `127.0.0.1:4310` and `127.0.0.1:54310`, with its data in the
+volumes `realtimedocs_rd_pgdata` and `realtimedocs_rd_assets`.
+
+- Operate it only through the scripts in `deploy/`: `deploy/up.sh`, `deploy/down.sh`, `deploy/status.sh`,
+  `deploy/logs.sh`, `deploy/exec.sh`.
+- **Never run `docker compose down -v`** (or `--volumes`, or `docker volume rm` / `prune`) on this project: it
+  deletes every account and document.
+- Do not run `docker compose ...`, `pnpm db:up` or `pnpm db:down` from the repository root on this host, and
+  do not create a `.env` in the repository root: those commands address the same project name.
+- Take a backup (`scripts/backup.sh --env-file deploy/.env.production`) before a deploy and rehearse
+  migrations first ([docs/upgrade-and-rollback.md](docs/upgrade-and-rollback.md)). Incidents:
+  [docs/incident-response.md](docs/incident-response.md).
+- Tests and trials must use their own project names, ports and containers; `vite dev` proxies to the live
+  server by default, so set `RD_API_PROXY=off`.
 
 ## First run with Docker Compose
 
@@ -333,29 +372,31 @@ short:
 These commands exist. Results are not listed here; they are recorded in
 [docs/testing.md](docs/testing.md).
 
-| Command                                                         | What it does                                                                                          |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `pnpm test`                                                     | All unit tests (Vitest projects `contracts`, `ui`, `editor`, `server`, `web`, `desktop`)              |
-| `pnpm exec vitest run --project server`                         | Unit tests of one project                                                                             |
-| `pnpm test:integration`                                         | Server integration tests against a real PostgreSQL container and a real server process (needs Docker) |
-| `pnpm test:backup-restore`                                      | Backup and restore rehearsal in two throw-away Compose projects (needs Docker)                        |
-| `pnpm --filter @realtimedocs/web run test:browser`              | Web app browser tests; run inside the Playwright container as described in `docs/notes/web.md`        |
-| `pnpm --filter @realtimedocs/desktop run test:smoke`            | Electron smoke tests under Xvfb in the Playwright container. Linux evidence only                      |
-| `pnpm --filter @realtimedocs/desktop run test:packaged`         | Checks the packaged Linux build from outside the process (run `package:linux` first)                  |
-| `pnpm typecheck`, `pnpm lint`, `pnpm format:check`              | TypeScript, ESLint and Prettier checks                                                                |
-| `pnpm check`                                                    | Format check, lint, type check and unit tests in one go                                               |
-| `pnpm build`                                                    | Builds the web app (`apps/web/dist`) and the server bundle (`apps/server/dist`)                       |
-| `pnpm start`                                                    | Runs the built server, which also serves the built web app                                            |
-| `docker compose build`                                          | Builds the server image (`realtimedocs-server:local`)                                                 |
-| `pnpm desktop:build`                                            | Development build of the desktop app into `apps/desktop/dist`                                         |
-| `pnpm desktop:package`                                          | Packages the desktop app for the machine it runs on                                                   |
-| `pnpm --filter @realtimedocs/desktop run package:win`           | Windows packages for x64 and arm64                                                                    |
-| `pnpm --filter @realtimedocs/desktop run package:mac`           | macOS packages for Intel (x64) and Apple Silicon (arm64)                                              |
-| `pnpm --filter @realtimedocs/desktop run package:mac:universal` | One macOS app for both architectures. Works on a Mac only                                             |
-| `pnpm --filter @realtimedocs/desktop run package:win:installer` | Per-user Windows installers for the packaged Windows folders (NSIS)                                   |
-| `pnpm test:e2e`                                                 | Acceptance suite (Playwright, needs Docker)                                                           |
-| `pnpm perf`                                                     | Latency harness; the stack must be up first (see docs/performance.md)                                 |
-| `pnpm --filter @realtimedocs/desktop run inspect-package`       | Inspects the packages in `apps/desktop/out` as files, without running them                            |
+| Command                                                                | What it does                                                                                                         |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`                                                            | All unit tests (Vitest projects `contracts`, `ui`, `editor`, `server`, `web`, `desktop`)                             |
+| `pnpm exec vitest run --project server`                                | Unit tests of one project                                                                                            |
+| `pnpm test:integration`                                                | Server integration tests against a real PostgreSQL container and a real server process (needs Docker)                |
+| `pnpm test:backup-restore`                                             | Backup and restore rehearsal in two throw-away Compose projects (needs Docker)                                       |
+| `pnpm --filter @realtimedocs/web run test:browser`                     | Web app browser tests; run inside the Playwright container as described in `docs/notes/web.md`                       |
+| `pnpm --filter @realtimedocs/desktop run test:smoke`                   | Electron smoke tests under Xvfb in the Playwright container. Linux evidence only                                     |
+| `pnpm --filter @realtimedocs/desktop run test:packaged`                | Checks the packaged Linux build from outside the process (run `package:linux` first)                                 |
+| `pnpm typecheck`, `pnpm lint`, `pnpm format:check`                     | TypeScript, ESLint and Prettier checks                                                                               |
+| `pnpm check`                                                           | Format check, lint, type check and unit tests in one go                                                              |
+| `pnpm build`                                                           | Builds the web app (`apps/web/dist`) and the server bundle (`apps/server/dist`)                                      |
+| `pnpm start`                                                           | Runs the built server, which also serves the built web app                                                           |
+| `docker compose build`                                                 | Builds the server image (`realtimedocs-server:local`)                                                                |
+| `pnpm desktop:build`                                                   | Development build of the desktop app into `apps/desktop/dist`                                                        |
+| `pnpm desktop:package`                                                 | Packages the desktop app for the machine it runs on                                                                  |
+| `pnpm --filter @realtimedocs/desktop run package:win`                  | Windows packages for x64 and arm64                                                                                   |
+| `pnpm --filter @realtimedocs/desktop run package:mac`                  | macOS packages for Intel (x64) and Apple Silicon (arm64)                                                             |
+| `pnpm --filter @realtimedocs/desktop run package:mac:universal`        | One macOS app for both architectures. Works on a Mac only                                                            |
+| `pnpm --filter @realtimedocs/desktop run package:win:installer`        | Per-user Windows installers for the packaged Windows folders (NSIS)                                                  |
+| `pnpm test:e2e`                                                        | Acceptance suite (Playwright, needs Docker)                                                                          |
+| `pnpm perf`                                                            | Latency harness; the stack must be up first (see docs/performance.md)                                                |
+| `pnpm --filter @realtimedocs/load run load -- <scenario> --topology A` | Load harness in `tests/load` with its own isolated stack (see docs/testing.md); results in docs/load-test-report.md  |
+| `scripts/rehearse-migration.sh <backup directory>`                     | Applies pending migrations to a throw-away copy of a backup and compares the data (see docs/upgrade-and-rollback.md) |
+| `pnpm --filter @realtimedocs/desktop run inspect-package`              | Inspects the packages in `apps/desktop/out` as files, without running them                                           |
 
 Two more root scripts exist: `pnpm test:e2e` (the Playwright acceptance suite in `tests/e2e`; it
 starts its own stack in Docker and needs the Playwright image, see the header of `tests/e2e/run.mjs`)
@@ -418,52 +459,97 @@ with its default and contains no secrets.
 | `TRUST_PROXY`     | Number of reverse proxies in front of the server, so that rate limits and logs see the real client address      |
 
 **Optional.** `ALLOW_SIGNUP` (self-service sign-up, off by default), `DOWNLOAD_DIR` (where the
-desktop builds for the download section live; unset means none are offered), ports (`RD_PORT`,
-`RD_DB_PORT`), session lifetimes, upload and document limits,
+desktop builds for the download section live; unset means none are offered), `REDIS_URL` and the `CLUSTER_*`
+settings (several instances), `METRICS_TOKEN` (metrics), `SHUTDOWN_DRAIN_SECONDS`, `HISTORY_*` (version
+history), `WEBHOOK_*`, ports (`RD_PORT`, `RD_DB_PORT`), session lifetimes, upload and document limits,
 retention periods, collaboration limits, database timeouts and rate limits all have working
-defaults. The full reference is in
+defaults. `SESSION_SECRET` also encrypts webhook secrets and stored API responses, so replacing it has side
+effects (see [docs/deployment.md](docs/deployment.md#rotating-session_secret)). The full reference is in
 [docs/deployment.md](docs/deployment.md#environment-reference). A wrong or missing value stops the
 server at start-up with a message that names the variable.
 
 ## Documentation map
 
-| Document                                                         | Content                                                                                                                   |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| [docs/deployment.md](docs/deployment.md)                         | HTTPS and WebSockets behind a reverse proxy, environment reference, publishing desktop downloads, redeploying, operations |
-| [deploy/README.md](deploy/README.md)                             | The deployment that runs on the build server, published through a Cloudflare Tunnel                                       |
-| [docs/security.md](docs/security.md)                             | Threat model, what is enforced where, known limits, residual risks, the permitted-use boundary                            |
-| [docs/capture-compatibility.md](docs/capture-compatibility.md)   | What private mode does and does not do, the test matrix (all `NOT TESTED`), the test procedure                            |
-| [docs/privacy-test-center.md](docs/privacy-test-center.md)       | The in-app Privacy Test Center: statuses, recording a test, expiry, export                                                |
-| [docs/backup-and-restore.md](docs/backup-and-restore.md)         | Backing up and restoring the database and files, and what is not covered                                                  |
-| [docs/windows-client.md](docs/windows-client.md)                 | The desktop app on Windows: getting it, modes, tray, shortcuts, building, signing, manual checklist                       |
-| [docs/macos-client.md](docs/macos-client.md)                     | The desktop app on macOS: the same, plus signing, notarization and capture limits                                         |
-| [docs/architecture.md](docs/architecture.md)                     | System design, data model, data flows and the deployment topology                                                         |
-| [docs/decisions.md](docs/decisions.md)                           | Choices made during the build and the reasons                                                                             |
-| [docs/requirements-checklist.md](docs/requirements-checklist.md) | Requirement by requirement: status, where it is implemented, where it is verified                                         |
-| [docs/testing.md](docs/testing.md)                               | Which tests exist and their recorded results                                                                              |
-| [docs/performance.md](docs/performance.md)                       | Latency measurements, how they were taken and how to rerun them                                                           |
-| [docs/status.md](docs/status.md)                                 | Short checkpoint of what is done and what is pending                                                                      |
-| `docs/notes/`                                                    | Engineers' working notes per area (server, editor, web, desktop, performance)                                             |
+Every document in `docs/`, plus the deployment guide. Documents that this web app does not bundle are shown
+here as plain text when you read this file in the app; open them in the repository.
+
+| Document                                                               | Content                                                                                                                      |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| [deploy/README.md](deploy/README.md)                                   | The deployment that runs on the build server, published through a Cloudflare Tunnel: commands, secrets, checks               |
+| [docs/architecture.md](docs/architecture.md)                           | System design, data model, data flows and the deployment topology                                                            |
+| [docs/backup-and-restore.md](docs/backup-and-restore.md)               | Backing up and restoring the database and files, and what is not covered                                                     |
+| [docs/capture-compatibility.md](docs/capture-compatibility.md)         | What private mode does and does not do, the test matrix (all `NOT TESTED`), the test procedure                               |
+| [docs/database-schema.md](docs/database-schema.md)                     | Every table after migrations 0001 to 0004, keys, indexes, locking, pagination, retention                                     |
+| [docs/decisions.md](docs/decisions.md)                                 | Choices made during the build and upgrade, and the reasons                                                                   |
+| [docs/deployment.md](docs/deployment.md)                               | HTTPS and WebSockets behind a reverse proxy, every environment variable, publishing downloads, redeploying, health endpoints |
+| [docs/desktop-release.md](docs/desktop-release.md)                     | Release layout, publishing, update flow, signing setup, rollback of a release                                                |
+| [docs/enterprise-upgrade-plan.md](docs/enterprise-upgrade-plan.md)     | The audit and plan of the enterprise upgrade of 2026-11-12                                                                   |
+| [docs/enterprise-upgrade-report.md](docs/enterprise-upgrade-report.md) | Final report of the enterprise upgrade: what was done, verified, and not tested                                              |
+| [docs/incident-response.md](docs/incident-response.md)                 | Roles, severities, runbooks for this deployment, evidence, disaster recovery                                                 |
+| [docs/known-limitations.md](docs/known-limitations.md)                 | One list of what the product does not do, by area                                                                            |
+| [docs/linux-client.md](docs/linux-client.md)                           | The desktop app on Linux: download, check, updates, capture limits                                                           |
+| [docs/load-test-report.md](docs/load-test-report.md)                   | Load and failure measurements (written separately; read its own status line)                                                 |
+| [docs/macos-client.md](docs/macos-client.md)                           | The desktop app on macOS: the same, plus signing, notarization and capture limits                                            |
+| [docs/observability.md](docs/observability.md)                         | Logs, the metrics endpoint and its metrics, health checks, alerts, dashboard layout                                          |
+| [docs/performance.md](docs/performance.md)                             | Latency measurements, how they were taken and how to rerun them                                                              |
+| [docs/privacy-test-center.md](docs/privacy-test-center.md)             | The in-app Privacy Test Center: statuses, recording a test, expiry, export                                                   |
+| [docs/requirements-checklist.md](docs/requirements-checklist.md)       | Requirement by requirement: status, where it is implemented, where it is verified                                            |
+| [docs/scaling.md](docs/scaling.md)                                     | Running several instances with Redis, failure behaviour, rolling deployment, what was verified                               |
+| [docs/security.md](docs/security.md)                                   | Threat model, what is enforced where, known limits, residual risks, the permitted-use boundary                               |
+| [docs/security-checklist.md](docs/security-checklist.md)               | Item-by-item security status, the review of 2026-11-12, credential rotation                                                  |
+| [docs/session-integration.md](docs/session-integration.md)             | The service API for interview sessions: keys, creation, idempotency, permissions, errors                                     |
+| [docs/status.md](docs/status.md)                                       | Short checkpoint of what is done and what is pending, with observed results                                                  |
+| [docs/testing.md](docs/testing.md)                                     | Which tests exist, how to run them and their recorded results                                                                |
+| [docs/troubleshooting.md](docs/troubleshooting.md)                     | Symptom, cause and fix, for users and operators                                                                              |
+| [docs/upgrade-and-rollback.md](docs/upgrade-and-rollback.md)           | Rehearsal, upgrade and rollback of the live deployment                                                                       |
+| [docs/version-history.md](docs/version-history.md)                     | Using version history, how it works, its settings and limits                                                                 |
+| [docs/webhooks.md](docs/webhooks.md)                                   | Webhook events, signatures, retries and target rules                                                                         |
+| [docs/windows-client.md](docs/windows-client.md)                       | The desktop app on Windows: getting it, modes, tray, shortcuts, building, signing, manual checklist                          |
+| [docs/notes/build-brief.md](docs/notes/build-brief.md)                 | Brief for implementation agents: environment, ownership, ports                                                               |
+| [docs/notes/desktop.md](docs/notes/desktop.md)                         | Engineers' notes on the desktop app                                                                                          |
+| [docs/notes/editor.md](docs/notes/editor.md)                           | Engineers' notes on the editor package                                                                                       |
+| [docs/notes/editor-api.md](docs/notes/editor-api.md)                   | The editor package's public API                                                                                              |
+| [docs/notes/perf.md](docs/notes/perf.md)                               | Engineers' notes on the performance harness                                                                                  |
+| [docs/notes/server.md](docs/notes/server.md)                           | Engineers' notes on the server                                                                                               |
+| [docs/notes/ui-api.md](docs/notes/ui-api.md)                           | The UI package's public API                                                                                                  |
+| [docs/notes/web.md](docs/notes/web.md)                                 | Engineers' notes on the web app                                                                                              |
 
 ## Status and limits
 
-This README describes how the product is built to work. It does not state test results.
+This README describes how the product is built to work. It states no test counts and no measured capacity.
+Results of the last recorded runs are in [docs/status.md](docs/status.md) and [docs/testing.md](docs/testing.md);
+latency in [docs/performance.md](docs/performance.md); load measurements in
+[docs/load-test-report.md](docs/load-test-report.md).
 
-- What is finished, what is in progress and what is pending is in [docs/status.md](docs/status.md).
-  Which tests were run, on what, and with what result is in [docs/testing.md](docs/testing.md).
-  Measured latency is in [docs/performance.md](docs/performance.md), with its limits.
-- **The native boundary.** Nothing has been run on Windows or macOS. The only evidence for the desktop
-  app is Electron on Linux under Xvfb, plus inspection of the cross-built packages and installers as
-  files. Native behaviour, installers, signing and notarization are `NOT TESTED`.
-- **No meeting application has been tested with private mode.** What the app requests from the
-  operating system and what was verified are different things; see
-  [docs/capture-compatibility.md](docs/capture-compatibility.md). On macOS the request is best effort.
-- Known product defect: when two or three editors press Enter at the same instant at the same place
-  in a document, the clients converge but the result is not what they typed
-  ([docs/requirements-checklist.md](docs/requirements-checklist.md), row 17.3).
-- The first-run path of this README, with a `.env` in the repository root, was not run as written
-  on the build host. The same files were run there under other project names and ports by the
-  test suites, and under the project name `realtimedocs` by the deployment in `deploy/`. What was
-  observed on that deployment is listed in [deploy/README.md](deploy/README.md); the Caddy and nginx
-  examples of the deployment guide were never run. See
-  [docs/deployment.md](docs/deployment.md#what-was-and-was-not-verified).
+Status labels: **IMPLEMENTED AND VERIFIED** (a test or run on the Linux build host exercises it),
+**IMPLEMENTED BUT NOT NATIVE-TESTED** (built, never run on the real system), **CONFIGURED BUT REQUIRES
+CREDENTIAL**, **PARTIALLY IMPLEMENTED**, **BLOCKED WITH EXACT REASON**.
+
+| Area                                                    | Status                             | Remark                                                                                                               |
+| ------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Server, web app, editor, sharing, snapshots, exports    | IMPLEMENTED AND VERIFIED           | Suites and results: docs/testing.md and docs/status.md                                                               |
+| Service API, interview sessions, webhooks               | IMPLEMENTED AND VERIFIED           | The admin pages cannot create a session (API only); `candidateCanShare` has no effect                                |
+| Version history                                         | IMPLEMENTED AND VERIFIED           | Starts at the upgrade; administrators only; text diff only                                                           |
+| Page setup and ruler                                    | PARTIALLY IMPLEMENTED              | No on-screen pagination, indent markers, headers or footers; only A4 and Letter                                      |
+| Uploads that retry; unsupported-content protection      | IMPLEMENTED AND VERIFIED           | The whole window pauses on unknown content (no per-node placeholders)                                                |
+| Download manifest, OS-aware download page, update check | IMPLEMENTED AND VERIFIED           | The live site publishes no desktop build yet                                                                         |
+| Desktop app on Linux (Xvfb smoke)                       | IMPLEMENTED AND VERIFIED           | Smoke evidence only; Linux is not a product target                                                                   |
+| Desktop app on Windows and macOS, installers            | IMPLEMENTED BUT NOT NATIVE-TESTED  | Nothing has been run on either system                                                                                |
+| Signing and notarization                                | CONFIGURED BUT REQUIRES CREDENTIAL | No certificate or Apple Developer account exists; all builds are unsigned                                            |
+| Capture exclusion with meeting applications             | NOT TESTED                         | Every cell of the matrix reads `NOT TESTED`                                                                          |
+| Multi-instance mode                                     | IMPLEMENTED AND VERIFIED           | One host, throw-away resources; not verified across hosts, with shared network storage or with TLS between instances |
+| Metrics, health, readiness                              | PARTIALLY IMPLEMENTED              | No tracing; the refusal path of `/metrics` has no located test                                                       |
+| Backups, disaster recovery                              | PARTIALLY IMPLEMENTED              | Scripts rehearsed; nothing is automated; no point-in-time recovery                                                   |
+| CI workflows                                            | BLOCKED WITH EXACT REASON          | Written, never executed: no runner was available                                                                     |
+| Object storage (S3)                                     | PARTIALLY IMPLEMENTED              | Shared directory only; no S3 adapter                                                                                 |
+
+Known product defect: when two or three editors press Enter at the same instant at the same place in a
+document, the clients converge but the result is not what they typed
+([docs/requirements-checklist.md](docs/requirements-checklist.md), row 17.3). The full list of limitations is
+[docs/known-limitations.md](docs/known-limitations.md).
+
+The first-run path of this README, with a `.env` in the repository root, was not run as written on the
+build host. The same files were run there under other project names and ports by the test suites, and
+under the project name `realtimedocs` by the deployment in `deploy/`. What was observed on that deployment is
+listed in [deploy/README.md](deploy/README.md); the Caddy and nginx examples of the deployment guide were never
+run. See [docs/deployment.md](docs/deployment.md#what-was-and-was-not-verified).

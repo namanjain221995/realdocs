@@ -206,7 +206,10 @@ be changed in your Cloudflare account:
   of its hostnames. Treat it like a password.
 - **Do not edit `POSTGRES_PASSWORD` after the first start.** The database stored it when
   it was created; changing the file later only makes the server fail to connect.
-  `SESSION_SECRET` may be replaced: nobody is signed out, open browser tabs reload once.
+  `SESSION_SECRET` may be replaced without signing anyone out (open browser tabs reload once). Since the
+  enterprise upgrade it also protects stored webhook secrets and stored idempotent API responses, which
+  become unreadable: re-create the webhook endpoints afterwards. See "Rotating SESSION_SECRET" in
+  `docs/deployment.md`. With several instances, change it on all of them at the same time.
 
 ### Replace the tunnel token
 

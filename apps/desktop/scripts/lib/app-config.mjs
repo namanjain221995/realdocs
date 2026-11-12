@@ -14,6 +14,19 @@ export const ARCHS = {
   darwin: ['x64', 'arm64', 'universal'],
 };
 
+/** Packager platform names (Node's `process.platform`) to the names used in public artifact names. */
+export const PUBLIC_PLATFORM = { win32: 'windows', darwin: 'macos', linux: 'linux' };
+
+/**
+ * `RealtimeDocs-<version>-<windows|macos|linux>-<x64|arm64|universal>.<ext>`: the one artifact name
+ * the release store, the publish script and the download page accept (docs/desktop-release.md).
+ */
+export function artifactFileName(version, platform, arch, ext) {
+  const publicPlatform = PUBLIC_PLATFORM[platform];
+  if (!publicPlatform) throw new Error(`unknown platform ${platform}`);
+  return `${APP_NAME}-${version}-${publicPlatform}-${arch}.${ext}`;
+}
+
 /**
  * Electron fuses for packaged builds, by fuse name (the names of
  * `FuseV1Options` in @electron/fuses). `true` = enabled, `false` = disabled.

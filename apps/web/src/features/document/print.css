@@ -42,10 +42,12 @@
 
 /* The sheet is always paper-coloured, whatever the app theme. */
 .print-sheet {
-  width: min(100% - 2 * var(--app-gutter), 210mm);
+  width: min(100% - 2 * var(--app-gutter), var(--print-page-width, 210mm));
   min-height: 60vh;
   margin: var(--rd-space-5) auto 0;
-  padding: clamp(20px, 6vw, 20mm) clamp(16px, 6vw, 18mm);
+  /* The document's margins; on a phone no more than 6vw so the text keeps room. */
+  padding: min(var(--print-mt, 20mm), 6vw) min(var(--print-mr, 18mm), 6vw)
+    min(var(--print-mb, 20mm), 6vw) min(var(--print-ml, 18mm), 6vw);
   border-radius: 2px;
   background: #ffffff;
   box-shadow: var(--rd-shadow-2);

@@ -7,7 +7,38 @@
  * writes nothing at all.
  */
 import type { Queryable } from '../db/pool';
-import { GenerationMismatchError, SequenceConflictError, type LogStore } from './durable-log';
+import { randomUUID } from 'node:crypto';
+import {
+  GenerationMismatchError,
+  SequenceConflictError,
+  type HistoryCheckpoint,
+  type HistorySegment,
+  type LogStore,
+} from './durable-log';
+
+const bytes = (data: Uint8Array): Buffer =>
+  Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+
+/** Columns of a history segment that travel as JSON (everything except the update bytes). */
+function segmentJson(segment: HistorySegment, transactionId: string): Record<string, unknown> {
+  return {
+    operationType: segment.operationType,
+    actorKind: segment.actor.kind,
+    userId: segment.actor.userId,
+    grantId: segment.actor.grantId,
+    name: segment.actor.name.slice(0, 200),
+    participantRole: segment.actor.participantRole,
+    sessionId: segment.actor.sessionId,
+    connectionId: segment.actor.connectionId,
+    clientId: segment.actor.clientId,
+    transactionId,
+    receivedAt: segment.receivedAt.toISOString(),
+    clientOccurredAt: segment.clientOccurredAt?.toISOString() ?? null,
+    contentSizeDelta: segment.contentSizeDelta,
+    summary: segment.summary,
+    attachmentIds: segment.attachmentIds,
+  };
+}
 
 interface AppendRow {
   generation: number | null;
@@ -32,10 +63,14 @@ export class PgLogStore implements LogStore {
     generation: number;
     expectedHeadSeq: number;
     update: Uint8Array;
+    history?: HistorySegment[];
   }): Promise<number> {
+    const history = input.history ?? [];
+    // One id for everything committed together, so rows of one commit can be found again.
+    const transactionId = randomUUID();
     const result = await this.db.query<AppendRow>(
       `WITH doc AS (
-         SELECT id, generation, head_seq
+         SELECT id, generation, head_seq, history_seq, schema_version
            FROM documents
           WHERE id = $1::uuid AND workspace_id = $2::uuid
             FOR UPDATE
@@ -45,9 +80,32 @@ export class PgLogStore implements LogStore {
            FROM doc
           WHERE doc.generation = $3::integer AND doc.head_seq = $4::bigint
          RETURNING seq
+       ), hist AS (
+         -- The attributed parts of the same commit: written or not written together with it.
+         INSERT INTO doc_history
+           (document_id, hseq, workspace_id, generation, seq, kind, operation_type,
+            actor_kind, actor_user_id, actor_grant_id, actor_name, participant_role,
+            session_id, connection_id, client_id, transaction_id,
+            server_received_at, client_occurred_at, content_size_delta, summary,
+            attachment_ids, schema_version, "update")
+         SELECT doc.id, doc.history_seq + m.ord, $2::uuid, doc.generation, ins.seq, 'update',
+                m.meta->>'operationType',
+                m.meta->>'actorKind', (m.meta->>'userId')::uuid, (m.meta->>'grantId')::uuid,
+                m.meta->>'name', m.meta->>'participantRole',
+                (m.meta->>'sessionId')::uuid, m.meta->>'connectionId',
+                (m.meta->>'clientId')::bigint, (m.meta->>'transactionId')::uuid,
+                (m.meta->>'receivedAt')::timestamptz, (m.meta->>'clientOccurredAt')::timestamptz,
+                (m.meta->>'contentSizeDelta')::integer, m.meta->'summary',
+                ARRAY(SELECT jsonb_array_elements_text(m.meta->'attachmentIds'))::uuid[],
+                doc.schema_version, b.data
+           FROM ins, doc,
+                jsonb_array_elements($6::jsonb) WITH ORDINALITY AS m(meta, ord)
+           JOIN unnest($7::bytea[]) WITH ORDINALITY AS b(data, ord) ON b.ord = m.ord
+         RETURNING hseq
        ), upd AS (
          UPDATE documents d
-            SET head_seq = ins.seq, content_updated_at = now()
+            SET head_seq = ins.seq, content_updated_at = now(),
+                history_seq = d.history_seq + $8::integer
            FROM ins
           WHERE d.id = $1::uuid AND d.workspace_id = $2::uuid
          RETURNING d.id
@@ -55,13 +113,17 @@ export class PgLogStore implements LogStore {
        SELECT (SELECT generation FROM doc) AS generation,
               (SELECT head_seq FROM doc) AS "headSeq",
               (SELECT seq FROM ins) AS seq,
-              (SELECT count(*) FROM upd) AS updated`,
+              (SELECT count(*) FROM upd) AS updated,
+              (SELECT count(*) FROM hist) AS recorded`,
       [
         input.documentId,
         this.workspaceId,
         input.generation,
         input.expectedHeadSeq,
-        Buffer.from(input.update.buffer, input.update.byteOffset, input.update.byteLength),
+        bytes(input.update),
+        JSON.stringify(history.map((segment) => segmentJson(segment, transactionId))),
+        history.map((segment) => bytes(segment.update)),
+        history.length,
       ],
     );
     const row = result.rows[0];
@@ -83,10 +145,11 @@ export class PgLogStore implements LogStore {
     generation: number;
     uptoSeq: number;
     state: Uint8Array;
+    checkpoint?: HistoryCheckpoint;
   }): Promise<void> {
     const result = await this.db.query<CompactRow>(
       `WITH doc AS (
-         SELECT id, generation, head_seq
+         SELECT id, generation, head_seq, history_seq, schema_version
            FROM documents
           WHERE id = $1::uuid AND workspace_id = $2::uuid
             FOR UPDATE
@@ -105,17 +168,37 @@ export class PgLogStore implements LogStore {
           WHERE u.document_id = up.document_id AND u.generation = $3::integer
             AND u.seq <= $4::bigint
          RETURNING u.seq
+       ), cp AS (
+         -- Optional history checkpoint: the same complete state, kept for good.
+         INSERT INTO doc_history
+           (document_id, hseq, workspace_id, generation, seq, kind, operation_type,
+            actor_kind, actor_name, transaction_id, server_received_at,
+            attachment_ids, schema_version, "update")
+         SELECT doc.id, doc.history_seq + 1, $2::uuid, $3::integer, $4::bigint, 'checkpoint',
+                $6::text, 'system', 'System', $8::uuid, clock_timestamp(),
+                $7::uuid[], doc.schema_version, $5::bytea
+           FROM doc JOIN up ON up.document_id = doc.id
+          WHERE $6::text IS NOT NULL
+         RETURNING hseq
+       ), bump AS (
+         UPDATE documents d SET history_seq = cp.hseq FROM cp
+          WHERE d.id = $1::uuid AND d.workspace_id = $2::uuid
+         RETURNING d.id
        )
        SELECT (SELECT generation FROM doc) AS generation,
               (SELECT head_seq FROM doc) AS "headSeq",
               (SELECT count(*) FROM up) AS stored,
-              (SELECT count(*) FROM del) AS deleted`,
+              (SELECT count(*) FROM del) AS deleted,
+              (SELECT count(*) FROM bump) AS checkpointed`,
       [
         input.documentId,
         this.workspaceId,
         input.generation,
         input.uptoSeq,
-        Buffer.from(input.state.buffer, input.state.byteOffset, input.state.byteLength),
+        bytes(input.state),
+        input.checkpoint?.operationType ?? null,
+        input.checkpoint?.attachmentIds ?? [],
+        randomUUID(),
       ],
     );
     const row = result.rows[0];
@@ -126,6 +209,69 @@ export class PgLogStore implements LogStore {
     if (Number(row.stored) !== 1) {
       throw new SequenceConflictError(
         `compaction boundary ${input.uptoSeq} does not match head_seq ${row.headSeq ?? 'none'}`,
+      );
+    }
+  }
+
+  async baseline(input: {
+    documentId: string;
+    generation: number;
+    headSeq: number;
+    state: Uint8Array;
+    attachmentIds: string[];
+  }): Promise<void> {
+    const result = await this.db.query<{
+      generation: number | null;
+      headSeq: number | string | null;
+    }>(
+      `WITH doc AS (
+         SELECT id, generation, head_seq, history_seq, schema_version
+           FROM documents
+          WHERE id = $1::uuid AND workspace_id = $2::uuid
+            FOR UPDATE
+       ), cp AS (
+         INSERT INTO doc_history
+           (document_id, hseq, workspace_id, generation, seq, kind, operation_type,
+            actor_kind, actor_name, transaction_id, server_received_at,
+            attachment_ids, schema_version, "update")
+         SELECT doc.id, doc.history_seq + 1, $2::uuid, doc.generation, doc.head_seq, 'checkpoint',
+                'baseline', 'system', 'System', $7::uuid, clock_timestamp(),
+                $6::uuid[], doc.schema_version, $5::bytea
+           FROM doc
+          WHERE doc.generation = $3::integer AND doc.head_seq = $4::bigint
+            -- Nothing to do when the history already reaches the head of the log
+            -- (another instance recorded the starting state first).
+            AND NOT EXISTS (
+              SELECT 1 FROM doc_history h
+               WHERE h.document_id = doc.id AND h.generation = doc.generation
+                 AND h.seq >= doc.head_seq)
+         RETURNING hseq
+       ), bump AS (
+         UPDATE documents d SET history_seq = cp.hseq FROM cp
+          WHERE d.id = $1::uuid AND d.workspace_id = $2::uuid
+         RETURNING d.id
+       )
+       SELECT (SELECT generation FROM doc) AS generation,
+              (SELECT head_seq FROM doc) AS "headSeq",
+              (SELECT count(*) FROM bump) AS recorded`,
+      [
+        input.documentId,
+        this.workspaceId,
+        input.generation,
+        input.headSeq,
+        bytes(input.state),
+        input.attachmentIds,
+        randomUUID(),
+      ],
+    );
+    const row = result.rows[0];
+    if (!row || row.generation === null) {
+      throw new GenerationMismatchError('document no longer exists');
+    }
+    if (Number(row.generation) !== input.generation) throw new GenerationMismatchError();
+    if (Number(row.headSeq) !== input.headSeq) {
+      throw new SequenceConflictError(
+        `baseline expected head_seq ${input.headSeq}, found ${row.headSeq ?? 'none'}`,
       );
     }
   }

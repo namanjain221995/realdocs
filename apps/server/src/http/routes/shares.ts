@@ -29,6 +29,8 @@ import type { Queryable } from '../../db/pool';
 import { GRANT_COLUMNS, type GrantRow } from '../../db/rows';
 import { getDocument } from '../../documents/store';
 import { errors } from '../../errors';
+import { findGrantParticipant } from '../../service/participants';
+import { isClosedStatus } from '../../service/state-machine';
 import { guestName } from '../../util/identity';
 import type { RouteDeps } from '../app';
 import { cookieOptions, documentAccess, requireManage, shareCookiePath } from '../auth';
@@ -301,7 +303,11 @@ export function registerShareRoutes(app: FastifyInstance, { ctx, limits }: Route
     async (request, reply): Promise<ShareExchangeResponse> => {
       const body = parseInput(ShareExchangeRequest, request.body);
       await limits.shareExchangeIp.assertAllowed(request, request.ip);
-      await limits.shareExchangeGrant.assertAllowed(request, body.grantId);
+      // Keyed on the link and the address: wrong secrets sent from one address
+      // must not block the link for everyone else. (The secret is 256 random
+      // bits, so there is nothing to guess across addresses.)
+      const grantFromHere = `${body.grantId}|${request.ip}`;
+      await limits.shareExchangeGrant.assertAllowed(request, grantFromHere);
 
       const found = await db.query<GrantRow>(
         `SELECT ${GRANT_COLUMNS} FROM share_grants g WHERE g.id = $1 AND g.workspace_id = $2`,
@@ -312,7 +318,7 @@ export function registerShareRoutes(app: FastifyInstance, { ctx, limits }: Route
       const matches = safeEqual(sha256(body.secret), grant?.secretHash ?? sha256(''));
       if (!grant || !matches) {
         await limits.shareExchangeIp.recordFailure(request, request.ip);
-        await limits.shareExchangeGrant.recordFailure(request, body.grantId);
+        await limits.shareExchangeGrant.recordFailure(request, grantFromHere);
         if (grant) {
           await tryAudit(db, ctx.logger, {
             workspaceId: workspace.id,
@@ -327,8 +333,19 @@ export function registerShareRoutes(app: FastifyInstance, { ctx, limits }: Route
       }
       // Only someone holding the secret learns the state of the link.
       const state = grantState(grant);
+      const participant = await findGrantParticipant(db, grant.id);
+      if (
+        participant &&
+        isClosedStatus(participant.sessionStatus) &&
+        (state === 'revoked' || participant.role === 'candidate')
+      ) {
+        throw errors.sessionClosed();
+      }
       if (state === 'revoked') throw errors.shareRevoked();
       if (state === 'expired') throw errors.shareExpired();
+      if (body.mode === 'bearer' && participant?.role === 'candidate') {
+        throw errors.forbidden('The desktop app is not available for your link.');
+      }
       const document = await getDocument(db, workspace.id, grant.documentId);
       if (!document) throw errors.shareInvalid();
       if (document.status === 'trashed') throw errors.documentTrashed();
@@ -342,7 +359,7 @@ export function registerShareRoutes(app: FastifyInstance, { ctx, limits }: Route
           kind: body.mode === 'bearer' ? 'desktop' : 'share',
           shareGrantId: grant.id,
           documentId: document.id,
-          guestName: guestName(),
+          guestName: participant?.name ?? guestName(),
           notAfter: grant.expiresAt,
         });
         await tx.query('UPDATE share_grants SET last_used_at = now() WHERE id = $1', [grant.id]);

@@ -1,0 +1,151 @@
+/* Download picker, /download and /releases/:version. Only --rd-* tokens, so both themes work. */
+.dl-picker {
+  margin-top: var(--rd-space-5);
+  display: grid;
+  gap: var(--rd-space-3);
+}
+
+.dl-version {
+  font-weight: 650;
+}
+
+.dl-primary,
+.dl-unsupported,
+.dl-unavailable {
+  display: grid;
+  gap: var(--rd-space-3);
+  max-width: 72ch;
+  padding: var(--rd-space-4);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-lg);
+  background: var(--rd-bg);
+}
+
+.dl-unavailable,
+.dl-unsupported {
+  border-left: 3px solid var(--rd-warning);
+}
+
+.dl-primary > h2,
+.dl-primary > h3,
+.dl-unsupported > h2,
+.dl-unsupported > h3,
+.dl-unavailable > h2,
+.dl-unavailable > h3 {
+  margin: 0;
+  font-size: var(--rd-text-lg);
+}
+
+.dl-primary a[data-testid='download-link'] {
+  justify-self: start;
+}
+
+.dl-facts {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px var(--rd-space-4);
+  margin: 0;
+}
+
+.dl-facts dt {
+  color: var(--rd-text-muted);
+}
+
+.dl-facts dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.dl-hint {
+  color: var(--rd-text-muted);
+  font-size: var(--rd-text-sm);
+  line-height: 1.5;
+}
+
+.dl-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+  margin-bottom: var(--rd-space-3);
+}
+
+.dl-builds {
+  display: grid;
+  gap: var(--rd-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dl-build {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-3);
+  padding: var(--rd-space-3) var(--rd-space-4);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-bg);
+}
+
+.dl-hash {
+  margin-top: 4px;
+  font-size: var(--rd-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.dl-page__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rd-space-3) var(--rd-space-4);
+  border-bottom: 1px solid var(--rd-border);
+}
+
+.dl-page__main {
+  box-sizing: border-box;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: var(--rd-space-6) var(--rd-space-4);
+  display: grid;
+  gap: var(--rd-space-4);
+}
+
+.dl-page__main h1,
+.dl-page__main h2 {
+  margin: 0;
+}
+
+.dl-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dl-table th,
+.dl-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rd-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.dl-history {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.dl-notes {
+  line-height: 1.6;
+  max-width: 72ch;
+}
+
+.dl-empty {
+  margin-top: var(--rd-space-4);
+}
+
+@media (max-width: 600px) {
+  .dl-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

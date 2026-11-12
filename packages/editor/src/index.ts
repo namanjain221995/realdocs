@@ -59,3 +59,27 @@ export { describeUploadError, formatBytes } from './uploads/limits';
 // ── Schema conveniences (the authoritative module is `./schema`) ────────────
 export { sanitizeLinkHref } from './schema';
 export type { DocJSON } from './schema';
+export {
+  describeUnsupportedContent,
+  scanUnsupportedContent,
+  type UnsupportedContent,
+} from './editor/unsupported';
+export {
+  UPLOAD_BASE_DELAY_MS,
+  UPLOAD_MAX_ATTEMPTS,
+  UPLOAD_MAX_DELAY_MS,
+  uploadBackoffMs,
+} from './uploads/manager';
+
+// ── Page settings (shared Yjs map; see docs/notes/editor.md) ────────────────
+export { PageSetupDialog } from './react/PageSetupDialog';
+export type { PageSetupDialogProps } from './react/PageSetupDialog';
+export { usePageSettings } from './page/usePageSettings';
+export type { PageSettingsControls } from './page/usePageSettings';
+export {
+  createPageSettingsStore,
+  readPageSettings,
+  resetPageSettings,
+  setPageSettings,
+} from './page/store';
+export { pageStyleVars } from './page/css';

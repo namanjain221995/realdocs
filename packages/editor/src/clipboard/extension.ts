@@ -27,6 +27,8 @@ export interface ClipboardOptions {
   openLink: (href: string) => void;
   /** A link was clicked while editing (opens the link editor instead of navigating). */
   onLinkActivated: (anchor: HTMLAnchorElement) => void;
+  /** A paste or an external drop is about to be applied (label for the version history). */
+  onPasteStart: () => void;
 }
 
 /** True when the HTML flavour is nothing but one or more images (no text). */
@@ -62,6 +64,7 @@ export const Clipboard = Extension.create<ClipboardOptions>({
       onReport: () => {},
       openLink: () => {},
       onLinkActivated: () => {},
+      onPasteStart: () => {},
     };
   },
 
@@ -150,6 +153,8 @@ export const Clipboard = Extension.create<ClipboardOptions>({
           },
 
           handlePaste(view, event, slice) {
+            // Before the paste is applied, so the label precedes the change it describes.
+            if (options.canEdit()) options.onPasteStart();
             const data = event.clipboardData;
             const files = data ? [...data.files] : [];
             const html = data?.getData('text/html') ?? '';
@@ -185,6 +190,7 @@ export const Clipboard = Extension.create<ClipboardOptions>({
               pending = null;
               return false;
             }
+            if (options.canEdit()) options.onPasteStart();
             const files = [...(event.dataTransfer?.files ?? [])];
             if (files.length > 0 && options.uploads) {
               pending = null;

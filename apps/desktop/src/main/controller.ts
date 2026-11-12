@@ -19,12 +19,14 @@ import {
   powerMonitor,
   screen,
   session,
+  shell,
   type IpcMainEvent,
   type IpcMainInvokeEvent,
   type MessageBoxOptions,
   type SaveDialogOptions,
   type Session,
 } from 'electron';
+import { COLLAB_PROTOCOL_VERSION, DOCUMENT_SCHEMA_VERSION } from '@realtimedocs/contracts';
 import type { PrivacyView } from '../shared/bridge';
 import {
   NO_VERIFICATION,
@@ -100,6 +102,7 @@ import {
   safeFileName,
 } from './asset-download';
 import { RateLimiter } from './rate-limit';
+import { UpdateService } from './update-service';
 import { createSafeStorageAdapter } from './safe-storage-adapter';
 import { decideExternalOpen } from './navigation-policy';
 import { hardenSession, lockDownUnusedSession, openExternalSafely } from './session-security';
@@ -146,6 +149,7 @@ export class AppController implements MainApi {
   private readonly preferences: PreferencesStore;
   private readonly credentials: CredentialStore;
   private readonly connection: ConnectionController;
+  private readonly updates: UpdateService;
   private appSession!: Session;
   private windows!: WindowManager;
   private shortcuts!: ShortcutManager;
@@ -190,10 +194,37 @@ export class AppController implements MainApi {
       encryption: options.encryption ?? createSafeStorageAdapter(process.platform),
       logger: this.logger,
     });
+    this.updates = new UpdateService({
+      fetch: (url, init) => this.mainFetch(url, init),
+      getServerOrigin: () => this.connection.serverOrigin,
+      appVersion: app.getVersion(),
+      platform:
+        process.platform === 'win32'
+          ? 'windows'
+          : process.platform === 'darwin'
+            ? 'macos'
+            : 'linux',
+      arch: process.arch === 'arm64' ? 'arm64' : 'x64',
+      schemaVersion: DOCUMENT_SCHEMA_VERSION,
+      protocolVersion: COLLAB_PROTOCOL_VERSION,
+      stateFile: path.join(this.paths.userData, 'update-state.json'),
+      downloadsDir: () => {
+        try {
+          return app.getPath('downloads');
+        } catch {
+          return app.getPath('temp');
+        }
+      },
+      showItemInFolder: (file) => shell.showItemInFolder(file),
+      openPath: (file) => shell.openPath(file),
+      onChange: () => this.publish(),
+      logger: this.logger,
+    });
     this.connection = new ConnectionController({
       // The network session is created in `start()`; the service is bound lazily.
       service: new ConnectionService({
         fetch: (url, init) => this.mainFetch(url, init),
+        appVersion: app.getVersion(),
       }),
       credentials: this.credentials,
       preferences: this.preferences,
@@ -322,6 +353,8 @@ export class AppController implements MainApi {
     void this.connection.start().catch(() => {
       this.logger.error('connection.start_failed', {});
     });
+    // First check shortly after start, then every 6 hours; never installs anything by itself.
+    this.updates.start();
   }
 
   /**
@@ -342,6 +375,7 @@ export class AppController implements MainApi {
     if (this.shutDown) return;
     this.quitting = true;
     try {
+      this.updates.stop();
       this.shortcuts?.unregisterAll();
       globalShortcut.unregisterAll();
       this.tray?.destroy();
@@ -641,6 +675,7 @@ export class AppController implements MainApi {
       },
       preferencesRepaired:
         this.preferences.status === 'repaired' || this.preferences.status === 'corrupt_reset',
+      updates: this.updates.snapshot(),
     };
   }
 
@@ -1192,12 +1227,33 @@ export class AppController implements MainApi {
 
   // ── MainApi: connection ──────────────────────────────────────────────────
 
-  setServer(origin: string): Promise<void> {
-    return this.connection.setServer(origin);
+  async setServer(origin: string): Promise<void> {
+    await this.connection.setServer(origin);
+    // A new server may publish updates (or require one): ask it now rather than in 6 hours.
+    void this.updates.check();
   }
 
   checkServer(): Promise<void> {
     return this.connection.checkServer();
+  }
+
+  async checkForUpdates(): Promise<void> {
+    await this.updates.check();
+  }
+
+  async downloadUpdate(): Promise<void> {
+    await this.updates.download();
+  }
+
+  async deferUpdate(): Promise<void> {
+    if (!(await this.updates.defer())) {
+      throw new IpcError('update_required', 'This update is required and cannot be postponed.');
+    }
+  }
+
+  async openUpdate(action: 'show-in-folder' | 'open-installer'): Promise<void> {
+    const result = await this.updates.reveal(action);
+    if (!result.ok) throw new IpcError('update_unavailable', result.message ?? 'Nothing to open.');
   }
 
   setConnectionOptions(options: {

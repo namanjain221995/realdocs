@@ -45,6 +45,7 @@ import { useRouterLink } from '../../components/links';
 import { RelativeTime } from '../../components/RelativeTime';
 import { GrantBadge, RoleBadge } from '../../components/RoleBadge';
 import { PanelSection, SidePanel } from '../../components/SidePanel';
+import { nameWithRole } from '../../lib/accessCapabilities';
 import { api } from '../../lib/api';
 import { errorMessage, requestIdOf } from '../../lib/errors';
 import {
@@ -907,7 +908,9 @@ export function SharingPanel({ document, onClose }: SharingPanelProps) {
                       aria-hidden="true"
                     />
                     <div className="app-row__text">
-                      <span className="app-row__title">{participant.name}</span>
+                      <span className="app-row__title">
+                        {nameWithRole(participant.name, participant.roleLabel)}
+                      </span>
                       <span className="app-row__meta">
                         {participant.kind === 'guest'
                           ? 'Guest through a share link'

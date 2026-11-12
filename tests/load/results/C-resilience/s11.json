@@ -1,0 +1,272 @@
+{
+ "scenario": "s11",
+ "title": "11. Redis restart during typing",
+ "topology": "C",
+ "startedAt": "2026-11-12T03:05:32.792Z",
+ "config": {
+  "docs": 100,
+  "clients": 400,
+  "typingRate": 1
+ },
+ "phases": [
+  {
+   "name": "Redis restarted during typing",
+   "durationS": 50.554,
+   "latency": {
+    "u": {
+     "ack": {
+      "n": 20228,
+      "min": 1.669677734375,
+      "p50": 3.405517578125,
+      "p95": 4.967529296875,
+      "p99": 6.621337890625,
+      "mean": 3.538353661810053,
+      "max": 39.55078125
+     },
+     "remote": {
+      "n": 20228,
+      "min": 0.123046875,
+      "p50": 0.65380859375,
+      "p95": 1.170166015625,
+      "p99": 1.66015625,
+      "mean": 0.7112320788132477,
+      "max": 34.6083984375
+     }
+    },
+    "ALL": {
+     "ack": {
+      "n": 20228,
+      "min": 1.669677734375,
+      "p50": 3.405517578125,
+      "p95": 4.967529296875,
+      "p99": 6.621337890625,
+      "mean": 3.538353661810053,
+      "max": 39.55078125
+     },
+     "remote": {
+      "n": 20228,
+      "min": 0.123046875,
+      "p50": 0.65380859375,
+      "p95": 1.170166015625,
+      "p99": 1.66015625,
+      "mean": 0.7112320788132477,
+      "max": 34.6083984375
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "edits": 20229
+    }
+   },
+   "errors": {},
+   "closeCodes": {},
+   "generator": [
+    {
+     "pid": 1275883,
+     "cpuPct": 5.00568882479615,
+     "cpuSecondsTotal": 16.94236,
+     "rssMb": 238.32421875,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 12.926975,
+     "clients": 100
+    },
+    {
+     "pid": 1275926,
+     "cpuPct": 5.250031885924362,
+     "cpuSecondsTotal": 17.403414,
+     "rssMb": 250.44921875,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 12.787711,
+     "clients": 100
+    },
+    {
+     "pid": 1275936,
+     "cpuPct": 5.221682047395873,
+     "cpuSecondsTotal": 17.377518,
+     "rssMb": 233.75,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 13.729791,
+     "clients": 100
+    },
+    {
+     "pid": 1276029,
+     "cpuPct": 5.266090906214036,
+     "cpuSecondsTotal": 17.447828,
+     "rssMb": 239.38671875,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 13.115391,
+     "clients": 100
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 12,
+     "upSamples": 12,
+     "cpuPctAvg": 16.56904968291164,
+     "cpuPctMax": 20.879272436538066,
+     "rssMbMax": 443.0078125,
+     "rssMbEnd": 280.0546875,
+     "heapMbMax": 244.90887451171875,
+     "wsMax": 204,
+     "wsForwardedMax": 71,
+     "docsLoadedMax": 51,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.086206999999998,
+     "queueBytesMax": 56,
+     "redisPingMaxMs": 0.7652019999804907,
+     "yjsUpdates": 10316,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 10314,
+       "meanMs": 2.763858866977059,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      },
+      "compact": {
+       "count": 51,
+       "meanMs": 2.957177647057899,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "forwarded": 0,
+      "accepted": 0
+     }
+    },
+    {
+     "port": 4451,
+     "samples": 12,
+     "upSamples": 12,
+     "cpuPctAvg": 15.369433293147678,
+     "cpuPctMax": 18.727129148340666,
+     "rssMbMax": 325.56640625,
+     "rssMbEnd": 325.56640625,
+     "heapMbMax": 171.78482818603516,
+     "wsMax": 196,
+     "wsForwardedMax": 75,
+     "docsLoadedMax": 49,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 6,
+     "poolWaitingAvg": 0.5,
+     "lagP99MaxMs": 21.446655,
+     "queueBytesMax": 54,
+     "redisPingMaxMs": 0.9476180000056047,
+     "yjsUpdates": 9913,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 9913,
+       "meanMs": 2.7594290607283303,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      },
+      "compact": {
+       "count": 49,
+       "meanMs": 3.041348346939063,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 0,
+      "forwarded": 0
+     }
+    }
+   ],
+   "hostLoadMax": 6.59,
+   "extra": {
+    "dockerRestartMs": 381,
+    "readinessProbes": 398,
+    "readinessNon200": 2,
+    "readinessStatusCounts": {
+     "4450:503": 1,
+     "4451:503": 1
+    },
+    "notReadyWindowMs": 0,
+    "firstNotReadyAfterRestartMs": 384
+   }
+  }
+ ],
+ "results": {
+  "quiesce": {
+   "ok": true,
+   "unacked": 0,
+   "waitedMs": 0
+  },
+  "verification": {
+   "docs": 100,
+   "checked": 32240,
+   "missing": 0,
+   "missingSamples": [],
+   "unackedAtEnd": 0,
+   "exportErrors": 0
+  }
+ },
+ "notes": [
+  "Host load average (1 min) peaked at 6.6 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T03:07:13.703Z"
+}

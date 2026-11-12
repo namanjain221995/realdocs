@@ -30,9 +30,11 @@ import { RouterLinkButton } from '../../components/links';
 import { RoleBadge } from '../../components/RoleBadge';
 import { api } from '../../lib/api';
 import { useMediaQuery } from '../../lib/hooks';
+import { accessFlags } from '../../lib/accessCapabilities';
 import { documentPrintPath } from '../../lib/navigation';
 import type { DocumentCapabilities } from '../../lib/permissions';
 import { useLimits } from '../../lib/useLimits';
+import { HistoryHeaderLink, HistoryMenuItem } from '../history/HistoryLinks';
 import { DisplayPreferencesForm } from './DisplayPreferences';
 
 export type WorkspacePanel = 'share' | 'snapshots';
@@ -198,6 +200,8 @@ export interface DocumentHeaderProps {
   onPanel: (panel: WorkspacePanel | null) => void;
   onRename: (title: string) => void;
   onOpenInDesktop: () => void;
+  /** Opens "Page setup" (shown to people who can edit). */
+  onPageSetup?: () => void;
   onLeave: () => void;
   leaving: boolean;
   /** The editor portals its connection and save indicator into this element. */
@@ -215,6 +219,7 @@ export function DocumentHeader({
   onPanel,
   onRename,
   onOpenInDesktop,
+  onPageSetup,
   onLeave,
   leaving,
   statusSlotRef,
@@ -224,6 +229,9 @@ export function DocumentHeader({
   const iconsOnly = useMediaQuery('(max-width: 1179px)');
   const [displayOpen, setDisplayOpen] = useState(false);
   const toggle = (which: WorkspacePanel): void => onPanel(panel === which ? null : which);
+  const flags = accessFlags(document.access);
+  const showHistory = capabilities.canManage && flags.canViewHistory;
+  const showShare = capabilities.canManage && flags.canShare;
 
   const identity = (
     <>
@@ -264,7 +272,7 @@ export function DocumentHeader({
           {back}
           {title}
           <div className="doc-actions">
-            {capabilities.canManage ? (
+            {showShare ? (
               <IconButton
                 variant="solid"
                 label="Share"
@@ -283,7 +291,7 @@ export function DocumentHeader({
                 </IconButton>
               }
             >
-              {capabilities.canManage ? (
+              {showHistory ? (
                 <MenuItem
                   icon={<History />}
                   onSelect={() => toggle('snapshots')}
@@ -292,13 +300,21 @@ export function DocumentHeader({
                   Snapshots
                 </MenuItem>
               ) : null}
-              <MenuItem
-                icon={<MonitorUp />}
-                onSelect={onOpenInDesktop}
-                data-testid="open-in-desktop"
-              >
-                Open in Desktop
-              </MenuItem>
+              {capabilities.canManage ? <HistoryMenuItem documentId={document.id} /> : null}
+              {flags.canUseDesktop ? (
+                <MenuItem
+                  icon={<MonitorUp />}
+                  onSelect={onOpenInDesktop}
+                  data-testid="open-in-desktop"
+                >
+                  Open in Desktop
+                </MenuItem>
+              ) : null}
+              {capabilities.canEdit && onPageSetup ? (
+                <MenuItem icon={<FileText />} onSelect={onPageSetup} data-testid="open-page-setup">
+                  Page setup
+                </MenuItem>
+              ) : null}
               <MenuItem
                 icon={<ALargeSmall />}
                 onSelect={() => setDisplayOpen(true)}
@@ -306,8 +322,12 @@ export function DocumentHeader({
               >
                 Display preferences
               </MenuItem>
-              <MenuSeparator />
-              <ExportItems documentId={document.id} />
+              {flags.canExport ? (
+                <>
+                  <MenuSeparator />
+                  <ExportItems documentId={document.id} />
+                </>
+              ) : null}
               {capabilities.canLeave ? (
                 <>
                   <MenuSeparator />
@@ -353,17 +373,19 @@ export function DocumentHeader({
         <div className="doc-header__identity">{identity}</div>
         <div className="doc-header__live">{slots}</div>
         <div className="doc-actions">
-          {capabilities.canManage ? (
+          {showShare ? (
+            <Button
+              variant="primary"
+              iconLeft={<UserPlus />}
+              pressed={panel === 'share'}
+              onClick={() => toggle('share')}
+              data-testid="open-sharing"
+            >
+              Share
+            </Button>
+          ) : null}
+          {showHistory ? (
             <>
-              <Button
-                variant="primary"
-                iconLeft={<UserPlus />}
-                pressed={panel === 'share'}
-                onClick={() => toggle('share')}
-                data-testid="open-sharing"
-              >
-                Share
-              </Button>
               {iconsOnly ? (
                 <IconButton
                   variant="solid"
@@ -384,25 +406,44 @@ export function DocumentHeader({
                   Snapshots
                 </Button>
               )}
+              <HistoryHeaderLink documentId={document.id} iconsOnly={iconsOnly} />
             </>
           ) : null}
-          <DropdownMenu
-            placement="bottom-end"
-            trigger={
-              iconsOnly ? (
-                <IconButton variant="solid" label="Export" data-testid="open-export">
-                  <Download />
-                </IconButton>
-              ) : (
-                <Button iconLeft={<Download />} data-testid="open-export">
-                  Export
-                </Button>
-              )
-            }
-          >
-            <ExportItems documentId={document.id} />
-          </DropdownMenu>
-          {iconsOnly ? (
+          {capabilities.canEdit && onPageSetup ? (
+            iconsOnly ? (
+              <IconButton
+                variant="solid"
+                label="Page setup"
+                onClick={onPageSetup}
+                data-testid="open-page-setup"
+              >
+                <FileText />
+              </IconButton>
+            ) : (
+              <Button iconLeft={<FileText />} onClick={onPageSetup} data-testid="open-page-setup">
+                Page setup
+              </Button>
+            )
+          ) : null}
+          {flags.canExport ? (
+            <DropdownMenu
+              placement="bottom-end"
+              trigger={
+                iconsOnly ? (
+                  <IconButton variant="solid" label="Export" data-testid="open-export">
+                    <Download />
+                  </IconButton>
+                ) : (
+                  <Button iconLeft={<Download />} data-testid="open-export">
+                    Export
+                  </Button>
+                )
+              }
+            >
+              <ExportItems documentId={document.id} />
+            </DropdownMenu>
+          ) : null}
+          {!flags.canUseDesktop ? null : iconsOnly ? (
             <IconButton
               variant="solid"
               label="Open in Desktop"

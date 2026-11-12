@@ -10,6 +10,8 @@ import type { DocumentListView } from '@realtimedocs/contracts';
  */
 export const queryKeys = {
   meta: ['meta'] as const,
+  desktopRelease: ['desktop-release'] as const,
+  adminReleases: ['admin-releases'] as const,
   documentLists: ['documents'] as const,
   documentList: (view: DocumentListView, search: string) => ['documents', view, search] as const,
   document: (documentId: string) => ['document', documentId] as const,
@@ -20,5 +22,12 @@ export const queryKeys = {
   users: ['users'] as const,
   invitations: ['invitations'] as const,
   audit: ['audit'] as const,
+  apiKeys: ['api-keys'] as const,
+  interviewSessions: (filters: unknown) => ['interview-sessions', 'list', filters] as const,
+  interviewSession: (sessionId: string) => ['interview-sessions', 'one', sessionId] as const,
+  interviewSessionAudit: (sessionId: string) => ['interview-sessions', 'audit', sessionId] as const,
+  webhooks: ['webhooks'] as const,
+  webhookDeliveries: (endpointId: string, status: string) =>
+    ['webhooks', 'deliveries', endpointId, status] as const,
   recoveryDrafts: (accountId: string) => ['recovery-drafts', accountId] as const,
 };

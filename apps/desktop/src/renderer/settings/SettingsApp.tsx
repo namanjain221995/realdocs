@@ -1,5 +1,13 @@
 import { Banner, EmptyState, Spinner, TabPanel, Tabs, useToast } from '@realtimedocs/ui';
-import { Activity, ClipboardCheck, Keyboard, Palette, PlugZap, ShieldCheck } from 'lucide-react';
+import {
+  Activity,
+  ClipboardCheck,
+  Download,
+  Keyboard,
+  Palette,
+  PlugZap,
+  ShieldCheck,
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { SETTINGS_TABS, type AppState, type SettingsTab } from '../../shared/state';
 import { attempt, desktop, onAppEvent, useAppState } from '../shared/desktop';
@@ -9,6 +17,7 @@ import { ConnectionTab } from './ConnectionTab';
 import { DiagnosticsTab } from './DiagnosticsTab';
 import { PrivacyTab } from './PrivacyTab';
 import { PrivacyTestCenterTab } from './PrivacyTestCenterTab';
+import { UpdatesTab } from './UpdatesTab';
 
 export type RunAction = (
   action: Promise<unknown> | undefined,
@@ -26,6 +35,7 @@ const TAB_ITEMS = [
   { id: 'behaviour', label: 'Behaviour & Shortcuts', icon: <Keyboard /> },
   { id: 'privacy', label: 'Privacy & Capture', icon: <ShieldCheck /> },
   { id: 'privacy-test-center', label: 'Privacy Test Center', icon: <ClipboardCheck /> },
+  { id: 'updates', label: 'Updates', icon: <Download /> },
   { id: 'diagnostics', label: 'Diagnostics & About', icon: <Activity /> },
 ] as const satisfies readonly { id: SettingsTab; label: string; icon: React.ReactNode }[];
 
@@ -127,6 +137,9 @@ export function SettingsApp() {
         </TabPanel>
         <TabPanel id="privacy-test-center" className="rds-panel">
           <PrivacyTestCenterTab {...props} />
+        </TabPanel>
+        <TabPanel id="updates" className="rds-panel">
+          <UpdatesTab {...props} />
         </TabPanel>
         <TabPanel id="diagnostics" className="rds-panel">
           <DiagnosticsTab {...props} />

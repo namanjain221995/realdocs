@@ -1,5 +1,5 @@
 import './print.css';
-import { isUuid } from '@realtimedocs/contracts';
+import { isUuid, type PageSettings } from '@realtimedocs/contracts';
 import { Button, Skeleton } from '@realtimedocs/ui';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Printer } from 'lucide-react';
@@ -12,6 +12,7 @@ import { useDocumentTitle, useOnlineStatus } from '../../lib/hooks';
 import { documentPath } from '../../lib/navigation';
 import { queryKeys } from '../../lib/queryKeys';
 import { DocumentError } from './DocumentError';
+import { printSheetStyle, usePrintPageRule } from './printPage';
 
 const PrintMount = lazy(async () => ({ default: (await import('./PrintMount')).PrintMount }));
 
@@ -36,6 +37,8 @@ export function PrintPage() {
   const helpId = useId();
   const [ready, setReady] = useState(false);
   const onReady = useCallback(() => setReady(true), []);
+  const [pageSettings, setPageSettings] = useState<PageSettings | null>(null);
+  usePrintPageRule(pageSettings);
 
   const query = useQuery({
     queryKey: queryKeys.document(documentId),
@@ -108,7 +111,13 @@ export function PrintPage() {
         </p>
       </section>
 
-      <main id="main" tabIndex={-1} className="print-sheet" data-theme="light">
+      <main
+        id="main"
+        tabIndex={-1}
+        className="print-sheet"
+        data-theme="light"
+        style={printSheetStyle(pageSettings)}
+      >
         {title === undefined ? (
           <Skeleton width="60%" height={30} style={{ marginBottom: 28 }} />
         ) : (
@@ -116,7 +125,11 @@ export function PrintPage() {
         )}
         {query.data ? (
           <Suspense fallback={<SheetSkeleton />}>
-            <PrintMount documentId={documentId} onReady={onReady} />
+            <PrintMount
+              documentId={documentId}
+              onReady={onReady}
+              onPageSettings={setPageSettings}
+            />
           </Suspense>
         ) : (
           <SheetSkeleton />

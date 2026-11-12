@@ -237,15 +237,15 @@ describe('backoff', () => {
     const high = () => 1;
     expect(backoffDelay(1, RECONNECT_BACKOFF, low)).toBe(200);
     expect(backoffDelay(1, RECONNECT_BACKOFF, high)).toBe(400);
-    expect(backoffDelay(2, RECONNECT_BACKOFF, high)).toBe(800);
-    expect(backoffDelay(4, RECONNECT_BACKOFF, high)).toBe(3200);
+    expect(backoffDelay(2, RECONNECT_BACKOFF, high)).toBe(640);
+    expect(backoffDelay(4, RECONNECT_BACKOFF, high)).toBe(1638);
     expect(backoffDelay(50, RECONNECT_BACKOFF, high)).toBe(30_000);
     expect(backoffDelay(50, RECONNECT_BACKOFF, low)).toBe(15_000);
     const samples = new Set(Array.from({ length: 50 }, () => backoffDelay(3, RECONNECT_BACKOFF)));
     expect(samples.size).toBeGreaterThan(5);
     for (const sample of samples) {
-      expect(sample).toBeGreaterThanOrEqual(800);
-      expect(sample).toBeLessThanOrEqual(1600);
+      expect(sample).toBeGreaterThanOrEqual(512);
+      expect(sample).toBeLessThanOrEqual(1024);
     }
   });
 });

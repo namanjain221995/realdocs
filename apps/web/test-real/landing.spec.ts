@@ -11,7 +11,7 @@ test('the landing page loads for a signed-out visitor with no CSP violation', as
   await expect(
     page.getByRole('heading', {
       level: 1,
-      name: 'Private presenter notes with OS-supported screen-share exclusion.',
+      name: 'Collaborative documents with a private presenter panel.',
     }),
   ).toBeVisible();
   // The server's list of builds has been read before we look at the page's problems
@@ -23,8 +23,8 @@ test('the landing page loads for a signed-out visitor with no CSP violation', as
   // Sign in is reachable, and the guides open from the footer.
   await page.getByTestId('hero-sign-in').click();
   await expect(page).toHaveURL('/login');
-  await page.goto('/docs/security');
+  await page.goto('/guides/security');
   await expect(page.getByTestId('docs-article')).toHaveAttribute('data-doc', 'security');
-  await page.goto('/docs/unknown-guide');
+  await page.goto('/guides/unknown-guide');
   await expect(page.getByTestId('not-found')).toBeVisible();
 });

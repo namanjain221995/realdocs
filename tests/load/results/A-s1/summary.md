@@ -1,0 +1,82 @@
+# Load test summary (2026-11-12T02:32:40.487Z, topology A)
+
+## 1. connect-1000: concurrent authenticated sockets (topology A) [ok]
+
+Started 2026-11-12T02:29:37.768Z, ended 2026-11-12T02:32:38.442Z.
+
+```json
+{
+ "docs": 250,
+ "perDoc": 4,
+ "users": 1000,
+ "rampS": 60,
+ "holdS": 120,
+ "awareness": true,
+ "autoReconnectDuringTest": false
+}
+```
+
+#### ramp (60 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| ticketMs | 1000 | 3.2 | 4.5 | 6.3 | 15.4 | 3.3 |
+| connect | 1000 | 30.0 | 42.5 | 53.4 | 113.1 | 31.7 |
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 14.6 | 27.1 | 356 | 157 | 1,000 | 0 | 250 | 10 / 10 | 0 (0.0) | 27.9 | 0 | 0.0 | 0 |
+
+Server :4450 persist append: n=949 mean 3.0 ms, p95 <= 5.0 ms, p99 <= 5.0 ms; yjs updates 949; HTTP /api (server-side) n=1,898 mean 4.1 ms, p95 <= 25.0 ms; ws outcomes accepted=949
+
+Generator (8 worker processes): CPU % per worker 2/2/2/2/2/2/2/2; event-loop lag p99 max 10.7 ms (max 35.4 ms); host load1 max 4.3
+
+```json
+{
+ "firstAttempt": {
+  "ok": 1000
+ },
+ "readyAtEndOfRamp": 1000
+}
+```
+
+#### hold (120 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| presence | 23003 | 89.0 | 169.0 | 179.0 | 186.0 | 84.3 |
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 6.0 | 12.0 | 394 | 178 | 1,000 | 0 | 250 | 10 / 10 | 3 (0.1) | 38.7 | 0 | 0.0 | 0 |
+
+Server :4450 persist append: n=0 mean n/a ms, p95 <= n/a ms, p99 <= n/a ms; yjs updates 0; HTTP /api (server-side) n=0 mean n/a ms, p95 <= n/a ms; ws outcomes accepted=0
+
+Generator (8 worker processes): CPU % per worker 1/1/1/1/1/1/1/1; event-loop lag p99 max 11.3 ms (max 20.9 ms); host load1 max 21.4
+
+```json
+{
+ "readyAtEndOfHold": 1000,
+ "total": 1000
+}
+```
+
+### Results
+
+```json
+{
+ "connectionEstablishment": {
+  "attempted": 1000,
+  "succeededFirstAttempt": 1000,
+  "successRatePct": 100,
+  "failuresByCause": {},
+  "connectedAtEndOfHold": 1000,
+  "lostDuringHold": 0
+ }
+}
+```
+
+### Notes
+
+- Presence: every client set an awareness state at connect and updated its cursor every 5 s (0.2/s) during the hold.
+- Host load average (1 min) peaked at 21.4 during the run so far.

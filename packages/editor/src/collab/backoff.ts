@@ -13,10 +13,16 @@ export interface BackoffOptions {
   jitter: number;
 }
 
+/**
+ * Growth 1.6 rather than 2: after a server instance is replaced, the first
+ * retries are what decide how long people wait, and with doubling the fifth
+ * retry alone waited up to 6.4 s (load-test report, rolling restart). The cap
+ * and the jitter, which protect a recovering server, are unchanged.
+ */
 export const RECONNECT_BACKOFF: BackoffOptions = {
   baseMs: 400,
   maxMs: 30_000,
-  factor: 2,
+  factor: 1.6,
   jitter: 0.5,
 };
 

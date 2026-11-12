@@ -10,6 +10,12 @@ import { createHash } from 'node:crypto';
 import { expect, publishDownload, resetDownloads, setSignup, test, unique } from './support/test';
 
 test.describe.configure({ mode: 'serial' });
+// The Playwright desktop devices present themselves as Windows or macOS; this spec needs a Linux
+// visitor so that the only published build (Windows) is for another platform.
+test.use({
+  userAgent:
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+});
 
 const FILE = 'realtimedocs-windows-x64.zip';
 const OTHERS = [
@@ -33,11 +39,10 @@ test('with DOWNLOAD_DIR unset nothing is listed and the page says the release is
 
   await page.goto('/');
   await expect(page.getByTestId('downloads-empty')).toContainText(
-    'Release not published — build the desktop app locally (see the Windows and macOS guides)',
+    'Release not published — build the desktop app locally (see the Windows, macOS and Linux guides)',
   );
   await expect(page.getByTestId('download-build')).toHaveCount(0);
   await expect(page.getByTestId('download-link')).toHaveCount(0);
-  await expect(page.getByTestId('unsigned-notice')).toBeVisible();
   for (const file of [FILE, ...OTHERS]) {
     expect((await page.request.head(`/download/${file}`)).status(), file).toBe(404);
   }
@@ -50,14 +55,19 @@ test('with one dummy build published, only that build is listed, with version, s
   const expectedHash = createHash('sha256').update(Buffer.alloc(2048, 0x5a)).digest('hex');
 
   await page.goto('/');
+  // The test browser is Linux and only a Windows build exists: no dead link, and the manual list has it.
+  await expect(page.getByTestId('download-unavailable')).toContainText(
+    'No release published for Linux',
+  );
+  await page.getByTestId('download-choose-other').click();
   await expect(page.getByTestId('download-build')).toHaveCount(1);
   const row = page.locator(`[data-file="${FILE}"]`);
-  const link = row.getByTestId('download-link');
+  const link = row.getByTestId('download-link-row');
   await expect(link).toHaveAttribute('href', `/download/${FILE}`);
-  await expect(link).toContainText('2 KB');
-  await expect(row.getByTestId('download-sha256')).toHaveText(expectedHash);
+  await expect(row).toContainText('2 KB');
+  await expect(row).toContainText(expectedHash);
   await expect(page.getByTestId('release-version')).toHaveText('Version 0.0.1-test');
-  await expect(page.getByTestId('unsigned-notice')).toBeVisible();
+  await expect(row).toContainText('Unsigned build');
   for (const name of ['Windows arm64', 'Apple Silicon', 'Intel']) {
     await expect(page.locator('#download')).not.toContainText(name);
   }
@@ -78,8 +88,10 @@ test('with one dummy build published, only that build is listed, with version, s
 test('a release stated to be signed has no unsigned notice', async ({ page }) => {
   await publishDownload(FILE, 1024, { version: '1.0.0', signed: true });
   await page.goto('/');
+  await page.getByTestId('download-choose-other').click();
   await expect(page.getByTestId('download-build')).toHaveCount(1);
-  await expect(page.getByTestId('unsigned-notice')).toHaveCount(0);
+  await expect(page.getByTestId('download-build')).toContainText('Signed build.');
+  await expect(page.getByTestId('download-build')).not.toContainText('Unsigned');
 });
 
 test('sign-up is off by default, and works when the operator turns it on', async ({ page }) => {

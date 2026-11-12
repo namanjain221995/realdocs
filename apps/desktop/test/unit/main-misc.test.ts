@@ -44,6 +44,7 @@ import {
 } from '../../src/shared/privacy/status';
 import { defaultShortcuts, type DesktopPlatform } from '../../src/shared/shortcuts';
 import { panelView, type AppState } from '../../src/shared/state';
+import { initialUpdateSnapshot } from '../../src/shared/updates';
 import { RateLimiter } from '../../src/main/rate-limit';
 
 function state(platform: DesktopPlatform = 'win32', overrides: Partial<AppState> = {}): AppState {
@@ -136,6 +137,7 @@ function state(platform: DesktopPlatform = 'win32', overrides: Partial<AppState>
     settings: { open: false, tab: 'connection' },
     probe: { open: false, record: null },
     preferencesRepaired: false,
+    updates: initialUpdateSnapshot('0.1.0'),
   };
   return { ...base, ...overrides };
 }

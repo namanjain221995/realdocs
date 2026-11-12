@@ -167,6 +167,12 @@ export type ShortcutSetInput = z.infer<typeof ShortcutSetInput>;
 export const ShortcutResetInput = z.strictObject({ action: z.enum(SHORTCUT_ACTIONS).optional() });
 export const ShortcutRecordingInput = z.strictObject({ active: z.boolean() });
 
+/** Settings window only. Acts on the file the main process itself downloaded and verified. */
+export const UpdatesOpenInput = z.strictObject({
+  action: z.enum(['show-in-folder', 'open-installer']),
+});
+export type UpdatesOpenInput = z.infer<typeof UpdatesOpenInput>;
+
 export const ExternalOpenInput = z.strictObject({ url: z.string().min(1).max(2048) });
 
 export const ProbeRecordInput = z.strictObject({

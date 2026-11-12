@@ -16,8 +16,9 @@ test-results
 apps/desktop
 tests
 # Documentation stays out of the image, except the pages the web app bundles as
-# its in-app reader (apps/web/src/features/docs/documents.ts imports them with ?raw).
+# its in-app reader (apps/web/src/features/guides/documents.ts imports them with ?raw).
 docs/*
 !docs/windows-client.md
 !docs/macos-client.md
+!docs/linux-client.md
 !docs/security.md

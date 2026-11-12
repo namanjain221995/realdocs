@@ -25,6 +25,27 @@ export const AccessInfo = z.object({
   expiresAt: IsoDate.nullable(),
   /** Stable id for local-storage partitioning; null for share-link guests. */
   accountId: Id.nullable(),
+  /** Set when the access is an interview participant's link (the server decides, never the client). */
+  participant: z
+    .object({
+      sessionId: Id,
+      participantId: Id,
+      role: z.enum(['candidate', 'interviewer']),
+      name: z.string(),
+    })
+    .nullish(),
+  /**
+   * What the caller may do beyond reading and editing. Absent (older servers, document lists)
+   * means everything the role allows.
+   */
+  capabilities: z
+    .object({
+      canExport: z.boolean(),
+      canViewHistory: z.boolean(),
+      canShare: z.boolean(),
+      canUseDesktop: z.boolean(),
+    })
+    .optional(),
 });
 export type AccessInfo = z.infer<typeof AccessInfo>;
 
@@ -140,6 +161,8 @@ export const Participant = z.object({
   color: z.string(),
   role: EffectiveRole,
   kind: z.enum(['user', 'guest']),
+  /** "Candidate" / "Interviewer" for interview participants, set by the server. */
+  roleLabel: z.string().optional(),
 });
 export type Participant = z.infer<typeof Participant>;
 
@@ -147,7 +170,7 @@ export const AuditEvent = z.object({
   id: Id,
   at: IsoDate,
   actorName: z.string().nullable(),
-  actorKind: z.enum(['user', 'guest', 'system']),
+  actorKind: z.enum(['user', 'guest', 'system', 'service']),
   action: z.string(),
   targetType: z.string().nullable(),
   targetId: z.string().nullable(),

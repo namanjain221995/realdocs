@@ -5,9 +5,14 @@
  * cancel, retry, failure, concurrency, composition).
  */
 import { ApiError } from '@realtimedocs/contracts';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { findUploadNodes } from '../src/uploads/extension';
-import { UPLOAD_CONCURRENCY, UploadManager, type UploadPhase } from '../src/uploads/manager';
+import {
+  UPLOAD_CONCURRENCY,
+  UploadManager,
+  uploadBackoffMs,
+  type UploadPhase,
+} from '../src/uploads/manager';
 import {
   DOCUMENT_ID,
   FakeUploadApi,
@@ -58,6 +63,13 @@ function imageAttrs(t: TestEditor): Record<string, unknown>[] {
   return found;
 }
 
+/**
+ * The state-machine tests look at one attempt of one file at a time: no
+ * automatic retry and no joining of identical files (the fixtures share their
+ * bytes). Both behaviours have their own tests in 'automatic retry'.
+ */
+const SINGLE_ATTEMPT = { maxAttempts: 1, dedupe: false } as const;
+
 describe('upload manager state machine', () => {
   const start = (manager: UploadManager, id: string, name = `${id}.png`): void => {
     manager.start(id, new Blob([new Uint8Array(100)]), name, 'image');
@@ -65,7 +77,11 @@ describe('upload manager state machine', () => {
 
   it('goes queued → uploading → done and reports honest, monotonic byte progress', async () => {
     const api = new FakeUploadApi();
-    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID });
+    const manager = new UploadManager({
+      ...SINGLE_ATTEMPT,
+      api: api.client,
+      documentId: DOCUMENT_ID,
+    });
     const phases: UploadPhase[] = [];
     const progress: number[] = [];
     const completed: string[] = [];
@@ -101,7 +117,11 @@ describe('upload manager state machine', () => {
 
   it('runs at most the configured number of uploads and starts the rest in order', async () => {
     const api = new FakeUploadApi();
-    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID });
+    const manager = new UploadManager({
+      ...SINGLE_ATTEMPT,
+      api: api.client,
+      documentId: DOCUMENT_ID,
+    });
     for (const id of ['a', 'b', 'c', 'd', 'e']) start(manager, id);
 
     expect(UPLOAD_CONCURRENCY).toBe(3);
@@ -125,7 +145,12 @@ describe('upload manager state machine', () => {
 
   it('cancels a queued upload without ever sending it, and an active one by aborting it', async () => {
     const api = new FakeUploadApi();
-    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID, concurrency: 1 });
+    const manager = new UploadManager({
+      ...SINGLE_ATTEMPT,
+      api: api.client,
+      documentId: DOCUMENT_ID,
+      concurrency: 1,
+    });
     start(manager, 'active');
     start(manager, 'waiting');
 
@@ -147,7 +172,11 @@ describe('upload manager state machine', () => {
 
   it('describes failures in words and only offers a retry when one can help', async () => {
     const api = new FakeUploadApi();
-    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID });
+    const manager = new UploadManager({
+      ...SINGLE_ATTEMPT,
+      api: api.client,
+      documentId: DOCUMENT_ID,
+    });
     start(manager, 'busy');
     start(manager, 'rejected');
     start(manager, 'strange');
@@ -176,7 +205,11 @@ describe('upload manager state machine', () => {
 
   it('retries a failed upload with the same id and the same bytes', async () => {
     const api = new FakeUploadApi();
-    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID });
+    const manager = new UploadManager({
+      ...SINGLE_ATTEMPT,
+      api: api.client,
+      documentId: DOCUMENT_ID,
+    });
     start(manager, 'again');
     api.call('again.png').fail(new ApiError('server_busy', 'x'));
     await settle();
@@ -198,7 +231,11 @@ describe('upload manager state machine', () => {
 
   it('reports nothing after it was destroyed', async () => {
     const api = new FakeUploadApi();
-    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID });
+    const manager = new UploadManager({
+      ...SINGLE_ATTEMPT,
+      api: api.client,
+      documentId: DOCUMENT_ID,
+    });
     const completed: string[] = [];
     manager.onCompleted((id) => completed.push(id));
     start(manager, 'late');
@@ -208,6 +245,143 @@ describe('upload manager state machine', () => {
     await settle();
     expect(completed).toEqual([]);
     expect(manager.get('late')).toBeUndefined();
+  });
+});
+
+describe('automatic retry, pause and de-duplication', () => {
+  const blob = (fill: number, size = 100): Blob => new Blob([new Uint8Array(size).fill(fill)]);
+  const flush = async (): Promise<void> => {
+    await vi.advanceTimersByTimeAsync(0);
+  };
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('backs off exponentially between half and the full capped delay', () => {
+    expect(uploadBackoffMs(1, 1000, 60_000, () => 0)).toBe(500);
+    expect(uploadBackoffMs(1, 1000, 60_000, () => 1)).toBe(1000);
+    expect(uploadBackoffMs(3, 1000, 60_000, () => 1)).toBe(4000);
+    expect(uploadBackoffMs(20, 1000, 60_000, () => 1)).toBe(60_000);
+  });
+
+  it('retries a rate-limited file by itself and holds the whole queue meanwhile', async () => {
+    vi.useFakeTimers();
+    const api = new FakeUploadApi();
+    const manager = new UploadManager({
+      api: api.client,
+      documentId: DOCUMENT_ID,
+      concurrency: 1,
+      dedupe: false,
+      random: () => 0,
+    });
+    manager.start('a', blob(1), 'a.png', 'image');
+    manager.start('b', blob(2), 'b.png', 'image');
+    expect(api.calls).toHaveLength(1);
+
+    api.call('a.png').fail(new ApiError('rate_limited', 'x', { retryAfterSeconds: 7 }));
+    await flush();
+    // Not failed: waiting, with the reason, and nothing else was sent.
+    expect(manager.get('a')).toMatchObject({ phase: 'queued', attempt: 1, retryable: true });
+    expect(manager.get('a')?.retryAt).not.toBeNull();
+    expect(manager.get('b')?.phase).toBe('queued');
+    expect(api.calls).toHaveLength(1);
+
+    await vi.advanceTimersByTimeAsync(6_900);
+    expect(api.calls).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(200);
+    // The pause is over: the queue moves again, one at a time, nothing lost.
+    expect(api.calls).toHaveLength(2);
+    api.calls[1]?.succeed();
+    await flush();
+    expect(api.calls).toHaveLength(3);
+    api.calls[2]?.succeed();
+    await flush();
+    expect(manager.get('a')?.phase).toBe('done');
+    expect(manager.get('b')?.phase).toBe('done');
+    expect(manager.get('a')?.attempt).toBe(2);
+    manager.destroy();
+  });
+
+  it('gives up after the configured attempts and then offers a manual retry', async () => {
+    vi.useFakeTimers();
+    const api = new FakeUploadApi();
+    const manager = new UploadManager({
+      api: api.client,
+      documentId: DOCUMENT_ID,
+      dedupe: false,
+      maxAttempts: 3,
+      baseDelayMs: 100,
+      random: () => 1,
+    });
+    manager.start('n', blob(3), 'n.png', 'image');
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      expect(api.calls).toHaveLength(attempt);
+      api.calls[attempt - 1]?.fail(new ApiError('network_error', 'x'));
+      await flush();
+      await vi.advanceTimersByTimeAsync(1_000);
+    }
+    expect(api.calls).toHaveLength(3);
+    expect(manager.get('n')).toMatchObject({ phase: 'failed', retryable: true, retryAt: null });
+
+    manager.retry('n');
+    await flush();
+    expect(manager.get('n')).toMatchObject({ phase: 'uploading', attempt: 1 });
+    manager.destroy();
+  });
+
+  it('never retries a file the server rejected', async () => {
+    vi.useFakeTimers();
+    const api = new FakeUploadApi();
+    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID, dedupe: false });
+    manager.start('r', blob(4), 'r.png', 'image');
+    api.call('r.png').fail(new ApiError('upload_rejected', 'x', { reason: 'content_mismatch' }));
+    await flush();
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(manager.get('r')).toMatchObject({ phase: 'failed', retryable: false });
+    expect(api.calls).toHaveLength(1);
+    manager.destroy();
+  });
+
+  it('cancels a file that is waiting for its next attempt', async () => {
+    vi.useFakeTimers();
+    const api = new FakeUploadApi();
+    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID, dedupe: false });
+    manager.start('c', blob(5), 'c.png', 'image');
+    api.call('c.png').fail(new ApiError('server_busy', 'x'));
+    await flush();
+    manager.cancel('c');
+    expect(manager.get('c')).toMatchObject({ phase: 'cancelled', retryAt: null });
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(api.calls).toHaveLength(1);
+    manager.destroy();
+  });
+
+  it('sends identical files once and gives every placeholder the same asset', async () => {
+    const api = new FakeUploadApi();
+    const manager = new UploadManager({ api: api.client, documentId: DOCUMENT_ID });
+    const done: string[] = [];
+    manager.onCompleted((id) => done.push(id));
+    manager.start('one', blob(9), 'shot.png', 'image');
+    manager.start('two', blob(9), 'shot.png', 'image');
+    manager.start('other', blob(8), 'other.png', 'image');
+    // Checksums are computed asynchronously: wait for the requests, not for a tick.
+    await vi.waitFor(() => expect(api.calls).toHaveLength(2));
+    await settle();
+    expect(api.calls.map((call) => call.name).sort()).toEqual(['other.png', 'shot.png']);
+    const asset = api.call('shot.png').succeed();
+    api.call('other.png').succeed();
+    await vi.waitFor(() => expect(done).toHaveLength(3));
+    expect(manager.completedAsset('one')?.id).toBe(asset.id);
+    expect(manager.completedAsset('two')?.id).toBe(asset.id);
+    expect(done.sort()).toEqual(['one', 'other', 'two']);
+
+    // A later paste of the same bytes reuses the stored asset without a request.
+    manager.start('three', blob(9), 'shot.png', 'image');
+    await vi.waitFor(() => expect(manager.completedAsset('three')).not.toBeNull());
+    expect(api.calls).toHaveLength(2);
+    expect(manager.completedAsset('three')?.id).toBe(asset.id);
+    manager.destroy();
   });
 });
 

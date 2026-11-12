@@ -88,6 +88,14 @@ export interface RdDesktopApi {
     setRecording(active: boolean): ActionResult;
   };
 
+  /** Settings window only. The app checks, downloads and verifies; it never installs by itself. */
+  updates: {
+    check(): ActionResult;
+    download(): ActionResult;
+    defer(): ActionResult;
+    open(action: 'show-in-folder' | 'open-installer'): ActionResult;
+  };
+
   openExternal(url: string): ActionResult;
 
   diagnostics: {
@@ -110,6 +118,7 @@ export const BRIDGE_KEYS = [
   'preferences',
   'privacy',
   'shortcuts',
+  'updates',
   'window',
 ] as const;
 

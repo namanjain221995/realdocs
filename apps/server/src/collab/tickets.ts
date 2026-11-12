@@ -26,7 +26,21 @@ interface Entry {
 export type ConsumeResult =
   { ok: true; data: TicketData } | { ok: false; reason: 'ticket_invalid' | 'ticket_expired' };
 
-export class TicketStore {
+type MaybePromise<T> = T | Promise<T>;
+
+/**
+ * What the server needs from a ticket store. `TicketStore` below keeps tickets
+ * in this process; with Redis coordination they are shared between instances
+ * (cluster/cluster.ts).
+ */
+export interface Tickets {
+  issue(data: TicketData): MaybePromise<{ ticket: string; expiresAt: Date } | null>;
+  consume(ticket: string): MaybePromise<ConsumeResult>;
+  revokeForSessions(sessionIds: ReadonlySet<string>): void;
+  close(): void;
+}
+
+export class TicketStore implements Tickets {
   private readonly entries = new Map<string, Entry>();
   private readonly sweeper: NodeJS.Timeout;
 

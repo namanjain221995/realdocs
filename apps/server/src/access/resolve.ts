@@ -12,8 +12,12 @@ import {
   type DocumentRole,
   type EffectiveRole,
   type ErrorCode,
+  type InterviewStatus,
+  type ParticipantRole,
+  type SessionPermissions,
 } from '@realtimedocs/contracts';
 import { ENDED_REASONS, sessionStatus } from '../auth/sessions';
+import { isClosedStatus } from '../service/state-machine';
 import type { Config } from '../config';
 import type { Queryable } from '../db/pool';
 import {
@@ -55,6 +59,28 @@ export interface Actor {
   sessionId: string;
 }
 
+/** The interview participant behind a share-link permission, when it is one. */
+export interface ParticipantAccess {
+  sessionId: string;
+  participantId: string;
+  role: ParticipantRole;
+  name: string;
+}
+
+/** What the caller may do besides reading and editing. Decided here, enforced by the routes. */
+export interface AccessCapabilities {
+  canExport: boolean;
+  canViewHistory: boolean;
+  canShare: boolean;
+  canUseDesktop: boolean;
+}
+
+interface ParticipantInfo extends ParticipantAccess {
+  grantId: string;
+  sessionStatus: InterviewStatus;
+  permissions: Partial<SessionPermissions>;
+}
+
 export interface AccessGranted {
   ok: true;
   document: DocumentRow;
@@ -77,6 +103,9 @@ export interface AccessGranted {
   grantId: string | null;
   /** Every session that currently contributes a permission. */
   grantingSessionIds: string[];
+  /** Interview participant behind the winning permission, if any. */
+  participant: ParticipantAccess | null;
+  capabilities: AccessCapabilities;
 }
 
 export interface AccessDenied {
@@ -90,6 +119,7 @@ export interface AccessDenied {
     | 'share_expired'
     | 'not_found'
     | 'document_trashed'
+    | 'session_closed'
   >;
   /** Reason for a live collaboration connection that just lost access. */
   change: Exclude<AccessChange, 'role_changed'>;
@@ -151,43 +181,56 @@ export async function resolveAccess(
     ...new Set(own.map((s) => s.shareGrantId).filter((id): id is string => id !== null)),
   ];
 
-  const [documentResult, userResult, memberResult, grantResult] = await Promise.all([
-    db.query<DocumentRow>(
-      `SELECT ${DOCUMENT_COLUMNS} FROM documents d WHERE d.id = $1 AND d.workspace_id = $2`,
-      [documentId, workspaceId],
-    ),
-    userIds.length > 0
-      ? db.query<UserRow>(
-          `SELECT ${USER_COLUMNS} FROM users WHERE id = ANY($1::uuid[]) AND workspace_id = $2`,
-          [userIds, workspaceId],
-        )
-      : null,
-    userIds.length > 0
-      ? db.query<{ userId: string; role: DocumentRole }>(
-          `SELECT user_id AS "userId", role FROM document_members
+  const [documentResult, userResult, memberResult, grantResult, participantResult] =
+    await Promise.all([
+      db.query<DocumentRow>(
+        `SELECT ${DOCUMENT_COLUMNS} FROM documents d WHERE d.id = $1 AND d.workspace_id = $2`,
+        [documentId, workspaceId],
+      ),
+      userIds.length > 0
+        ? db.query<UserRow>(
+            `SELECT ${USER_COLUMNS} FROM users WHERE id = ANY($1::uuid[]) AND workspace_id = $2`,
+            [userIds, workspaceId],
+          )
+        : null,
+      userIds.length > 0
+        ? db.query<{ userId: string; role: DocumentRole }>(
+            `SELECT user_id AS "userId", role FROM document_members
             WHERE document_id = $1 AND workspace_id = $2 AND user_id = ANY($3::uuid[])`,
-          [documentId, workspaceId, userIds],
-        )
-      : null,
-    grantIds.length > 0
-      ? db.query<GrantRow>(
-          `SELECT ${GRANT_COLUMNS} FROM share_grants g
+            [documentId, workspaceId, userIds],
+          )
+        : null,
+      grantIds.length > 0
+        ? db.query<GrantRow>(
+            `SELECT ${GRANT_COLUMNS} FROM share_grants g
             WHERE g.id = ANY($1::uuid[]) AND g.workspace_id = $2 AND g.document_id = $3`,
-          [grantIds, workspaceId, documentId],
-        )
-      : null,
-  ]);
+            [grantIds, workspaceId, documentId],
+          )
+        : null,
+      grantIds.length > 0
+        ? db.query<ParticipantInfo>(
+            `SELECT g.id AS "grantId", p.id AS "participantId", p.session_id AS "sessionId",
+                  p.role, p.name, s.status AS "sessionStatus", s.permissions
+             FROM share_grants g
+             JOIN interview_participants p ON p.id = g.participant_id
+             JOIN interview_sessions s ON s.id = p.session_id
+            WHERE g.id = ANY($1::uuid[]) AND g.workspace_id = $2 AND g.document_id = $3`,
+            [grantIds, workspaceId, documentId],
+          )
+        : null,
+    ]);
 
   const document = documentResult.rows[0] ?? null;
   const users = new Map((userResult?.rows ?? []).map((user) => [user.id, user]));
   const memberships = new Map((memberResult?.rows ?? []).map((row) => [row.userId, row.role]));
   const grants = new Map((grantResult?.rows ?? []).map((grant) => [grant.id, grant]));
+  const participants = new Map((participantResult?.rows ?? []).map((info) => [info.grantId, info]));
 
   const granted: PrincipalGrant[] = [];
   const denials = new Map<string, DenyReason>();
   let anyValidPrincipal = false;
   let anySessionExpired = false;
-  let shareError: 'share_revoked' | 'share_expired' | null = null;
+  let shareError: 'share_revoked' | 'share_expired' | 'session_closed' | null = null;
   let accountUser: UserRow | null = null;
   const names = new Map<string, Actor>();
 
@@ -195,10 +238,21 @@ export async function resolveAccess(
     const grant = session.shareGrantId ? (grants.get(session.shareGrantId) ?? null) : null;
 
     // A dead share grant explains itself, whatever happened to the session row.
+    const participantInfo = session.shareGrantId
+      ? (participants.get(session.shareGrantId) ?? null)
+      : null;
+    const sessionClosed = participantInfo ? isClosedStatus(participantInfo.sessionStatus) : false;
     if (session.shareGrantId && grant) {
       if (grant.revokedAt) {
         denials.set(session.id, 'grant_revoked');
-        shareError = 'share_revoked';
+        // A link that ended because the interview ended says so.
+        shareError = sessionClosed ? 'session_closed' : 'share_revoked';
+        continue;
+      }
+      // A candidate is out as soon as the session is over, whatever the state of the link.
+      if (sessionClosed && participantInfo?.role === 'candidate') {
+        denials.set(session.id, 'grant_revoked');
+        shareError = 'session_closed';
         continue;
       }
       if (grant.expiresAt && grant.expiresAt.getTime() <= now) {
@@ -284,12 +338,14 @@ export async function resolveAccess(
     names.set(session.id, {
       kind: 'guest',
       userId: null,
-      name: session.guestName ?? 'Guest',
+      // Interview participants appear under the name the organiser registered.
+      name: participantInfo?.name ?? session.guestName ?? 'Guest',
       sessionId: session.id,
     });
     granted.push({
       sessionId: session.id,
-      role: grant.role,
+      // After the interview, interviewers keep read access until their link expires.
+      role: sessionClosed ? 'viewer' : grant.role,
       via: 'share_link',
       expiresAt: minDate(grant.expiresAt, session.expiresAt),
       userId: null,
@@ -343,6 +399,17 @@ export async function resolveAccess(
       sessionId: winner.sessionId,
     };
 
+  const winnerParticipant = winner.grantId ? (participants.get(winner.grantId) ?? null) : null;
+  const permissions = winnerParticipant?.permissions ?? {};
+  const isCandidate = winnerParticipant?.role === 'candidate';
+  const capabilities: AccessCapabilities = {
+    canExport: isCandidate ? permissions.candidateCanExport === true : true,
+    canViewHistory: isCandidate ? permissions.candidateCanViewHistory === true : true,
+    canShare: canManage,
+    // The desktop app is for staff; a candidate never gets a handoff.
+    canUseDesktop: !isCandidate,
+  };
+
   return {
     ok: true,
     document,
@@ -355,5 +422,14 @@ export async function resolveAccess(
     principalSessionId: winner.sessionId,
     grantId: winner.grantId,
     grantingSessionIds: granted.map((grant) => grant.sessionId),
+    participant: winnerParticipant
+      ? {
+          sessionId: winnerParticipant.sessionId,
+          participantId: winnerParticipant.participantId,
+          role: winnerParticipant.role,
+          name: winnerParticipant.name,
+        }
+      : null,
+    capabilities,
   };
 }

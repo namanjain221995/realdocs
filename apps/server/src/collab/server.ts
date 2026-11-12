@@ -33,23 +33,33 @@ import {
   type Document,
   type WebSocketLike,
 } from '@hocuspocus/server';
-import { WebSocketServer, type RawData, type WebSocket } from 'ws';
+import * as decoding from 'lib0/decoding';
+import { WebSocket as WsClient, WebSocketServer, type RawData, type WebSocket } from 'ws';
 import * as Y from 'yjs';
 import { resolveAccess, type AccessDeps } from '../access/resolve';
+import { recordParticipantJoin } from '../service/sessions';
 import { SYSTEM_ACTOR, tryAudit } from '../audit';
 import { findSessionsByIds, touchSessions } from '../auth/sessions';
+import type { Cluster, ControlMessage } from '../cluster/cluster';
 import { newId } from '../auth/tokens';
 import { allowedOrigins, type Config } from '../config';
 import type { Db } from '../db/pool';
 import { loadDurableState } from '../documents/store';
 import type { Logger } from '../logger';
+import type { Metrics } from '../metrics';
 import { TokenBucket, TrailingThrottle, WindowLimiter, mapLimit } from '../util/limits';
 import { clientIp } from '../util/net';
 import { decodeClientSnapshot, snapshotContainedIn } from './containment';
 import { DurableLog, type FatalReason } from './durable-log';
+import {
+  HistoryRecorder,
+  SYSTEM_ACTOR as SYSTEM_HISTORY_ACTOR,
+  collectAssetIdsFromDoc,
+  type HistoryActor,
+} from './history';
 import { PgLogStore } from './pg-log-store';
 import { PresenceThrottle, isAwarenessFrame, sanitizeAwareness } from './presence';
-import type { TicketStore } from './tickets';
+import type { Tickets } from './tickets';
 
 interface CloseSpec {
   code: number;
@@ -98,6 +108,8 @@ class SocketState {
   // Assigned right after construction (they need a reference to this object).
   client!: ClientConnection;
   presence!: PresenceThrottle;
+  /** With several instances a socket belongs to the one document it was routed for. */
+  boundDocumentId: string | null = null;
 
   constructor(
     readonly ws: WebSocket,
@@ -145,6 +157,25 @@ interface ConnState {
    */
   hello: TrailingThrottle<DeferredHello>;
   closing: boolean;
+  /** What the client announced for its next update (history label only). */
+  pendingHint: { kind: 'paste'; at: number; clientAt: Date | null } | null;
+}
+
+/** A client hint describes the update that follows it within this time. */
+const HINT_TTL_MS = 5_000;
+
+function actorOf(state: ConnState): HistoryActor {
+  const [sessionId] = state.grantingSessionIds;
+  return {
+    kind: state.participant.kind,
+    userId: state.userId,
+    grantId: state.grantId,
+    name: state.participant.name,
+    participantRole: state.participant.roleLabel?.toLowerCase() ?? state.role,
+    sessionId: sessionId ?? state.sessionIds[0] ?? null,
+    connectionId: state.id,
+    clientId: state.clientId,
+  };
 }
 
 interface DeferredHello {
@@ -168,6 +199,10 @@ interface DocRuntime {
   appendFailuresLogged: number;
   /** The log was offered for compaction since the last update; avoids retrying in a loop. */
   compactionTriedForUnload: boolean;
+  /** An edit was applied since this document was loaded (first-edit notification). */
+  firstEditSeen: boolean;
+  /** Summarises each applied transaction for the history; null when history is off. */
+  recorder: HistoryRecorder | null;
 }
 
 export interface CollabDeps {
@@ -175,7 +210,15 @@ export interface CollabDeps {
   db: Db;
   logger: Logger;
   workspaceId: string;
-  tickets: TicketStore;
+  tickets: Tickets;
+  /** Coordination with other instances; absent when the server runs alone. */
+  cluster?: Cluster | null;
+  metrics?: Metrics;
+  /**
+   * Called once per loaded document with its first applied edit. The receiver
+   * decides whether that is the first edit ever (interview-session webhook).
+   */
+  onFirstEdit?: (documentId: string) => void;
 }
 
 export interface GenerationNotice {
@@ -196,6 +239,50 @@ function closeForChange(change: Exclude<AccessChange, 'role_changed'>): CloseSpe
   }
 }
 
+interface BufferedFrame {
+  data: RawData;
+  isBinary: boolean;
+}
+
+function rawLength(data: RawData): number {
+  if (Array.isArray(data)) return data.reduce((total, part) => total + part.byteLength, 0);
+  return data.byteLength;
+}
+
+/** Every Hocuspocus frame starts with the name of the document it is for. */
+function documentNameOfFrame(data: RawData): string | null {
+  try {
+    const buffer = Array.isArray(data)
+      ? Buffer.concat(data)
+      : data instanceof ArrayBuffer
+        ? Buffer.from(data)
+        : data;
+    if (buffer.byteLength < 2) return null;
+    return decoding.readVarString(
+      decoding.createDecoder(new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/** Closes with `code` when the protocol allows sending it, else with "service restart". */
+function safeClose(ws: WebSocket | WsClient, code: number, reason: string): void {
+  const sendable =
+    (code >= 1000 && code <= 1003) ||
+    (code >= 1007 && code <= 1014) ||
+    (code >= 3000 && code <= 4999);
+  try {
+    if (ws.readyState === ws.OPEN) {
+      ws.close(sendable ? code : 1012, sendable ? reason.slice(0, 120) : 'connection_lost');
+    } else if (ws.readyState === ws.CONNECTING) {
+      ws.terminate();
+    }
+  } catch {
+    ws.terminate();
+  }
+}
+
 export class CollabServer {
   readonly hocuspocus: Hocuspocus<CollabContext>;
 
@@ -203,7 +290,15 @@ export class CollabServer {
   private readonly db: Db;
   private readonly logger: Logger;
   private readonly workspaceId: string;
-  private readonly tickets: TicketStore;
+  private readonly tickets: Tickets;
+  private readonly cluster: Cluster | null;
+  private readonly metrics: Metrics | null;
+  private readonly onFirstEdit: ((documentId: string) => void) | null;
+  private drainingFlag = false;
+  /** Sockets whose first frame has not been routed yet (several instances only). */
+  private routing = 0;
+  /** Sockets forwarded to the instance that owns their document. */
+  private readonly forwards = new Set<{ client: WebSocket; upstream: WsClient }>();
   private readonly accessDeps: AccessDeps;
   private readonly store: PgLogStore;
   private readonly origins: Set<string>;
@@ -212,7 +307,10 @@ export class CollabServer {
 
   private readonly sockets = new Set<SocketState>();
   private readonly runtimes = new Map<string, DocRuntime>();
-  private readonly loadInfo = new WeakMap<Document, { headSeq: number; rows: number }>();
+  private readonly loadInfo = new WeakMap<
+    Document,
+    { headSeq: number; rows: number; hasCheckpoint: boolean; rowsSinceCheckpoint: number }
+  >();
   /** Live and pending connections by document id. */
   private readonly registry = new Map<string, Set<ConnState>>();
   private sweepTimer: NodeJS.Timeout | null = null;
@@ -225,6 +323,40 @@ export class CollabServer {
     this.logger = deps.logger.child({ component: 'collab' });
     this.workspaceId = deps.workspaceId;
     this.tickets = deps.tickets;
+    this.cluster = deps.cluster ?? null;
+    this.metrics = deps.metrics ?? null;
+    this.onFirstEdit = deps.onFirstEdit ?? null;
+    if (this.metrics) {
+      this.metrics.gauge(
+        'rd_ws_connections',
+        'Collaboration sockets served by this instance.',
+        () => this.sockets.size,
+      );
+      this.metrics.gauge(
+        'rd_ws_forwarded_connections',
+        'Collaboration sockets forwarded to the instance that owns their document.',
+        () => this.forwards.size,
+      );
+      this.metrics.gauge(
+        'rd_documents_loaded',
+        'Documents held in memory.',
+        () => this.runtimes.size,
+      );
+      this.metrics.gauge(
+        'rd_persist_queue_bytes',
+        'Update bytes accepted and not yet committed (background queue depth).',
+        () => {
+          let total = 0;
+          for (const runtime of this.runtimes.values()) total += runtime.log.pendingBytes;
+          return total;
+        },
+      );
+    }
+    if (this.cluster) {
+      this.cluster.setLoadedCheck((documentId) => this.hasRuntime(documentId));
+      this.cluster.onLeaseLost((documentId) => this.dropDocument(documentId));
+      this.cluster.onControl((message) => this.onControl(message));
+    }
     this.accessDeps = {
       db: deps.db,
       sessionTtl: deps.config.sessions,
@@ -291,7 +423,9 @@ export class CollabServer {
         const runtime = this.runtimes.get(data.documentName);
         if (!runtime) return;
         runtime.log.close();
+        runtime.recorder?.destroy();
         this.runtimes.delete(data.documentName);
+        this.cluster?.releaseIfUnused(runtime.documentId);
       },
       onDisconnect: async (data) => {
         const state = (data.context as CollabContext | undefined)?.auth;
@@ -346,7 +480,9 @@ export class CollabServer {
   }
 
   private onSocket(ws: WebSocket, request: IncomingMessage): void {
-    const ip = clientIp(request, this.config.trustProxy);
+    // A socket forwarded by a peer instance carries the client address it vouches for.
+    const forwardedIp = this.cluster?.verifyInternal(request.headers) ?? null;
+    const ip = forwardedIp ?? clientIp(request, this.config.trustProxy);
     // Registered before anything else: an unhandled 'error' event would crash the process.
     ws.on('error', (err) => {
       this.logger.debug({ err, ip }, 'collaboration socket error');
@@ -355,22 +491,182 @@ export class CollabServer {
       setTimeout(() => ws.terminate(), 1_000).unref();
     });
     // The handshake is completed first so the client can read a precise close code.
-    if (!this.upgradeLimiter.take(ip)) {
+    // (A forwarded socket was already counted by the instance that accepted it.)
+    if (forwardedIp === null && !this.upgradeLimiter.take(ip)) {
+      this.metrics?.wsConnections.inc({ outcome: 'rejected_rate_limit' });
       ws.close(COLLAB_CLOSE.rateLimited.code, COLLAB_CLOSE.rateLimited.reason);
       return;
     }
     const origin = request.headers.origin;
     if (typeof origin !== 'string' || !this.origins.has(origin)) {
       this.logger.warn({ ip }, 'collaboration connection from a disallowed origin rejected');
+      this.metrics?.wsConnections.inc({ outcome: 'rejected_origin' });
       ws.close(COLLAB_CLOSE.badOrigin.code, COLLAB_CLOSE.badOrigin.reason);
       return;
     }
-    if (this.sockets.size >= this.config.collab.maxConnections) {
+    if (
+      this.sockets.size + this.forwards.size + this.routing >=
+      this.config.collab.maxConnections
+    ) {
       this.logger.warn({ ip }, 'collaboration connection cap reached');
+      this.metrics?.wsConnections.inc({ outcome: 'rejected_capacity' });
       ws.close(CLOSE_BUSY.code, CLOSE_BUSY.reason);
       return;
     }
+    if (!this.cluster) {
+      this.serveLocal(ws, ip, origin, null, []);
+      return;
+    }
+    this.routeSocket(this.cluster, ws, ip, origin, forwardedIp !== null);
+  }
 
+  /**
+   * Several instances: the first frame names the document, the lease says which
+   * instance owns it. The socket is then served here or forwarded to the owner.
+   */
+  private routeSocket(
+    cluster: Cluster,
+    ws: WebSocket,
+    ip: string,
+    origin: string,
+    forwarded: boolean,
+  ): void {
+    const buffered: BufferedFrame[] = [];
+    let bufferedBytes = 0;
+    let routing = false;
+    // Counted against the connection cap until it is served, forwarded or gone.
+    this.routing += 1;
+    let counted = true;
+    const uncount = (): void => {
+      if (counted) this.routing -= 1;
+      counted = false;
+    };
+    const deadline = setTimeout(() => {
+      ws.close(CLOSE_AUTH_FAILED.code, CLOSE_AUTH_FAILED.reason);
+    }, AUTH_DEADLINE_MS);
+    const onEarlyClose = (): void => {
+      clearTimeout(deadline);
+      uncount();
+    };
+    const onMessage = (data: RawData, isBinary: boolean): void => {
+      buffered.push({ data, isBinary });
+      bufferedBytes += rawLength(data);
+      if (buffered.length > 64 || bufferedBytes > this.config.limits.maxCollabMessageBytes * 2) {
+        ws.close(CLOSE_BUSY.code, CLOSE_BUSY.reason);
+        return;
+      }
+      if (routing) return;
+      const name = isBinary ? parseCollabDocumentName(documentNameOfFrame(data) ?? '') : null;
+      if (!name) {
+        ws.close(CLOSE_AUTH_FAILED.code, CLOSE_AUTH_FAILED.reason);
+        return;
+      }
+      routing = true;
+      const { documentId } = name;
+      cluster
+        .route(documentId)
+        .then((owner) => {
+          clearTimeout(deadline);
+          uncount();
+          ws.off('message', onMessage);
+          ws.off('close', onEarlyClose);
+          if (ws.readyState !== ws.OPEN || this.shuttingDown) {
+            if (owner.local) cluster.release(documentId);
+            if (ws.readyState === ws.OPEN) ws.close(CLOSE_BUSY.code, CLOSE_BUSY.reason);
+            return;
+          }
+          if (owner.local) {
+            this.serveLocal(ws, ip, origin, documentId, buffered);
+          } else if (forwarded) {
+            // A peer forwarded this socket here, but ownership has moved on. The
+            // client reconnects and is routed again.
+            ws.close(CLOSE_DOCUMENT_RESET.code, CLOSE_DOCUMENT_RESET.reason);
+          } else {
+            this.forward(cluster, ws, ip, origin, owner.url, buffered);
+          }
+        })
+        .catch((err: unknown) => {
+          clearTimeout(deadline);
+          this.logger.warn({ err, documentId }, 'document owner could not be determined');
+          ws.close(CLOSE_BUSY.code, CLOSE_BUSY.reason);
+        });
+    };
+    ws.on('message', onMessage);
+    ws.on('close', onEarlyClose);
+  }
+
+  /** Pipes a client socket to the instance that owns its document, frame for frame. */
+  private forward(
+    cluster: Cluster,
+    client: WebSocket,
+    ip: string,
+    origin: string,
+    ownerUrl: string,
+    buffered: BufferedFrame[],
+  ): void {
+    const upstream = new WsClient(`${ownerUrl.replace(/^http/, 'ws')}${COLLAB_WS_PATH}`, {
+      headers: cluster.internalHeaders(ip, origin),
+      perMessageDeflate: false,
+      handshakeTimeout: 5_000,
+      maxPayload: this.config.limits.maxCollabMessageBytes,
+    });
+    const pair = { client, upstream };
+    this.forwards.add(pair);
+    this.metrics?.wsConnections.inc({ outcome: 'forwarded' });
+    const pending = buffered.slice();
+    let pendingBytes = pending.reduce((total, frame) => total + rawLength(frame.data), 0);
+    let open = false;
+    const closeBoth = (code: number, reason: string): void => {
+      this.forwards.delete(pair);
+      safeClose(client, code, reason);
+      safeClose(upstream, code, reason);
+    };
+    upstream.on('open', () => {
+      open = true;
+      for (const frame of pending) upstream.send(frame.data, { binary: frame.isBinary });
+      pending.length = 0;
+    });
+    upstream.on('error', (err) => {
+      this.logger.debug({ err }, 'forwarded collaboration socket failed');
+      closeBoth(CLOSE_BUSY.code, CLOSE_BUSY.reason);
+    });
+    client.on('message', (data: RawData, isBinary: boolean) => {
+      if (!open) {
+        pending.push({ data, isBinary });
+        pendingBytes += rawLength(data);
+        // Same bounds as while routing: the owner is not connected yet.
+        if (pending.length > 64 || pendingBytes > this.config.limits.maxCollabMessageBytes * 2) {
+          closeBoth(CLOSE_BUSY.code, CLOSE_BUSY.reason);
+        }
+        return;
+      }
+      if (upstream.bufferedAmount > MAX_BUFFERED_BYTES) {
+        closeBoth(CLOSE_BUSY.code, CLOSE_BUSY.reason);
+        return;
+      }
+      upstream.send(data, { binary: isBinary });
+    });
+    upstream.on('message', (data: RawData, isBinary: boolean) => {
+      if (client.bufferedAmount > MAX_BUFFERED_BYTES) {
+        // The client is not reading; do not buffer without bound for it.
+        closeBoth(CLOSE_BUSY.code, CLOSE_BUSY.reason);
+        return;
+      }
+      client.send(data, { binary: isBinary });
+    });
+    // Close codes travel through unchanged, so the client sees what the owner decided.
+    upstream.on('close', (code, reason) => closeBoth(code, reason.toString('utf8')));
+    client.on('close', (code, reason) => closeBoth(code, reason.toString('utf8')));
+  }
+
+  /** Serves a socket in this process. `buffered` are frames read while it was being routed. */
+  private serveLocal(
+    ws: WebSocket,
+    ip: string,
+    origin: string,
+    documentId: string | null,
+    buffered: BufferedFrame[],
+  ): void {
     const state = new SocketState(
       ws,
       ip,
@@ -407,7 +703,9 @@ export class CollabServer {
     state.presence = new PresenceThrottle((frame) => {
       if (!state.closing) state.client.handleMessage(frame);
     });
+    state.boundDocumentId = documentId;
     this.sockets.add(state);
+    this.metrics?.wsConnections.inc({ outcome: 'accepted' });
 
     state.timers.push(
       setInterval(() => {
@@ -437,7 +735,9 @@ export class CollabServer {
         this.logger.warn({ err }, 'error while closing a collaboration connection');
       }
       for (const conn of [...state.conns]) this.forget(conn);
+      if (documentId) this.cluster?.release(documentId);
     });
+    for (const frame of buffered) this.onFrame(state, frame.data, frame.isBinary);
   }
 
   private onFrame(state: SocketState, data: RawData, isBinary: boolean): void {
@@ -504,7 +804,11 @@ export class CollabServer {
     const name = parseCollabDocumentName(documentName);
     if (!name) throw new CollabDenied('ticket_invalid');
 
-    const consumed = this.tickets.consume(token);
+    // The socket was routed for one document; it cannot open another one here.
+    if (socket.boundDocumentId !== null && socket.boundDocumentId !== name.documentId) {
+      throw new CollabDenied('ticket_invalid');
+    }
+    const consumed = await this.tickets.consume(token);
     if (!consumed.ok) throw new CollabDenied(consumed.reason);
     const ticket = consumed.data;
     if (ticket.documentId !== name.documentId) throw new CollabDenied('ticket_invalid');
@@ -568,8 +872,16 @@ export class CollabServer {
         MIN_HELLO_INTERVAL_MS,
       ),
       closing: false,
+      pendingHint: null,
     };
     connectionConfig.readOnly = state.roleReadOnly;
+    if (access.participant) {
+      // Joined times and the `participant.joined` webhook; never delays or fails the connection.
+      recordParticipantJoin(
+        { db: this.db, workspace: { id: this.workspaceId } },
+        access.participant.participantId,
+      ).catch((err: unknown) => this.logger.warn({ err }, 'could not record a participant join'));
+    }
     socket.conns.add(state);
     let set = this.registry.get(state.documentId);
     if (!set) {
@@ -594,9 +906,45 @@ export class CollabServer {
     if (durable.generation !== name.generation) throw new CollabDenied('generation_mismatch');
     if (durable.state) Y.applyUpdate(data.document, durable.state, LOAD_ORIGIN);
     for (const update of durable.updates) Y.applyUpdate(data.document, update, LOAD_ORIGIN);
+    let hasCheckpoint = true;
+    let rowsSinceCheckpoint = 0;
+    if (this.config.history.enabled) {
+      try {
+        const history = await this.db.query<{
+          checkpoint: string | null;
+          rows: string;
+          lastSeq: string | null;
+        }>(
+          `SELECT c.hseq AS checkpoint,
+                  (SELECT count(*) FROM doc_history h
+                    WHERE h.document_id = $1 AND h.generation = $2
+                      AND h.hseq > COALESCE(c.hseq, 0)) AS rows,
+                  (SELECT max(seq) FROM doc_history h
+                    WHERE h.document_id = $1 AND h.generation = $2) AS "lastSeq"
+             FROM (SELECT max(hseq) AS hseq FROM doc_history
+                    WHERE document_id = $1 AND generation = $2 AND kind = 'checkpoint') c`,
+          [name.documentId, name.generation],
+        );
+        // History is complete when it reaches the head of the log. It does not
+        // after commits made without it (recording switched off, or an older
+        // server version during a rollback): then a new starting state is
+        // recorded, so that later revisions are rebuilt from the right base.
+        const lastSeq = history.rows[0]?.lastSeq;
+        hasCheckpoint =
+          history.rows[0]?.checkpoint != null &&
+          lastSeq != null &&
+          Number(lastSeq) >= durable.headSeq;
+        rowsSinceCheckpoint = Number(history.rows[0]?.rows ?? 0);
+      } catch (err) {
+        this.logger.error({ err, documentId: name.documentId }, 'history state could not be read');
+        throw new CollabDenied('server_busy');
+      }
+    }
     this.loadInfo.set(data.document, {
       headSeq: durable.headSeq,
       rows: durable.headSeq - durable.uptoSeq,
+      hasCheckpoint,
+      rowsSinceCheckpoint,
     });
   }
 
@@ -605,6 +953,7 @@ export class CollabServer {
     const info = this.loadInfo.get(document);
     if (!name || !info) throw new CollabDenied('server_busy');
 
+    const historyOn = this.config.history.enabled;
     const runtime: DocRuntime = {
       documentName,
       documentId: name.documentId,
@@ -613,7 +962,23 @@ export class CollabServer {
       dead: false,
       appendFailuresLogged: 0,
       compactionTriedForUnload: false,
+      firstEditSeen: false,
+      recorder: historyOn ? new HistoryRecorder(document) : null,
       log: new DurableLog({
+        history: historyOn
+          ? {
+              // The state exactly as loaded (= head_seq): where this generation's history starts.
+              baseline: info.hasCheckpoint
+                ? null
+                : {
+                    state: Y.encodeStateAsUpdate(document),
+                    attachmentIds: collectAssetIdsFromDoc(document),
+                  },
+              rowsSinceCheckpoint: info.rowsSinceCheckpoint,
+              checkpointEvery: this.config.history.checkpointEvery,
+              assetIds: () => collectAssetIdsFromDoc(document),
+            }
+          : undefined,
         documentId: name.documentId,
         generation: name.generation,
         headSeq: info.headSeq,
@@ -633,8 +998,11 @@ export class CollabServer {
             this.broadcast(runtime, { t: 'persistence', ...status });
           },
           fatal: (reason) => this.onFatal(runtime, reason),
+          timing: (phase, milliseconds) =>
+            this.metrics?.persistDuration.observe(milliseconds / 1000, { phase }),
           idle: () => this.unloadIfUnused(runtime),
           error: (err, phase) => {
+            this.metrics?.persistFailures.inc({ phase });
             // One line when trouble starts, then every 20th attempt.
             runtime.appendFailuresLogged += 1;
             if (runtime.appendFailuresLogged === 1 || runtime.appendFailuresLogged % 20 === 0) {
@@ -666,7 +1034,34 @@ export class CollabServer {
         return;
       }
       runtime.compactionTriedForUnload = false;
-      runtime.log.enqueue(update);
+      this.metrics?.yjsUpdates.inc();
+      if (!runtime.firstEditSeen) {
+        runtime.firstEditSeen = true;
+        this.onFirstEdit?.(runtime.documentId);
+      }
+      if (!runtime.recorder) {
+        runtime.log.enqueue(update);
+        return;
+      }
+      // Who: the connection the server authenticated, never anything the client says.
+      const summary = runtime.recorder.take();
+      const state =
+        isTransactionOrigin(origin) && origin.source === 'connection'
+          ? (origin.connection as Connection<CollabContext>).context.auth
+          : undefined;
+      let clientOccurredAt: Date | null = null;
+      if (state?.pendingHint) {
+        if (Date.now() - state.pendingHint.at <= HINT_TTL_MS) {
+          summary.clientHint = state.pendingHint.kind;
+          clientOccurredAt = state.pendingHint.clientAt;
+        }
+        state.pendingHint = null;
+      }
+      runtime.log.enqueue(update, {
+        actor: state ? actorOf(state) : SYSTEM_HISTORY_ACTOR,
+        summary,
+        clientOccurredAt,
+      });
     });
   }
 
@@ -722,6 +1117,20 @@ export class CollabServer {
     try {
       message = ClientStateless.parse(JSON.parse(payload));
     } catch {
+      return;
+    }
+
+    if (message.t === 'hint') {
+      // Label for the next update of this connection. It changes nothing but the
+      // history's wording, and only for an editor's own changes.
+      if (!state.roleReadOnly) {
+        const clientAt = message.at === undefined ? null : new Date(message.at);
+        state.pendingHint = {
+          kind: message.kind,
+          at: Date.now(),
+          clientAt: clientAt && !Number.isNaN(clientAt.getTime()) ? clientAt : null,
+        };
+      }
       return;
     }
 
@@ -1057,12 +1466,22 @@ export class CollabServer {
 
   /** Re-checks every connection of a document after its permissions or status changed. */
   async reevaluateDocument(documentId: string): Promise<void> {
+    this.cluster?.publish({ type: 'reevaluate_document', documentId });
+    await this.reevaluateDocumentHere(documentId);
+  }
+
+  private async reevaluateDocumentHere(documentId: string): Promise<void> {
     await this.reevaluate([...(this.registry.get(documentId) ?? [])]);
   }
 
   /** Re-checks connections that were authorized by any of the given sessions. */
   async reevaluateSessions(sessionIds: readonly string[]): Promise<void> {
     if (sessionIds.length === 0) return;
+    this.cluster?.publish({ type: 'reevaluate_sessions', sessionIds: [...sessionIds] });
+    await this.reevaluateSessionsHere(sessionIds);
+  }
+
+  private async reevaluateSessionsHere(sessionIds: readonly string[]): Promise<void> {
     const ids = new Set(sessionIds);
     this.tickets.revokeForSessions(ids);
     await this.reevaluate(this.select((state) => state.sessionIds.some((id) => ids.has(id))));
@@ -1070,7 +1489,64 @@ export class CollabServer {
 
   /** Re-checks every connection of an account (role change, disable). */
   async reevaluateUser(userId: string): Promise<void> {
+    this.cluster?.publish({ type: 'reevaluate_user', userId });
+    await this.reevaluateUserHere(userId);
+  }
+
+  private async reevaluateUserHere(userId: string): Promise<void> {
     await this.reevaluate(this.select((state) => state.userId === userId));
+  }
+
+  /** A message from another instance: the same action, applied to this instance's sockets. */
+  private onControl(message: ControlMessage): void {
+    const failed = (err: unknown): void => {
+      this.logger.error({ err, type: message.type }, 'control message could not be applied');
+    };
+    switch (message.type) {
+      case 'reevaluate_document':
+        this.reevaluateDocumentHere(message.documentId).catch(failed);
+        break;
+      case 'reevaluate_sessions':
+        this.reevaluateSessionsHere(message.sessionIds).catch(failed);
+        break;
+      case 'reevaluate_user':
+        this.reevaluateUserHere(message.userId).catch(failed);
+        break;
+      case 'generation':
+        this.announceGenerationHere(
+          message.documentId,
+          message.oldGeneration,
+          message.newGeneration,
+          message.notice,
+        );
+        break;
+      case 'flush': {
+        const runtime = this.runtimes.get(
+          collabDocumentName(message.documentId, message.generation),
+        );
+        // Only the instance that has the document loaded answers.
+        if (!runtime || runtime.dead) break;
+        runtime.log
+          .flush(message.timeoutMs)
+          .then((ok) => this.cluster?.reply(message.replyTo, ok))
+          .catch(failed);
+        break;
+      }
+    }
+  }
+
+  private hasRuntime(documentId: string): boolean {
+    for (const runtime of this.runtimes.values()) {
+      if (runtime.documentId === documentId && !runtime.dead) return true;
+    }
+    return false;
+  }
+
+  /** Another instance owns the document now: stop serving it here; clients reconnect. */
+  private dropDocument(documentId: string): void {
+    for (const runtime of [...this.runtimes.values()]) {
+      if (runtime.documentId === documentId) runtime.log.fail('sequence_conflict');
+    }
   }
 
   /** Re-checks everything: used by the periodic sweep. */
@@ -1130,8 +1606,10 @@ export class CollabServer {
   /** Waits until the loaded document (if any) has nothing left to commit. */
   async flushDocument(documentId: string, generation: number, timeoutMs = 5_000): Promise<boolean> {
     const runtime = this.runtimes.get(collabDocumentName(documentId, generation));
-    if (!runtime || runtime.dead) return true;
-    return runtime.log.flush(timeoutMs);
+    if (runtime && !runtime.dead) return runtime.log.flush(timeoutMs);
+    // Loaded on another instance, perhaps: ask. Nobody answering means nobody has it.
+    if (this.cluster) await this.cluster.requestFlush(documentId, generation, timeoutMs);
+    return true;
   }
 
   /**
@@ -1139,6 +1617,16 @@ export class CollabServer {
    * closes it and makes sure nothing queued for the old generation is written.
    */
   announceGeneration(
+    documentId: string,
+    oldGeneration: number,
+    newGeneration: number,
+    notice: GenerationNotice = {},
+  ): void {
+    this.cluster?.publish({ type: 'generation', documentId, oldGeneration, newGeneration, notice });
+    this.announceGenerationHere(documentId, oldGeneration, newGeneration, notice);
+  }
+
+  private announceGenerationHere(
     documentId: string,
     oldGeneration: number,
     newGeneration: number,
@@ -1171,6 +1659,21 @@ export class CollabServer {
     return this.sockets.size;
   }
 
+  /** Sockets this instance only passes on to the owner of their document. */
+  get forwardedCount(): number {
+    return this.forwards.size;
+  }
+
+  /** New sockets are refused from now on (the load balancer should already send none). */
+  get draining(): boolean {
+    return this.drainingFlag || this.shuttingDown;
+  }
+
+  /** Readiness turns to "not ready"; open connections keep working until `shutdown`. */
+  beginDrain(): void {
+    this.drainingFlag = true;
+  }
+
   get loadedDocumentCount(): number {
     return this.runtimes.size;
   }
@@ -1187,6 +1690,11 @@ export class CollabServer {
       [...this.runtimes.values()].map((runtime) => runtime.log.flush(flushTimeoutMs)),
     );
     for (const socket of [...this.sockets]) this.closeSocket(socket, COLLAB_CLOSE.serverShutdown);
+    for (const pair of [...this.forwards]) {
+      safeClose(pair.client, COLLAB_CLOSE.serverShutdown.code, COLLAB_CLOSE.serverShutdown.reason);
+      safeClose(pair.upstream, 1000, 'server_shutdown');
+    }
+    this.forwards.clear();
     await new Promise<void>((resolve) => {
       const deadline = setTimeout(resolve, 1_500);
       const check = setInterval(() => {

@@ -1,0 +1,258 @@
+{
+ "scenario": "s10",
+ "title": "10. rolling restart (2 instances)",
+ "topology": "A",
+ "startedAt": "2026-11-12T02:48:02.793Z",
+ "config": {
+  "instances": 1,
+  "docs": 100,
+  "clients": 400,
+  "settleS": 30,
+  "instanceDownS": 5,
+  "typingRate": 1,
+  "backoff": "400 ms base, x2, cap 30 s, equal jitter 0.5 (same as packages/editor/src/collab/backoff.ts)"
+ },
+ "phases": [
+  {
+   "name": "restart of instance 1 (SIGTERM, 5s down, start)",
+   "durationS": 35.709,
+   "latency": {
+    "u": {
+     "remote": {
+      "n": 10562,
+      "min": 0.0849609375,
+      "p50": 0.768798828125,
+      "p95": 1.7255859375,
+      "p99": 9581.927490234375,
+      "mean": 199.64885932562635,
+      "max": 11911.223876953125
+     },
+     "ack": {
+      "n": 10570,
+      "min": 1.66552734375,
+      "p50": 3.798828125,
+      "p95": 5.949951171875,
+      "p99": 8.121337890625,
+      "mean": 23.738793760532463,
+      "max": 11919.302734375
+     },
+     "ticketMs": {
+      "n": 400,
+      "min": 2.9990234375,
+      "p50": 5.442138671875,
+      "p95": 13.341064453125,
+      "p99": 19.16845703125,
+      "mean": 6.584730224609375,
+      "max": 45.72509765625
+     },
+     "ackOffline": {
+      "n": 3710,
+      "min": 3.825927734375,
+      "p50": 4638.890625,
+      "p95": 9295.81005859375,
+      "p99": 10368.82373046875,
+      "mean": 4711.852223522258,
+      "max": 11492.85986328125
+     },
+     "reconnect": {
+      "n": 400,
+      "min": 5797.65283203125,
+      "p50": 9296.486083984375,
+      "p95": 11099.594970703125,
+      "p99": 11523.89990234375,
+      "mean": 9288.779943847656,
+      "max": 11867.8857421875
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 10562,
+      "min": 0.0849609375,
+      "p50": 0.768798828125,
+      "p95": 1.7255859375,
+      "p99": 9581.927490234375,
+      "mean": 199.64885932562635,
+      "max": 11911.223876953125
+     },
+     "ack": {
+      "n": 10570,
+      "min": 1.66552734375,
+      "p50": 3.798828125,
+      "p95": 5.949951171875,
+      "p99": 8.121337890625,
+      "mean": 23.738793760532463,
+      "max": 11919.302734375
+     },
+     "ticketMs": {
+      "n": 400,
+      "min": 2.9990234375,
+      "p50": 5.442138671875,
+      "p95": 13.341064453125,
+      "p99": 19.16845703125,
+      "mean": 6.584730224609375,
+      "max": 45.72509765625
+     },
+     "ackOffline": {
+      "n": 3710,
+      "min": 3.825927734375,
+      "p50": 4638.890625,
+      "p95": 9295.81005859375,
+      "p99": 10368.82373046875,
+      "mean": 4711.852223522258,
+      "max": 11492.85986328125
+     },
+     "reconnect": {
+      "n": 400,
+      "min": 5797.65283203125,
+      "p50": 9296.486083984375,
+      "p95": 11099.594970703125,
+      "p99": 11523.89990234375,
+      "mean": 9288.779943847656,
+      "max": 11867.8857421875
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "edits": 14282,
+     "shutdown_notice": 400,
+     "connect_errors": 1599,
+     "reconnects": 400
+    }
+   },
+   "errors": {
+    "net_UND_ERR_SOCKET": 838,
+    "net_ECONNRESET": 761
+   },
+   "closeCodes": {
+    "4503 server_shutdown": 400
+   },
+   "generator": [
+    {
+     "pid": 1087598,
+     "cpuPct": 9.148558551831576,
+     "cpuSecondsTotal": 9.303692,
+     "rssMb": 249.953125,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 15.335423,
+     "clients": 100
+    },
+    {
+     "pid": 1087621,
+     "cpuPct": 8.78306795235253,
+     "cpuSecondsTotal": 9.084243,
+     "rssMb": 251.015625,
+     "lagP99Ms": 10.969087,
+     "lagMaxMs": 14.442495,
+     "clients": 100
+    },
+    {
+     "pid": 1087629,
+     "cpuPct": 9.03568732069865,
+     "cpuSecondsTotal": 9.05359,
+     "rssMb": 240.62109375,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 13.410303,
+     "clients": 100
+    },
+    {
+     "pid": 1087637,
+     "cpuPct": 8.074430597070512,
+     "cpuSecondsTotal": 8.657894,
+     "rssMb": 202.97265625,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 12.623871,
+     "clients": 100
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 10,
+     "upSamples": 8,
+     "cpuPctAvg": 28.91938346676009,
+     "cpuPctMax": 39.776643356643355,
+     "rssMbMax": 368.953125,
+     "rssMbEnd": 368.953125,
+     "heapMbMax": 187.76577758789062,
+     "wsMax": 400,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 100,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 4,
+     "poolWaitingAvg": 0.5,
+     "lagP99MaxMs": 23.527423,
+     "queueBytesMax": 28,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": -2450,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": -2454,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": -199,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": -2000,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": -2000,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": -2000
+     }
+    }
+   ],
+   "hostLoadMax": 4.63,
+   "extra": {
+    "sigtermAt": "2026-11-12T02:48:52.992Z",
+    "shutdownMs": 178,
+    "startToHealthyMs": 527,
+    "readyClientsAtEnd": 400,
+    "total": 400
+   }
+  }
+ ],
+ "results": {
+  "restarts": [
+   {
+    "instance": 1,
+    "shutdownMs": 178,
+    "startToHealthyMs": 527
+   }
+  ],
+  "quiesce": {
+   "ok": true,
+   "unacked": 0,
+   "waitedMs": 502
+  },
+  "verification": {
+   "docs": 100,
+   "checked": 26294,
+   "missing": 0,
+   "missingSamples": [],
+   "unackedAtEnd": 0,
+   "exportErrors": 0
+  }
+ },
+ "notes": [
+  "Host load average (1 min) peaked at 4.6 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T02:49:29.320Z"
+}

@@ -1,0 +1,206 @@
+{
+ "scenario": "s12",
+ "title": "12. temporary database pause",
+ "topology": "A",
+ "startedAt": "2026-11-12T03:11:18.189Z",
+ "config": {
+  "docs": 100,
+  "clients": 400,
+  "typingRate": 1,
+  "pauseS": 10
+ },
+ "phases": [
+  {
+   "name": "database paused for 10 s during typing",
+   "durationS": 60.07,
+   "latency": {
+    "u": {
+     "ack": {
+      "n": 24025,
+      "min": 1.57177734375,
+      "p50": 3.400634765625,
+      "p95": 7100.5439453125,
+      "p99": 9514.56005859375,
+      "mean": 854.8093718599604,
+      "max": 10040.39013671875
+     },
+     "remote": {
+      "n": 24028,
+      "min": 0.098876953125,
+      "p50": 0.5517578125,
+      "p95": 1.02197265625,
+      "p99": 1.34521484375,
+      "mean": 0.5932719708679718,
+      "max": 8.530517578125
+     }
+    },
+    "ALL": {
+     "ack": {
+      "n": 24025,
+      "min": 1.57177734375,
+      "p50": 3.400634765625,
+      "p95": 7100.5439453125,
+      "p99": 9514.56005859375,
+      "mean": 854.8093718599604,
+      "max": 10040.39013671875
+     },
+     "remote": {
+      "n": 24028,
+      "min": 0.098876953125,
+      "p50": 0.5517578125,
+      "p95": 1.02197265625,
+      "p99": 1.34521484375,
+      "mean": 0.5932719708679718,
+      "max": 8.530517578125
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "edits": 24028,
+     "save_error_storage_unavailable": 2121,
+     "persistence_degraded": 360,
+     "persistence_ok": 360
+    }
+   },
+   "errors": {},
+   "closeCodes": {},
+   "generator": [
+    {
+     "pid": 1349629,
+     "cpuPct": 4.397371856332943,
+     "cpuSecondsTotal": 5.518922,
+     "rssMb": 162.859375,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 12.910591,
+     "clients": 100
+    },
+    {
+     "pid": 1349637,
+     "cpuPct": 4.333419678034171,
+     "cpuSecondsTotal": 5.368064,
+     "rssMb": 161.95703125,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 12.820479,
+     "clients": 100
+    },
+    {
+     "pid": 1349646,
+     "cpuPct": 4.289440193971581,
+     "cpuSecondsTotal": 5.403893,
+     "rssMb": 164.3515625,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 11.870207,
+     "clients": 100
+    },
+    {
+     "pid": 1349700,
+     "cpuPct": 4.133700091849211,
+     "cpuSecondsTotal": 5.264127,
+     "rssMb": 162.6015625,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 11.263999,
+     "clients": 100
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 14,
+     "upSamples": 14,
+     "cpuPctAvg": 18.313485726853308,
+     "cpuPctMax": 21.880363927214585,
+     "rssMbMax": 343.44921875,
+     "rssMbEnd": 343.44921875,
+     "heapMbMax": 180.08604431152344,
+     "wsMax": 400,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 100,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 99,
+     "poolWaitingAvg": 13.642857142857142,
+     "lagP99MaxMs": 21.233663,
+     "queueBytesMax": 102828,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 24032,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 20206,
+       "meanMs": 28.761056438533092,
+       "p95UpperMs": 5,
+       "p99UpperMs": 50
+      },
+      "compact": {
+       "count": 100,
+       "meanMs": 2.9794058699997548,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 0
+     }
+    }
+   ],
+   "hostLoadMax": 5.3,
+   "extra": {
+    "pausedAt": "2026-11-12T03:12:13.498Z",
+    "resumedAt": "2026-11-12T03:12:23.528Z"
+   }
+  }
+ ],
+ "results": {
+  "quiesce": {
+   "ok": true,
+   "unacked": 0,
+   "waitedMs": 0
+  },
+  "verification": {
+   "docs": 100,
+   "checked": 36043,
+   "missing": 0,
+   "missingSamples": [],
+   "unackedAtEnd": 0,
+   "exportErrors": 0
+  }
+ },
+ "notes": [
+  "Host load average (1 min) peaked at 6.8 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T03:13:08.656Z"
+}

@@ -150,6 +150,7 @@ export function CompatibilityMatrix({
                     return (
                       <td
                         key={mode.id}
+                        data-label={mode.label}
                         data-verified={found.length > 0 ? 'true' : undefined}
                         data-testid="matrix-cell"
                       >

@@ -1,0 +1,335 @@
+{
+ "scenario": "s16",
+ "title": "16. soak",
+ "topology": "A",
+ "startedAt": "2026-11-12T03:13:48.458Z",
+ "config": {
+  "docs": 250,
+  "clients": 1000,
+  "ratePerClient": 0.2,
+  "editsPerSecondTotal": 200,
+  "minutes": 12,
+  "metricSampleIntervalS": 5
+ },
+ "phases": [],
+ "results": {
+  "soak": {
+   "ranMinutes": 12,
+   "perInstance": {
+    "4450": {
+     "rssSlopeBytesPerMinAfter10min": 12071498,
+     "heapSlopeBytesPerMinAfter10min": -871425,
+     "rssSlopeBytesPerMinSecondHalf": 6482510,
+     "heapSlopeBytesPerMinSecondHalf": -1047422,
+     "rssSlopeBytesPerMinWholeRun": 5269550,
+     "rssMbAt": {
+      "min5": 362.1,
+      "min10": 384.1
+     },
+     "heapMbAt": {
+      "min5": 150.7,
+      "min10": 147.9
+     }
+    }
+   },
+   "windows": [
+    {
+     "atMinute": 5,
+     "remoteP95": 1.1748046875,
+     "ackP95": 4.88818359375,
+     "remoteN": 60000,
+     "reconnects": 0,
+     "errors": {},
+     "rssMb": [
+      362.1
+     ],
+     "generatorCpu": [
+      3.5,
+      3.5,
+      3.3,
+      3.3
+     ]
+    },
+    {
+     "atMinute": 10,
+     "remoteP95": 1.020751953125,
+     "ackP95": 4.46240234375,
+     "remoteN": 60022,
+     "reconnects": 0,
+     "errors": {},
+     "rssMb": [
+      384.1
+     ],
+     "generatorCpu": [
+      3,
+      3.1,
+      2.8,
+      2.8
+     ]
+    },
+    {
+     "atMinute": 12,
+     "remoteP95": 1.01904296875,
+     "ackP95": 4.502197265625,
+     "remoteN": 23978,
+     "reconnects": 0,
+     "errors": {},
+     "rssMb": [
+      401.6
+     ],
+     "generatorCpu": [
+      2.9,
+      3.1,
+      2.5,
+      2.5
+     ]
+    }
+   ]
+  },
+  "quiesce": {
+   "ok": true,
+   "unacked": 0,
+   "waitedMs": 1
+  },
+  "verification": {
+   "docs": 250,
+   "checked": 144019,
+   "missing": 0,
+   "missingSamples": [],
+   "unackedAtEnd": 0,
+   "exportErrors": 0
+  },
+  "rssSeries": [
+   {
+    "min": 0.1,
+    "rssMb": [
+     330.1
+    ],
+    "heapMb": [
+     140.9
+    ]
+   },
+   {
+    "min": 0.6,
+    "rssMb": [
+     353.2
+    ],
+    "heapMb": [
+     142
+    ]
+   },
+   {
+    "min": 1.1,
+    "rssMb": [
+     371.2
+    ],
+    "heapMb": [
+     179.8
+    ]
+   },
+   {
+    "min": 1.6,
+    "rssMb": [
+     388.5
+    ],
+    "heapMb": [
+     208.8
+    ]
+   },
+   {
+    "min": 2.1,
+    "rssMb": [
+     301.2
+    ],
+    "heapMb": [
+     130.1
+    ]
+   },
+   {
+    "min": 2.6,
+    "rssMb": [
+     359.8
+    ],
+    "heapMb": [
+     154.3
+    ]
+   },
+   {
+    "min": 3.1,
+    "rssMb": [
+     362.5
+    ],
+    "heapMb": [
+     183.8
+    ]
+   },
+   {
+    "min": 3.6,
+    "rssMb": [
+     376.1
+    ],
+    "heapMb": [
+     165.3
+    ]
+   },
+   {
+    "min": 4.1,
+    "rssMb": [
+     387.5
+    ],
+    "heapMb": [
+     196.2
+    ]
+   },
+   {
+    "min": 4.6,
+    "rssMb": [
+     305.5
+    ],
+    "heapMb": [
+     139.6
+    ]
+   },
+   {
+    "min": 5,
+    "rssMb": [
+     362.1
+    ],
+    "heapMb": [
+     150.7
+    ]
+   },
+   {
+    "min": 5.5,
+    "rssMb": [
+     362.5
+    ],
+    "heapMb": [
+     172
+    ]
+   },
+   {
+    "min": 6,
+    "rssMb": [
+     367.8
+    ],
+    "heapMb": [
+     135.4
+    ]
+   },
+   {
+    "min": 6.5,
+    "rssMb": [
+     368.3
+    ],
+    "heapMb": [
+     169.3
+    ]
+   },
+   {
+    "min": 7,
+    "rssMb": [
+     368.9
+    ],
+    "heapMb": [
+     136.8
+    ]
+   },
+   {
+    "min": 7.5,
+    "rssMb": [
+     368.9
+    ],
+    "heapMb": [
+     172.4
+    ]
+   },
+   {
+    "min": 8,
+    "rssMb": [
+     368.9
+    ],
+    "heapMb": [
+     138.3
+    ]
+   },
+   {
+    "min": 8.5,
+    "rssMb": [
+     370.7
+    ],
+    "heapMb": [
+     150.7
+    ]
+   },
+   {
+    "min": 9,
+    "rssMb": [
+     377.7
+    ],
+    "heapMb": [
+     187.3
+    ]
+   },
+   {
+    "min": 9.5,
+    "rssMb": [
+     383.3
+    ],
+    "heapMb": [
+     144.9
+    ]
+   },
+   {
+    "min": 10,
+    "rssMb": [
+     383.9
+    ],
+    "heapMb": [
+     184.3
+    ]
+   },
+   {
+    "min": 10.4,
+    "rssMb": [
+     384.1
+    ],
+    "heapMb": [
+     122.8
+    ]
+   },
+   {
+    "min": 10.9,
+    "rssMb": [
+     385.5
+    ],
+    "heapMb": [
+     155.3
+    ]
+   },
+   {
+    "min": 11.4,
+    "rssMb": [
+     400
+    ],
+    "heapMb": [
+     185
+    ]
+   },
+   {
+    "min": 11.9,
+    "rssMb": [
+     400.8
+    ],
+    "heapMb": [
+     152.6
+    ]
+   }
+  ]
+ },
+ "notes": [
+  "Host load average (1 min) peaked at 4.2 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T03:26:49.122Z"
+}

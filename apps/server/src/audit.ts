@@ -9,7 +9,7 @@ import { newId } from './auth/tokens';
 export type AuditDetails = Record<string, string | number | boolean | null>;
 
 export interface AuditActor {
-  kind: 'user' | 'guest' | 'system';
+  kind: 'user' | 'guest' | 'system' | 'service';
   userId?: string | null;
   name?: string | null;
 }

@@ -1,5 +1,9 @@
 /**
- * Public downloads of the packaged desktop application.
+ * Public downloads of the packaged desktop application: the LEGACY flat-file layout.
+ *
+ * Versioned, multi-platform releases are served by `releases.ts`. This file keeps the four flat
+ * files (`realtimedocs-<platform>-<arch>.zip`) working until the operator migrates, and feeds
+ * `GET /api/downloads` from the new release store when a current stable release exists there.
  *
  * Only a fixed allow-list of file names is served, and only from the
  * configured `DOWNLOAD_DIR`; there is no directory traversal and no listing.
@@ -22,6 +26,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { contentDisposition } from '../../assets/filename';
 import { errors } from '../../errors';
 import type { RouteDeps } from '../app';
+import { releaseStoreFor } from '../../releases';
 
 /** The exact file names the landing page links to. Nothing else is served. */
 export const DOWNLOADS: Readonly<Record<string, string>> = {
@@ -57,6 +62,7 @@ function sha256File(filePath: string): Promise<string> {
 
 export function registerDownloadRoutes(app: FastifyInstance, { ctx }: RouteDeps): void {
   const { downloadDir } = ctx.config;
+  const store = releaseStoreFor(ctx);
 
   // SHA-256 per file, keyed by path, size and modification time: unchanged files are not
   // hashed again. Concurrent requests for the same key share one streaming pass.
@@ -113,8 +119,36 @@ export function registerDownloadRoutes(app: FastifyInstance, { ctx }: RouteDeps)
     return null;
   }
 
+  /** The current stable release of the versioned store in the legacy shape, or null when absent. */
+  async function fromReleaseStore(): Promise<DownloadsResponse | null> {
+    const release = await store.current('stable');
+    if (!release) return null;
+    const verified = await store.verified(release);
+    if (verified.length === 0) return null;
+    const states = verified.map((a) => a.signatureStatus);
+    const signed = states.every((x) => x === 'signed' || x === 'notarized')
+      ? true
+      : states.every((x) => x === 'unsigned' || x === 'dev-signed')
+        ? false
+        : null;
+    return {
+      release: { version: release.version, notes: release.notes.slice(0, 2000), signed },
+      artifacts: verified.map((a) => ({
+        file: a.fileName,
+        platform: a.platform,
+        arch: a.arch,
+        bytes: a.sizeBytes,
+        sha256: a.sha256,
+        modifiedAt: release.publishedAt,
+        url: a.downloadUrl,
+      })),
+    };
+  }
+
   app.get('/api/downloads', async (): Promise<DownloadsResponse> => {
     if (!downloadDir) return { release: null, artifacts: [] };
+    const fromStore = await fromReleaseStore();
+    if (fromStore) return fromStore;
     const artifacts: DownloadArtifact[] = [];
     for (const name of Object.keys(DOWNLOADS)) {
       const described = describeName(name);
@@ -183,4 +217,18 @@ export function registerDownloadRoutes(app: FastifyInstance, { ctx }: RouteDeps)
     url: '/download/:file',
     handler: (request, reply) => serve(request, reply),
   });
+}
+
+/** Names of the legacy flat files that are present (for the administrator overview). */
+export async function listLegacyFiles(dir: string | null): Promise<string[]> {
+  if (!dir) return [];
+  const present: string[] = [];
+  for (const name of Object.keys(DOWNLOADS)) {
+    try {
+      if ((await stat(path.join(dir, name))).isFile()) present.push(name);
+    } catch {
+      // absent
+    }
+  }
+  return present;
 }

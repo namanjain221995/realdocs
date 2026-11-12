@@ -53,6 +53,12 @@ const SCREENS: Record<ShareFailureKind, FailureScreen> = {
     description:
       'It no longer opens the document. Ask the person who sent it for a new link if you still need access.',
   },
+  session_closed: {
+    kind: 'session_closed',
+    title: 'This interview has ended',
+    description:
+      'The session this link belongs to was completed, cancelled or archived, so the document can no longer be opened. If you still need it, contact the organiser.',
+  },
   document_unavailable: {
     kind: 'document_trashed',
     title: 'The shared document is not available',

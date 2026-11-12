@@ -41,6 +41,9 @@ export function registerDesktopRoutes(app: FastifyInstance, { ctx, limits }: Rou
     '/api/documents/:documentId/desktop-handoff',
     async (request, reply): Promise<DesktopHandoffResponse> => {
       const access = await documentAccess(ctx, request, param(request, 'documentId'));
+      if (!access.capabilities.canUseDesktop) {
+        throw errors.forbidden('The desktop app is not available for your link.');
+      }
       await limits.collabTicket.consume(request, `handoff:${access.principalSessionId}`);
       const code = randomToken();
       const expiresAt = new Date(Date.now() + TTL.desktopHandoffCodeMs);

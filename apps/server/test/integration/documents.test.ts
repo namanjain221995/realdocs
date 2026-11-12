@@ -439,6 +439,17 @@ describe('retention job (cleanup)', () => {
     await fx.admin.delete(
       `/api/documents/${documentId}/snapshots/${snapshots.body.snapshots[0]?.id}`,
     );
+    // The version history still shows the revision that contained the image, so
+    // the image stays referenced after its snapshot is gone.
+    expect(await runCleanup()).toMatchObject({ assetsDeleted: 0 });
+    expect(await unreferencedSince(inSnapshot.id)).toBeNull();
+
+    // Once that part of the history is no longer retained, the image starts its
+    // own grace period.
+    await fx.server.sql(
+      'DELETE FROM doc_history WHERE document_id = $1 AND $2::uuid = ANY (attachment_ids)',
+      [documentId, inSnapshot.id],
+    );
     expect(await runCleanup()).toMatchObject({ assetsDeleted: 0 });
     expect(await unreferencedSince(inSnapshot.id)).not.toBeNull();
     expect(await unreferencedSince(live.id)).toBeNull();

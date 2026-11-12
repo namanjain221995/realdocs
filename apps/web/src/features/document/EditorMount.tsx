@@ -68,6 +68,9 @@ export interface EditorMountProps {
   participantsSlot: HTMLElement | null;
   /** Reading mode: read-only presentation that always follows the latest changes. */
   reading?: boolean;
+  /** Controlled "Page setup" dialog (opened from the document header). */
+  pageSetupOpen?: boolean;
+  onPageSetupOpenChange?: (open: boolean) => void;
   /** Narrow header: ask for the compact indicator. */
   compact?: boolean;
   /** Connection, save state, role, generation or the list of kept drafts changed. */
@@ -173,12 +176,16 @@ function Surface({
   access,
   displayPreferences,
   reading,
+  pageSetupOpen,
+  onPageSetupOpenChange,
   onOpenDraft,
 }: {
   session: CollabSession;
   access: AccessInfo;
   displayPreferences: DisplayPreferences;
   reading: boolean;
+  pageSetupOpen?: boolean;
+  onPageSetupOpenChange?: (open: boolean) => void;
   onOpenDraft?: (draftId: string) => void;
 }) {
   const canEdit = useSessionSelector(session, selectCanEdit);
@@ -205,6 +212,10 @@ function Surface({
         followLatest={follow || reading}
         onFollowLatestChange={changeFollow}
         onOpenLink={openLink}
+        // Reading mode keeps the per-user reading width; otherwise the document's own page.
+        layout={reading ? 'reading' : 'page'}
+        pageSetupOpen={pageSetupOpen}
+        onPageSetupOpenChange={onPageSetupOpenChange}
       />
     </div>
   );
@@ -216,6 +227,8 @@ export function EditorMount({
   documentTitle,
   displayPreferences,
   reading = false,
+  pageSetupOpen,
+  onPageSetupOpenChange,
   statusSlot,
   participantsSlot,
   compact = false,
@@ -252,6 +265,8 @@ export function EditorMount({
         access={access}
         displayPreferences={displayPreferences}
         reading={reading}
+        pageSetupOpen={pageSetupOpen}
+        onPageSetupOpenChange={onPageSetupOpenChange}
         onOpenDraft={onOpenDraft}
       />
     </>

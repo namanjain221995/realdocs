@@ -69,12 +69,20 @@ delivered as a `.zip` or, when built on a Mac, also as a `.dmg`. Drag it to the 
 and open it once, so that macOS knows it handles `realtimedocs://` links. A Mac build is not an
 installer: there is nothing to run with administrator rights, and the app asks for none.
 
-| Form                        | File name                                                           | Where it comes from                                                               |
-| --------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Zip, Apple Silicon          | `RealtimeDocs-0.1.0-darwin-arm64.zip` (117.5 MiB as built on Linux) | cross-built on the Linux server; unsigned; **cannot start until signed on a Mac** |
-| Zip, Intel                  | `RealtimeDocs-0.1.0-darwin-x64.zip` (121.3 MiB as built on Linux)   | cross-built on the Linux server; unsigned; never started                          |
-| Disk image (`.dmg`)         | `RealtimeDocs-0.1.0-darwin-<arch>.dmg`                              | made only on a Mac (`hdiutil`); not built yet                                     |
-| One app for both processors | the universal build                                                 | made only on a Mac (`lipo`); not built yet                                        |
+| Form                        | File name                                                          | Where it comes from                                                               |
+| --------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Zip, Apple Silicon          | `RealtimeDocs-0.1.0-macos-arm64.zip` (117.5 MiB as built on Linux) | cross-built on the Linux server; unsigned; **cannot start until signed on a Mac** |
+| Zip, Intel                  | `RealtimeDocs-0.1.0-macos-x64.zip` (121.3 MiB as built on Linux)   | cross-built on the Linux server; unsigned; never started                          |
+| Disk image (`.dmg`)         | `RealtimeDocs-0.1.0-macos-<arch>.dmg`                              | made only on a Mac (`hdiutil`); not built yet                                     |
+| One app for both processors | the universal build                                                | made only on a Mac (`lipo`); not built yet                                        |
+
+The published file names are `RealtimeDocs-<version>-macos-<arm64|x64|universal>.<zip|dmg>`
+([desktop-release.md](desktop-release.md)); the unpacked folder keeps the Electron name
+`RealtimeDocs-darwin-<arch>`. Updates: the app checks your server, and on request downloads and
+verifies (SHA-256) the new file, but never installs by itself. A browser cannot tell Apple Silicon
+from Intel, so the download page shows the Apple Silicon build by default and always offers "Choose
+another platform"; Apple menu -> About This Mac names your chip. A `.dmg` is suggested only when the
+operator states it is notarised.
 
 **Never disable Gatekeeper or System Integrity Protection for this app, and do not strip download
 marks from it to get it past macOS.** If macOS refuses a build, the build is the thing to fix.
@@ -151,7 +159,7 @@ The engineers' notes also describe signing one of the Linux-built zips on a Mac,
 before a native build exists:
 
 ```sh
-unzip RealtimeDocs-0.1.0-darwin-arm64.zip && cd RealtimeDocs-darwin-arm64
+unzip RealtimeDocs-0.1.0-macos-arm64.zip && cd RealtimeDocs-darwin-arm64
 codesign --force --deep --sign - RealtimeDocs.app
 open RealtimeDocs.app
 ```
@@ -203,7 +211,7 @@ The entitlements listing should show `com.apple.security.cs.allow-jit` and nothi
 The script does not sign or notarize the `.dmg` container itself. To distribute the disk image:
 
 ```sh
-DMG=apps/desktop/out/RealtimeDocs-0.1.0-darwin-arm64.dmg
+DMG=apps/desktop/out/RealtimeDocs-0.1.0-macos-arm64.dmg
 codesign --sign "$APPLE_SIGNING_IDENTITY" --timestamp "$DMG"
 xcrun notarytool submit "$DMG" --keychain-profile "$APPLE_KEYCHAIN_PROFILE" --wait
 xcrun stapler staple "$DMG"

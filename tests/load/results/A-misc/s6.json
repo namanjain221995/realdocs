@@ -1,0 +1,183 @@
+{
+ "scenario": "s6",
+ "title": "6. presence updates",
+ "topology": "A",
+ "startedAt": "2026-11-12T02:50:33.323Z",
+ "config": {
+  "docs": 100,
+  "perDoc": 4,
+  "clients": 400,
+  "awarenessUpdatesPerSecondPerClient": 5,
+  "durationS": 90
+ },
+ "phases": [
+  {
+   "name": "presence updates",
+   "durationS": 90.001,
+   "latency": {
+    "u": {
+     "presence": {
+      "n": 180000,
+      "min": 0,
+      "p50": 5,
+      "p95": 33,
+      "p99": 42,
+      "mean": 9.680238888888889,
+      "max": 55
+     }
+    },
+    "ALL": {
+     "presence": {
+      "n": 180000,
+      "min": 0,
+      "p50": 5,
+      "p95": 33,
+      "p99": 42,
+      "mean": 9.680238888888889,
+      "max": 55
+     }
+    }
+   },
+   "counts": {},
+   "errors": {},
+   "closeCodes": {},
+   "generator": [
+    {
+     "pid": 1087598,
+     "cpuPct": 5.510590499510068,
+     "cpuSecondsTotal": 15.431642,
+     "rssMb": 259.171875,
+     "lagP99Ms": 10.887167,
+     "lagMaxMs": 12.681215,
+     "clients": 100
+    },
+    {
+     "pid": 1087621,
+     "cpuPct": 6.014433138272098,
+     "cpuSecondsTotal": 15.607712,
+     "rssMb": 253.96875,
+     "lagP99Ms": 10.903551,
+     "lagMaxMs": 14.393343,
+     "clients": 100
+    },
+    {
+     "pid": 1087629,
+     "cpuPct": 5.782492498829847,
+     "cpuSecondsTotal": 15.409503,
+     "rssMb": 249.1640625,
+     "lagP99Ms": 10.903551,
+     "lagMaxMs": 14.098431,
+     "clients": 100
+    },
+    {
+     "pid": 1087637,
+     "cpuPct": 5.843153441066755,
+     "cpuSecondsTotal": 15.174762,
+     "rssMb": 147.890625,
+     "lagP99Ms": 10.870783,
+     "lagMaxMs": 12.967935,
+     "clients": 100
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 20,
+     "upSamples": 20,
+     "cpuPctAvg": 32.14582827946541,
+     "cpuPctMax": 41.578588564574126,
+     "rssMbMax": 428.0859375,
+     "rssMbEnd": 320.8828125,
+     "heapMbMax": 194.7064437866211,
+     "wsMax": 400,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 100,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 42.532863,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/openapi.json": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/admin/api-keys": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/v1/interview-sessions": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 0
+     }
+    }
+   ],
+   "hostLoadMax": 4.26,
+   "extra": {
+    "targetUpdatesPerSecond": 2000
+   }
+  }
+ ],
+ "results": {},
+ "notes": [
+  "Presence latency is awareness-update send time (timestamp inside the awareness state) to apply time at the sampled receiver in the same worker process. The server throttles/coalesces presence frames (collab/presence.ts), so latency includes that trailing throttle.",
+  "Host load average (1 min) peaked at 4.6 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T02:52:33.476Z"
+}

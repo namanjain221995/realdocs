@@ -28,8 +28,15 @@ export function registerAuthRoutes(app: FastifyInstance, { ctx, limits }: RouteD
   app.post('/api/auth/login', async (request, reply) => {
     const body = parseInput(LoginRequest, request.body);
     const email = body.email.trim().toLowerCase();
+    // Per address, per account from one address, and per account from anywhere.
+    // The middle one is what a person mistyping a password meets. It is keyed on
+    // the address as well, so that someone else guessing at an account from
+    // their own address cannot lock its owner out; the last one is ten times
+    // higher and bounds guessing spread over many addresses.
+    const emailFromHere = `${email}|${request.ip}`;
     await limits.loginIp.assertAllowed(request, request.ip);
-    await limits.loginEmail.assertAllowed(request, email);
+    await limits.loginEmail.assertAllowed(request, emailFromHere);
+    await limits.loginEmailAnywhere.assertAllowed(request, email);
 
     const found = await db.query<UserWithHash>(
       `SELECT ${USER_COLUMNS}, password_hash AS "passwordHash"
@@ -46,7 +53,8 @@ export function registerAuthRoutes(app: FastifyInstance, { ctx, limits }: RouteD
     }
     if (!user || !valid || user.status !== 'active') {
       await limits.loginIp.recordFailure(request, request.ip);
-      await limits.loginEmail.recordFailure(request, email);
+      await limits.loginEmail.recordFailure(request, emailFromHere);
+      await limits.loginEmailAnywhere.recordFailure(request, email);
       await tryAudit(db, ctx.logger, {
         workspaceId: workspace.id,
         actor: { kind: 'system', name: 'anonymous' },

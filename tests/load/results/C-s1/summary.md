@@ -1,0 +1,88 @@
+# Load test summary (2026-11-12T02:55:53.164Z, topology C)
+
+## 1. connect-1000: concurrent authenticated sockets (topology C) [ok]
+
+Started 2026-11-12T02:52:50.745Z, ended 2026-11-12T02:55:51.105Z.
+
+```json
+{
+ "docs": 250,
+ "perDoc": 4,
+ "users": 1000,
+ "rampS": 60,
+ "holdS": 120,
+ "awareness": true,
+ "autoReconnectDuringTest": false
+}
+```
+
+#### ramp (60 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| ticketMs | 1000 | 4.3 | 5.5 | 7.4 | 14.3 | 4.4 |
+| connect | 1000 | 32.1 | 43.7 | 52.8 | 97.8 | 33.5 |
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 9.3 | 13.8 | 324 | 156 | 536 | 165 | 134 | 10 / 10 | 0 (0.0) | 21.0 | 0 | 0.6 | 0 |
+| :4451 | 11.0 | 13.8 | 318 | 158 | 464 | 200 | 116 | 10 / 10 | 0 (0.0) | 21.1 | 0 | 0.5 | 0 |
+
+Server :4450 persist append: n=497 mean 3.1 ms, p95 <= 5.0 ms, p99 <= 10.0 ms; yjs updates 497; HTTP /api (server-side) n=706 mean 4.4 ms, p95 <= 10.0 ms; ws outcomes accepted=497, forwarded=165
+
+Server :4451 persist append: n=436 mean 3.0 ms, p95 <= 5.0 ms, p99 <= 5.0 ms; yjs updates 436; HTTP /api (server-side) n=1,160 mean 5.3 ms, p95 <= 10.0 ms; ws outcomes accepted=436, forwarded=196
+
+Generator (4 worker processes): CPU % per worker 3/3/3/3; event-loop lag p99 max 10.8 ms (max 33.4 ms); host load1 max 5.0
+
+```json
+{
+ "firstAttempt": {
+  "ok": 1000
+ },
+ "readyAtEndOfRamp": 1000
+}
+```
+
+#### hold (120 s)
+
+| metric (ms) | n | p50 | p95 | p99 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| presence | 23001 | 49.0 | 75.0 | 90.0 | 98.0 | 44.6 |
+
+| server | CPU avg % | CPU max % | RSS max MB | heap max MB | ws max | fwd ws max | docs loaded | pool conn max / max | pool waiting max (avg) | loop lag p99 max ms | queue max B | redis ping max ms | persist failures |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| :4450 | 4.0 | 8.7 | 366 | 158 | 536 | 165 | 134 | 10 / 10 | 0 (0.0) | 26.4 | 0 | 3.0 | 0 |
+| :4451 | 3.9 | 6.6 | 361 | 161 | 464 | 200 | 116 | 10 / 10 | 0 (0.0) | 29.5 | 0 | 3.0 | 0 |
+
+Server :4450 persist append: n=0 mean n/a ms, p95 <= n/a ms, p99 <= n/a ms; yjs updates 0; HTTP /api (server-side) n=0 mean n/a ms, p95 <= n/a ms; ws outcomes accepted=0, forwarded=0
+
+Server :4451 persist append: n=0 mean n/a ms, p95 <= n/a ms, p99 <= n/a ms; yjs updates 0; HTTP /api (server-side) n=0 mean n/a ms, p95 <= n/a ms; ws outcomes accepted=0, forwarded=0
+
+Generator (4 worker processes): CPU % per worker 2/2/1/1; event-loop lag p99 max 11.1 ms (max 21.0 ms); host load1 max 18.9
+
+```json
+{
+ "readyAtEndOfHold": 1000,
+ "total": 1000
+}
+```
+
+### Results
+
+```json
+{
+ "connectionEstablishment": {
+  "attempted": 1000,
+  "succeededFirstAttempt": 1000,
+  "successRatePct": 100,
+  "failuresByCause": {},
+  "connectedAtEndOfHold": 1000,
+  "lostDuringHold": 0
+ }
+}
+```
+
+### Notes
+
+- Presence: every client set an awareness state at connect and updated its cursor every 5 s (0.2/s) during the hold.
+- Host load average (1 min) peaked at 18.9 during the run so far.

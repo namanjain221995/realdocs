@@ -49,7 +49,7 @@ RUN pnpm --filter @realtimedocs/server run build
 FROM source AS web-build
 # The in-app document reader bundles these pages at build time (`?raw` imports).
 COPY README.md ./
-COPY docs/windows-client.md docs/macos-client.md docs/security.md ./docs/
+COPY docs/windows-client.md docs/macos-client.md docs/linux-client.md docs/security.md ./docs/
 COPY apps/web ./apps/web
 RUN pnpm --filter @realtimedocs/web run build
 

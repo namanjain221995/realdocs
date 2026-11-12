@@ -1,0 +1,78 @@
+# Continuous integration: formatting, lint, types, unit tests, the server integration suite against
+# PostgreSQL, and the production builds of the web app and the server.
+#
+# The commands are the ones used locally (docs/testing.md). Browser end-to-end suites and the desktop
+# Xvfb suites need the Playwright image and are not part of this workflow.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Format, lint, types, unit tests, builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The exact Node.js version the project pins.
+          node-version-file: .node-version
+
+      # `packageManager` in package.json names the pnpm version; corepack installs exactly that.
+      - name: Enable pnpm through corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm run format:check
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Unit tests
+        run: pnpm run test
+
+      - name: Build the web app
+        run: pnpm --filter @realtimedocs/web run build
+
+      - name: Build the server
+        run: pnpm --filter @realtimedocs/server run build
+
+  integration:
+    name: Server integration tests (PostgreSQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Enable pnpm through corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The suite's global setup starts and removes its own PostgreSQL 17 container (name
+      # rd-srv-pg-test, port 54410) with the Docker that every GitHub-hosted Ubuntu runner has.
+      - name: Integration tests
+        run: pnpm run test:integration

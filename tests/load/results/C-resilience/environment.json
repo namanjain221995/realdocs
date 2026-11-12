@@ -1,0 +1,72 @@
+{
+ "host": {
+  "cpus": 20,
+  "model": "unknown",
+  "loadavgAtStart": [
+   6.04,
+   8.45,
+   8.35
+  ],
+  "totalMemMb": 124608,
+  "freeMemMb": 32349,
+  "node": "v24.22.2",
+  "kernel": "7.0.0-1025-nvidia"
+ },
+ "stack": {
+  "startedAt": "2026-11-12T03:02:13.960Z",
+  "topology": "C",
+  "instances": [
+   {
+    "index": 0,
+    "port": 4450,
+    "pid": 1275835,
+    "logFile": "/home/techsphere/Documents/project/realtimedocs/tests/load/.stage/server-0.log"
+   },
+   {
+    "index": 1,
+    "port": 4451,
+    "pid": 1275854,
+    "logFile": "/home/techsphere/Documents/project/realtimedocs/tests/load/.stage/server-1.log"
+   }
+  ],
+  "lbPid": 1275874,
+  "origin": "http://127.0.0.1:4459",
+  "settings": {
+   "NODE_ENV": "production",
+   "RD_HOST": "127.0.0.1",
+   "RD_PORT": "4450",
+   "PUBLIC_ORIGIN": "http://127.0.0.1:4459",
+   "ALLOWED_ORIGINS": "http://127.0.0.1:4459,http://127.0.0.1:4450,http://127.0.0.1:4451",
+   "ASSET_DIR": "/home/techsphere/Documents/project/realtimedocs/tests/load/.stage/assets",
+   "LOG_LEVEL": "info",
+   "CLEANUP_INTERVAL_MINUTES": "0",
+   "METRICS_TOKEN": "*** (load-test constant)",
+   "DATABASE_URL": "postgres://rd:***@127.0.0.1:15450/realtimedocs_load",
+   "SESSION_SECRET": "*** (generated)",
+   "DB_POOL_MAX": "10",
+   "COLLAB_MAX_CONNECTIONS": "5000",
+   "RATE_API_PER_MINUTE": "10000000",
+   "RATE_LOGIN_PER_IP": "1000000",
+   "RATE_SHARE_EXCHANGE_PER_IP": "1000000",
+   "RATE_SHARE_EXCHANGE_PER_GRANT": "1000000",
+   "RATE_INVITE_PER_IP": "1000000",
+   "RATE_SIGNUP_PER_IP": "1000000",
+   "RATE_DESKTOP_REDEEM_PER_IP": "1000000",
+   "RATE_DOWNLOAD_PER_IP": "1000000",
+   "RATE_WS_UPGRADE_PER_MINUTE": "1000000",
+   "REDIS_URL": "redis://127.0.0.1:16450"
+  },
+  "adminEmail": "load@example.test",
+  "extraEnv": {},
+  "redis": true
+ },
+ "argv": [
+  "s13,s10,s11,s14",
+  "--topology",
+  "C",
+  "--workers",
+  "4",
+  "--out",
+  "C-resilience"
+ ]
+}

@@ -233,6 +233,7 @@ describe('share exchange', () => {
     ['validation_failed', 400, 'invalid'],
     ['share_expired', 410, 'expired'],
     ['share_revoked', 410, 'revoked'],
+    ['session_closed', 410, 'session_closed'],
     ['document_trashed', 410, 'document_unavailable'],
     ['server_busy', 503, 'unavailable'],
     ['storage_unavailable', 503, 'unavailable'],
@@ -310,6 +311,7 @@ describe('share exchange', () => {
     expect(isFinalShareFailure('invalid')).toBe(true);
     expect(isFinalShareFailure('expired')).toBe(true);
     expect(isFinalShareFailure('revoked')).toBe(true);
+    expect(isFinalShareFailure('session_closed')).toBe(true);
     expect(isFinalShareFailure('document_unavailable')).toBe(true);
     expect(isFinalShareFailure('rate_limited')).toBe(false);
     expect(isFinalShareFailure('offline')).toBe(false);

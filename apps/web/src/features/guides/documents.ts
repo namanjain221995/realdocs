@@ -4,13 +4,14 @@
  * offline of the repository and never fetches anything.
  */
 import readme from '../../../../../README.md?raw';
+import linuxClient from '../../../../../docs/linux-client.md?raw';
 import macosClient from '../../../../../docs/macos-client.md?raw';
 import security from '../../../../../docs/security.md?raw';
 import windowsClient from '../../../../../docs/windows-client.md?raw';
 import type { ResolvedLink } from './markdown';
 
 export interface BundledDocument {
-  slug: 'readme' | 'windows-client' | 'macos-client' | 'security';
+  slug: 'readme' | 'windows-client' | 'macos-client' | 'linux-client' | 'security';
   /** The file in the repository, relative to its root. */
   file: string;
   title: string;
@@ -30,6 +31,12 @@ export const BUNDLED_DOCUMENTS: readonly BundledDocument[] = [
     file: 'docs/macos-client.md',
     title: 'macOS desktop app',
     source: macosClient,
+  },
+  {
+    slug: 'linux-client',
+    file: 'docs/linux-client.md',
+    title: 'Linux desktop app',
+    source: linuxClient,
   },
   { slug: 'security', file: 'docs/security.md', title: 'Security', source: security },
 ];
@@ -63,7 +70,7 @@ function repositoryPath(fromFile: string, target: string): string | null {
  * not part of this site) is shown as plain text.
  */
 export function resolveDocumentLink(fromFile: string, slug: string, href: string): ResolvedLink {
-  if (href.startsWith('#')) return { kind: 'internal', to: `/docs/${slug}${href}` };
+  if (href.startsWith('#')) return { kind: 'internal', to: `/guides/${slug}${href}` };
   if (/^(?:https?:\/\/|mailto:)/i.test(href)) return { kind: 'external', href };
   if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//')) return { kind: 'none' };
   const hashAt = href.indexOf('#');
@@ -71,5 +78,5 @@ export function resolveDocumentLink(fromFile: string, slug: string, href: string
   const fragment = hashAt === -1 ? '' : href.slice(hashAt);
   const resolved = repositoryPath(fromFile, file);
   const target = BUNDLED_DOCUMENTS.find((entry) => entry.file === resolved);
-  return target ? { kind: 'internal', to: `/docs/${target.slug}${fragment}` } : { kind: 'none' };
+  return target ? { kind: 'internal', to: `/guides/${target.slug}${fragment}` } : { kind: 'none' };
 }

@@ -61,6 +61,10 @@ All identifiers are random UUIDv4 (opaque). Every table that belongs to a worksp
 | `desktop_handoffs` | Single-use, 60-second handoff codes (hashed) bound to a principal and a document.                                                                                                                                                                                                                                                                                  |
 | `audit_events`     | Administrative and security events. Never document content, passwords, secrets or tokens.                                                                                                                                                                                                                                                                          |
 
+**Service API tables** (migration `0002_service_api.sql`, see [session-integration.md](session-integration.md)): `api_keys` (hashed keys, scopes, CIDR allow-list, expiry, revocation, rotation), `interview_sessions` (one per document), `interview_participants` (candidate / interviewers, e-mail, join times, current `share_grant_id`), `idempotency_keys` (encrypted stored responses, 24 h), `webhook_endpoints` (encrypted signing secret) and `webhook_deliveries` (the queue). `share_grants.participant_id` ties a participant's link to the ordinary share-grant machinery; `audit_events.actor_kind` gains `service`.
+
+**Service API routes.** `/api/v1/*` (API key, `Authorization: Bearer rdk_…`, never cookies; own error envelope), the same handlers for signed-in administrators under `/api/admin/interview-sessions…` and `/api/admin/webhooks…`, `GET/POST /api/admin/api-keys…`, and the public `GET /api/openapi.json`, generated from the route registry (`apps/server/src/service/v1-routes.ts`). `resolveAccess` returns a `participant` and `capabilities` (`canExport`, `canViewHistory`, `canShare`, `canUseDesktop`) which export, desktop handoff and the collaboration ticket enforce.
+
 ## 3. Authentication, sessions and authorization
 
 - **Passwords**: Argon2id through Node's built-in `crypto.argon2` (memory 64 MiB, 3 passes, parallelism 1), per-password random salt, constant-time comparison, minimum length 12. The first administrator is created by a local CLI (`pnpm bootstrap:admin`), which refuses to run once any account exists. No default credentials exist.
@@ -145,6 +149,10 @@ Restoring a snapshot (administrators only) creates a `pre_restore` snapshot, inc
 
 The compatibility rule is what keeps old clients from damaging new content: when a version-2 client connects, its ticket raises the document's `schema_version` to 2; a client that speaks version 1 then gets `update_required` (HTTP 426 for the ticket) instead of opening a document whose callouts it would silently drop. Every attribute is validated again when it is rendered, because another client can write any value into any attribute through Yjs (see [security.md](security.md)).
 
+### 5.8 Page settings
+
+Paper size, orientation, margins, display unit and page colour are shared document state in a top-level `Y.Map` named `page` (`Y_PAGE_FIELD`) in the same Yjs document as the text. An empty map means defaults, so nothing is stored for an untouched document and `DOCUMENT_SCHEMA_VERSION` is unchanged (older clients ignore the map and never write it). Because it is part of the Yjs state it is synchronised to every client, written to the durable update log, included in snapshots, carried through snapshot restore and duplication (`reencodeFresh` / `encodeInitialState` copy it), merged after offline work, and writable only through read-write connections. Every value is untrusted: `normalizePageSettings` (`packages/contracts/src/page.ts`) is the only reader and returns valid settings whatever the map holds. The JSON export includes the normalised `pageSettings`. Details and limits (continuous page, no pagination): [notes/editor.md](notes/editor.md) section 18.
+
 ## 6. Assets
 
 - Bytes are uploaded over HTTP (`multipart/form-data`) to the private volume through a storage adapter with randomized keys; document nodes hold only asset ids and metadata.
@@ -154,11 +162,43 @@ The compatibility rule is what keeps old clients from damaging new content: when
 
 ## 7. Web application
 
-Routes: `/` (the dashboard for a signed-in session, the public landing page for everyone else), `/login`, `/signup` (only when the server says sign-up is enabled), `/invite/:id`, `/d/:documentId` (editor or viewer by role), `/d/:documentId/print`, `/s/:grantId` (share exchange), `/docs/:name` (an in-app reader for the README and the Windows, macOS and security guides, bundled at build time), `/settings`, `/admin/users`. The landing page lists desktop downloads from `GET /api/downloads` (or says that no release is published) and a compatibility matrix that shows only verified records (the file is empty today, so every cell reads "Not tested"). In development Vite proxies `/api` and `/collab` to the server so the browser sees one origin; in production the server serves the built app.
+Routes: `/` (the dashboard for a signed-in session, the public landing page for everyone else), `/login`, `/signup` (only when the server says sign-up is enabled), `/invite/:id`, `/d/:documentId` (editor or viewer by role), `/d/:documentId/print`, `/s/:grantId` (share exchange), `/guides/:name` (an in-app reader for the README and the Windows, macOS and security guides, bundled at build time), `/settings`, `/admin/users`. The landing page lists desktop downloads from `GET /api/downloads` (or says that no release is published) and a compatibility matrix that shows only verified records (the file is empty today, so every cell reads "Not tested"). In development Vite proxies `/api` and `/collab` to the server so the browser sees one origin; in production the server serves the built app.
 
-### 7.1 Desktop downloads
+The document screen draws the text as a sheet with the document's page settings and, for editors, a ruler; the print view uses the same settings for its `@page` rule ([notes/web.md](notes/web.md)).
 
-The operator copies the packaged zips into the directory named by `DOWNLOAD_DIR` (the `rd_downloads` volume, mounted at `/data/downloads`, in Compose) under four fixed names, optionally with a `release.json` (`version`, `notes`, `signed`). `GET /api/downloads` lists what exists (size, SHA-256, modification time, URL); `GET` and `HEAD /download/:file` serve only the four allow-listed names. Nothing is listed or served that is not a regular file in that directory, and the server never infers that a build is signed. How to publish: [deployment.md](deployment.md#publish-desktop-downloads).
+### 7.1 Desktop downloads and updates
+
+The operator publishes versioned releases into `DOWNLOAD_DIR` (the `rd_downloads` volume):
+`releases/<channel>/<version>/` (artifacts named `RealtimeDocs-<version>-<platform>-<arch>.<ext>` plus a
+`release.json` written by `scripts/publish-release.mjs`) and `channels/<channel>.json`, a pointer
+`{version, rolloutPercent?}` to the current release, so rollback is moving the pointer. The server
+(`apps/server/src/releases/`) only reads: the manifest is validated with zod; each artifact must be a
+regular file directly in its release directory, with the exact generated name, the manifest size and a
+SHA-256 that matches (streamed once, single-flight, cached by path, size and modification time). Only
+verified files are offered; the server never infers that a build is signed — `signatureStatus` is the
+operator's statement. Requests address files through the loaded manifest, never by joining input onto a
+path.
+
+Public endpoints (API limiter; downloads have `RATE_DOWNLOAD_PER_IP`): `GET /api/v1/desktop/releases/latest`
+(format preference per platform, `detected` when the platform came from request headers, 404
+`RELEASE_NOT_AVAILABLE`), `GET /api/v1/desktop/releases[/:version]`, `GET /api/v1/desktop/update`
+(update manifest with `required` and staged rollout by a stable hash of the client's random
+`installId`), and `GET|HEAD /download/releases/:channel/:version/:fileName` (attachment, `nosniff`,
+immutable cache, `ETag` = SHA-256, Range requests). `GET /api/meta` carries
+`minimumSupportedClientVersion`, `recommendedClientVersion`, `documentSchemaVersion` and `updateUrl`.
+Downloads are counted per day, version, platform, architecture and format in `release_download_counts`
+(no address, no user agent). `GET /api/admin/releases` and the page `/admin/releases` show releases,
+checksums, stated signature status, counts and problems; publishing stays a filesystem operation. The
+four legacy flat files and `GET /api/downloads` keep working, fed from the new store once it has a
+current stable release. How to publish: [desktop-release.md](desktop-release.md) and
+[deployment.md](deployment.md#publish-desktop-downloads).
+
+The web app picks the build for the visitor (`features/landing/platform.ts`: client hints, then
+user agent, never `navigator.platform` alone; macOS architecture is never claimed as detected) and always
+offers every file and "Choose another platform". The desktop app (`main/update-service.ts`) checks its
+configured server at start and every 6 hours, downloads only on request, from the configured origin
+only, and verifies size and SHA-256 before offering "Show in folder" / "Open installer". It never
+installs or restarts by itself (decisions.md).
 
 ## 8. Desktop companion
 
@@ -196,9 +236,9 @@ On Windows an **optional** C++ Node-API module (`apps/desktop/native/win-display
 
 See `docs/security.md` for the full list. Highlights: opaque ids, hashed secrets, origin-checked WebSockets, CSRF protection, strict CSP on web and desktop, sanitized clipboard HTML, Mermaid rendered with `securityLevel: 'strict'` and displayed as an inert image, links restricted to http(s)/mailto/tel, structured logs with redaction, audit events without content.
 
-## 10. Scaling boundary
+## 10. Scaling
 
-The following state is per-process and must be coordinated before running more than one server instance: in-memory documents and their write queues (needs sticky routing per document or a shared pub/sub such as the Hocuspocus Redis extension plus a single-writer lease per document), collaboration tickets, rate-limit counters and the live-connection registry used for revocation. The database schema already serializes writers per document through the `documents` row lock, so a second writer would be safe but slow; it would not be correct for acknowledgements without the lease.
+One instance (the default) keeps documents, tickets, rate-limit counters and the list of live connections in its own memory. With `REDIS_URL` several instances coordinate: a Redis lease names the one instance that holds a document and writes its log, an instance that receives a collaboration socket for a document it does not own forwards it to the owner, and tickets, rate-limit counters and revocation messages go through Redis. The lease only decides routing; the `head_seq` check of the durable log is what refuses a second writer. Design, settings, failure behaviour and what was verified: [scaling.md](scaling.md). Reasons: [decisions.md](decisions.md).
 
 ## 11. Deployment topology (the public deployment)
 

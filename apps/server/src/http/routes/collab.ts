@@ -54,20 +54,27 @@ export function registerCollabRoutes(app: FastifyInstance, { ctx, limits }: Rout
 
       const participant: Participant = {
         id: newId(),
+        // For interview participants this is the registered name, taken from the record.
         name: access.actor.name,
         color: colorFor(access.actor.userId ?? access.actor.sessionId),
         role: access.role,
         kind: access.actor.kind,
+        ...(access.participant
+          ? { roleLabel: access.participant.role === 'candidate' ? 'Candidate' : 'Interviewer' }
+          : {}),
       };
-      const issued = ctx.tickets.issue({
-        documentId: document.id,
-        generation: document.generation,
-        clientId: body.clientId,
-        sessionIds,
-        participant,
-        schemaVersion: body.schemaVersion,
-        protocolVersion: body.protocolVersion,
-      });
+      const issued = await Promise.resolve(
+        ctx.tickets.issue({
+          documentId: document.id,
+          generation: document.generation,
+          clientId: body.clientId,
+          sessionIds,
+          participant,
+          schemaVersion: body.schemaVersion,
+          protocolVersion: body.protocolVersion,
+        }),
+        // The shared ticket store (Redis) is unreachable: the client retries.
+      ).catch(() => null);
       if (!issued) throw errors.serverBusy();
 
       return {

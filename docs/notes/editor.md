@@ -462,3 +462,82 @@ Audit against the owner's list:
 | find for readers, find/replace for editors                                 | present (`FindBar.tsx`, `findReplace.ts`)                                                                         |
 | collaboration-aware undo/redo                                              | present (y-tiptap undo; toolbar state reads its stacks)                                                           |
 | Unicode, emoji, mixed Hindi/English, IME, multi-line paste                 | present (checks `hindi-emoji`, IME on Chromium only, paste pipeline)                                              |
+
+## 18. Page settings, page surface and ruler (enterprise phase 3, 2026-11-12)
+
+**State.** Page settings are shared document state in the same Y.Doc as the text: the top-level `Y.Map`
+named `page` (`Y_PAGE_FIELD`, `packages/contracts/src/versions.ts`), flat keys `size`, `orientation`,
+`marginTop|Right|Bottom|Left` (millimetres), `unit`, `background`, `headerSpacing`, `footerSpacing`. An empty
+map means defaults. They therefore sync live, persist through the durable log, are part of snapshots, merge
+after offline work and are refused from read-only connections by the server like any other update.
+`DOCUMENT_SCHEMA_VERSION` is unchanged: older clients ignore the map and never write it.
+
+**Model and helpers**: `packages/contracts/src/page.ts` (zod + pure functions, DOM-free). Every read goes
+through `normalizePageSettings(raw)`: unknown names and wrong types become the default, numbers are clamped
+(margins 0-100 mm, spacing 0-50 mm) and rounded to 0.1 mm, and the text area keeps at least 50 mm in both
+directions (opposite margins shrink together). `background` is one of `default | white | cream | gray`, never
+CSS text. Also `pageDimensionsMm`, `mmToPx` (96 dpi), `formatMeasurement`, `parseMeasurement` ("25.4", "2.5 cm",
+`1"`), `snapMm` (1 mm, or 1/16 in), `marginProblem`, `maxMarginMm`, `pageRuleCss`.
+
+**Editor package**: `src/page/store.ts` (`setPageSettings(ydoc, patch, origin)` writes only changed keys in
+one transaction; `resetPageSettings`; `createPageSettingsStore`), `usePageSettings`, `css.ts` (custom
+properties), `react/PageRuler.tsx`, `react/PageSetupDialog.tsx`, toolbar button "Page setup".
+`DocumentEditor` gained `layout?: 'page' | 'reading'` (default `page`; `variant="panel"` is always `reading`),
+`pageSetupOpen` / `onPageSetupOpenChange`.
+
+**Undo.** The Collaboration extension's `Y.UndoManager` tracks the XML fragment. The editor adds the page map
+with `undoManager.addToScope(...)` and writes page changes with the sync plugin's key as the transaction origin,
+which that manager already tracks. A margin change is therefore one undo step in the same personal stack as
+typing (Ctrl+Z in the document undoes the margin if it was the last thing the person did), and never reverts a
+collaborator's change. `stopCapturing()` runs before and after each page write so it is never merged into the
+typing next to it. Ctrl+Z / Ctrl+Shift+Z on a focused ruler marker call the same manager.
+
+**Page surface.** In the `page` layout `.rd-editor__page` is a sheet: width = paper width, padding = margins,
+border and shadow, centred, aspect ratio of the paper (so a short document is still a sheet; it grows with the
+text), page colour. It is **one continuous sheet: there is no pagination** (page breaks appear only when
+printing). Narrow containers: the sheet becomes `100%` wide and each margin is `min(real margin, its share of
+the paper width)`, a percentage padding that resolves against the sheet's own width, so margins shrink in
+proportion and the text reflows at its normal size. This was chosen over CSS `zoom` / `transform: scale`
+because those change the coordinate space of `getBoundingClientRect`, `coordsAtPos` and `posAtCoords`
+differently per engine, and ProseMirror's caret, selection and drag geometry depend on them; the fluid sheet
+transforms nothing. Verified at 320 px in Chromium, Firefox and WebKit: no horizontal scroll, and 42 sampled
+positions map from `coordsAtPos` back to themselves through `posAtCoords`. Named paper colours other than
+`default` set `data-theme="light"` on the sheet so ink stays readable, and diagram previews are drawn light.
+The per-user reading width (`display.readingWidth`) applies to the `reading` layout only (the compact panel and
+the web reading mode); in the page layout the document's page decides the width. Font scale still applies.
+
+**Ruler.** Shown above the page to people who can edit (hidden for readers, in the reading layout and when
+printing). Ticks follow the preferred unit (mm: millimetre ticks, labels in cm; inches: 1/16 ticks, labels per
+inch). Two markers, `role="slider"` with `aria-valuenow` (mm), `aria-valuemin`, `aria-valuemax` (largest value
+that keeps 50 mm of text) and `aria-valuetext` in the preferred unit. Pointer events with capture; snapping;
+tooltip with the exact value; the drag only previews locally and writes once on release. Keys: Left / Right move
+the marker on screen (so Right shrinks the right margin), Up / Down raise / lower the margin, Shift = ten steps,
+Home / End = smallest / largest, Escape cancels a drag. **Not implemented: first-line and hanging indent
+markers.** The schema's block `indent` attribute is a whole-block level, not a length; per-paragraph indent
+lengths need a new attribute and therefore a schema version.
+
+**Print / export.** `GET /api/documents/:id/export?format=json` returns the document with a `pageSettings`
+member (normalised; optional in the contract, `ExportPageSettingsField`). The print view
+(`apps/web/src/features/document/printPage.ts`) sizes the sheet from it and inserts `@page { size; margin }`
+through `CSSStyleSheet.insertRule` on an empty `<style>` element (the site's CSP currently allows inline
+styles; the CSSOM route would work without that). Markdown and plain text are unchanged. `reencodeFresh` and
+`encodeInitialState` (restore, duplicate) copy the settings into the new Yjs history
+(`pageSettingsFromState` in `apps/server/src/documents/ydoc.ts`).
+
+**Commands and results (this host).** `pnpm exec vitest run --project editor --project contracts --project web`;
+new files `contracts/test/page.test.ts` (17 tests) and `editor/test/page-settings.test.ts` (9 tests); server
+`test/integration/page-settings.test.ts` (3 tests; run it under the integration lock, see docs/testing.md).
+Browser checks added to `demo/e2e.mjs`: `page-surface`, `ruler-drag`, `ruler-keyboard`, `page-undo`,
+`page-setup-dialog`, `page-viewer-cannot-write`, `page-hostile-values`, `page-fit-320`, `page-reading-layout`.
+The two-pane checks need a wide viewport (the harness puts the panes side by side); they set one.
+
+**Not done / limits.** No pagination or page breaks on screen; no headers or footers (`headerSpacing` and
+`footerSpacing` are stored and validated but nothing renders them); no indent markers (see above); only A4 and
+Letter (no Legal, A3, custom sizes); the web print preview ignores the paper colour (paper is white).
+
+Full browser run on 2026-11-12 with the page work in: Chromium 156 46 passed / 1 failed, Firefox 157 44 passed / 1
+failed / 2 skipped, WebKit 27.2 44 passed / 1 failed / 2 skipped. The one failure in each engine is
+`upload-states` ("Failure, then retry"): it injects one failed upload and expects the "failed" placeholder, but
+the upload manager now retries automatically (phase 1 work), so the placeholder never shows. That check needs
+updating by whoever owns the upload retry change; it is not caused by the page work. All nine page checks pass
+in all three engines.

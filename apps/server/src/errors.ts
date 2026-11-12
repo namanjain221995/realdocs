@@ -104,6 +104,11 @@ export const errors = {
         cause,
       },
     ),
+  sessionClosed: () =>
+    new AppError(
+      'session_closed',
+      'This interview session has ended. Ask the organiser for a new link if you still need access.',
+    ),
   internal: (cause?: unknown) =>
     new AppError('internal', 'Something went wrong on the server.', { cause }),
 };

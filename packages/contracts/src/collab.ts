@@ -55,7 +55,20 @@ export type ClientHello = z.infer<typeof ClientHello>;
 export const ClientMark = z.object({ t: z.literal('mark'), n: z.number().int().min(0) });
 export type ClientMark = z.infer<typeof ClientMark>;
 
-export const ClientStateless = z.discriminatedUnion('t', [ClientHello, ClientMark]);
+/**
+ * "My next update is a paste." A label for the version history, nothing more:
+ * the server attributes and timestamps the update itself and treats this as
+ * untrusted. Servers that do not know the message ignore it.
+ */
+export const ClientHint = z.object({
+  t: z.literal('hint'),
+  kind: z.literal('paste'),
+  /** Client clock (epoch milliseconds). Informational. */
+  at: z.number().int().min(0).optional(),
+});
+export type ClientHint = z.infer<typeof ClientHint>;
+
+export const ClientStateless = z.discriminatedUnion('t', [ClientHello, ClientMark, ClientHint]);
 export type ClientStateless = z.infer<typeof ClientStateless>;
 
 // ── Server → client ─────────────────────────────────────────────────────────
@@ -191,6 +204,7 @@ export const AwarenessUser = z.object({
   color: z.string(),
   role: EffectiveRole,
   kind: z.enum(['user', 'guest']),
+  roleLabel: z.string().optional(),
 });
 export type AwarenessUser = z.infer<typeof AwarenessUser>;
 

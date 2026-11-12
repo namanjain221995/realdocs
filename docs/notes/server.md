@@ -159,18 +159,22 @@ with a message that names the variable; secrets are never part of that message.
 Rate limits live in the memory of the server process (they reset on restart) and answer
 `rate_limited` (429) with `Retry-After`.
 
-| Variable                        | Default | Counted                                                  | Window |
-| ------------------------------- | ------- | -------------------------------------------------------- | ------ |
-| `RATE_LOGIN_PER_IP`             | 20      | failed sign-ins per client address                       | 5 min  |
-| `RATE_LOGIN_PER_EMAIL`          | 8       | failed sign-ins per email address                        | 15 min |
-| `RATE_SHARE_EXCHANGE_PER_IP`    | 30      | failed share exchanges per client address                | 5 min  |
-| `RATE_SHARE_EXCHANGE_PER_GRANT` | 20      | failed share exchanges per link                          | 5 min  |
-| `RATE_INVITE_PER_IP`            | 20      | failed invitation lookups and accepts per client address | 10 min |
-| `RATE_DESKTOP_REDEEM_PER_IP`    | 20      | failed handoff redemptions per client address            | 5 min  |
-| `RATE_COLLAB_TICKET_PER_MINUTE` | 120     | collaboration tickets per principal                      | 1 min  |
-| `RATE_UPLOAD_PER_MINUTE`        | 60      | uploads per principal                                    | 1 min  |
-| `RATE_WS_UPGRADE_PER_MINUTE`    | 120     | WebSocket upgrades per client address                    | 1 min  |
-| `RATE_API_PER_MINUTE`           | 1200    | all API requests per client address                      | 1 min  |
+| Variable                         | Default                        | Counted                                                        | Window |
+| -------------------------------- | ------------------------------ | -------------------------------------------------------------- | ------ |
+| `RATE_LOGIN_PER_IP`              | 20                             | failed sign-ins per client address                             | 5 min  |
+| `RATE_LOGIN_PER_EMAIL`           | 8                              | failed sign-ins per email address                              | 15 min |
+| `RATE_SHARE_EXCHANGE_PER_IP`     | 30                             | failed share exchanges per client address                      | 5 min  |
+| `RATE_SHARE_EXCHANGE_PER_GRANT`  | 20                             | failed share exchanges per link                                | 5 min  |
+| `RATE_INVITE_PER_IP`             | 20                             | failed invitation lookups and accepts per client address       | 10 min |
+| `RATE_DESKTOP_REDEEM_PER_IP`     | 20                             | failed handoff redemptions per client address                  | 5 min  |
+| `RATE_COLLAB_TICKET_PER_MINUTE`  | 120                            | collaboration tickets per principal                            | 1 min  |
+| `RATE_UPLOAD_PER_MINUTE`         | 240                            | uploads per principal                                          | 1 min  |
+| `RATE_WS_UPGRADE_PER_MINUTE`     | 120                            | WebSocket upgrades per client address                          | 1 min  |
+| `RATE_API_PER_MINUTE`            | 1200                           | all API requests per client address                            | 1 min  |
+| `RATE_API_KEY_PER_MINUTE`        | 600                            | requests per service API key (`/api/v1`)                       | 1 min  |
+| `WEBHOOK_POLL_MS`                | 2000                           | delivery worker poll interval (0 disables the worker)          | —      |
+| `WEBHOOK_TIMEOUT_MS`             | 10000                          | one delivery attempt                                           | —      |
+| `WEBHOOK_RETRY_SCHEDULE_SECONDS` | `60,300,1800,7200,21600,86400` | wait after the 1st, 2nd, … failure; one more failure is `dead` | —      |
 
 Fixed in code: Argon2id with 64 MiB memory, 3 passes, parallelism 1 (at most 4 hashes run at the
 same time, 64 wait); password length 12 to 256; title 200, display name 80, snapshot name 120,
@@ -618,3 +622,18 @@ the verification: `apps/web/src/features/docs/documents.ts` imports `README.md` 
   34 s (image build, backup, restore into a second project, every comparison identical, a damaged backup
   rejected before anything is touched).
 - The server agent's run on the same tree: unit 195/195, integration 149/149 (15 files, 121 s).
+
+## Desktop releases (phase 5)
+
+- Code: `src/releases/{store,select,range,version,index}.ts`, routes `src/http/routes/releases.ts` (latest, list,
+  one release, update, `GET|HEAD /download/releases/...`, `GET /api/admin/releases`) and the legacy
+  `routes/download.ts`. Migration `0004_releases.sql` (`release_download_counts`). Config
+  `RATE_DOWNLOAD_PER_IP`. `GET /api/meta` is now computed per request (stable release fields).
+- Tests: `test/unit/releases.test.ts` (versions, ranges, selection, rollout, store validation and path
+  safety), `test/unit/publish-release.test.ts` (script, including real filesystem runs),
+  `test/integration/releases.test.ts` (12 tests: 404 state, per-platform latest, hash mismatch not offered,
+  header fallback with `detected`, Range 200/206/416/HEAD, counters without personal data, traversal, rollout,
+  required updates, rollback, legacy flat files). The integration file uses port 4413/4414 and takes 15 s
+  because the server re-reads the directory every 2 s.
+- Gaps: the snapshot is per process (several instances would each hash their own copy of the files on the
+  shared volume); only one `Range` is honoured (several are answered with the whole file).

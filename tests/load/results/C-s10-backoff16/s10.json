@@ -1,0 +1,571 @@
+{
+ "scenario": "s10",
+ "title": "10. rolling restart (2 instances)",
+ "topology": "C",
+ "startedAt": "2026-11-12T03:29:50.274Z",
+ "config": {
+  "instances": 2,
+  "docs": 100,
+  "clients": 400,
+  "settleS": 30,
+  "instanceDownS": 5,
+  "typingRate": 1,
+  "backoff": "400 ms base, x2, cap 30 s, equal jitter 0.5 (same as packages/editor/src/collab/backoff.ts)"
+ },
+ "phases": [
+  {
+   "name": "restart of instance 1 (SIGTERM, 5s down, start)",
+   "durationS": 35.498,
+   "latency": {
+    "u": {
+     "ack": {
+      "n": 13041,
+      "min": 1.66552734375,
+      "p50": 3.321533203125,
+      "p95": 4.922607421875,
+      "p99": 7.09814453125,
+      "mean": 4.487777598804971,
+      "max": 6688.680419921875
+     },
+     "remote": {
+      "n": 12718,
+      "min": 0.109375,
+      "p50": 0.61279296875,
+      "p95": 1.374755859375,
+      "p99": 4938.744384765625,
+      "mean": 108.57883473165494,
+      "max": 9297.005859375
+     },
+     "ticketMs": {
+      "n": 980,
+      "min": 2.00537109375,
+      "p50": 4.564453125,
+      "p95": 18.603515625,
+      "p99": 23.221923828125,
+      "mean": 6.681866828762755,
+      "max": 28.689208984375
+     },
+     "ackOffline": {
+      "n": 1146,
+      "min": 2.32666015625,
+      "p50": 3370.370849609375,
+      "p95": 7521.881591796875,
+      "p99": 8536.507080078125,
+      "mean": 3552.951698076871,
+      "max": 9307.927490234375
+     },
+     "reconnect": {
+      "n": 276,
+      "min": 244.41748046875,
+      "p50": 2785.889892578125,
+      "p95": 8903.283935546875,
+      "p99": 9236.828857421875,
+      "mean": 4145.037103183027,
+      "max": 9515.08154296875
+     }
+    },
+    "ALL": {
+     "ack": {
+      "n": 13041,
+      "min": 1.66552734375,
+      "p50": 3.321533203125,
+      "p95": 4.922607421875,
+      "p99": 7.09814453125,
+      "mean": 4.487777598804971,
+      "max": 6688.680419921875
+     },
+     "remote": {
+      "n": 12718,
+      "min": 0.109375,
+      "p50": 0.61279296875,
+      "p95": 1.374755859375,
+      "p99": 4938.744384765625,
+      "mean": 108.57883473165494,
+      "max": 9297.005859375
+     },
+     "ticketMs": {
+      "n": 980,
+      "min": 2.00537109375,
+      "p50": 4.564453125,
+      "p95": 18.603515625,
+      "p99": 23.221923828125,
+      "mean": 6.681866828762755,
+      "max": 28.689208984375
+     },
+     "ackOffline": {
+      "n": 1146,
+      "min": 2.32666015625,
+      "p50": 3370.370849609375,
+      "p95": 7521.881591796875,
+      "p99": 8536.507080078125,
+      "mean": 3552.951698076871,
+      "max": 9307.927490234375
+     },
+     "reconnect": {
+      "n": 276,
+      "min": 244.41748046875,
+      "p50": 2785.889892578125,
+      "p95": 8903.283935546875,
+      "p99": 9236.828857421875,
+      "mean": 4145.037103183027,
+      "max": 9515.08154296875
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "shutdown_notice": 196,
+     "edits": 14187,
+     "connect_errors": 773,
+     "reconnects": 276
+    }
+   },
+   "errors": {
+    "net_ECONNRESET": 35,
+    "net_UND_ERR_SOCKET": 34,
+    "ws_close_1006": 704
+   },
+   "closeCodes": {
+    "4503 server_shutdown": 276
+   },
+   "generator": [
+    {
+     "pid": 1469266,
+     "cpuPct": 7.229910715215561,
+     "cpuSecondsTotal": 5.320499,
+     "rssMb": 179.26171875,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 11.902975,
+     "clients": 100
+    },
+    {
+     "pid": 1469325,
+     "cpuPct": 6.936180842418416,
+     "cpuSecondsTotal": 5.232649,
+     "rssMb": 165.87109375,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 11.927551,
+     "clients": 100
+    },
+    {
+     "pid": 1469353,
+     "cpuPct": 6.768747285080291,
+     "cpuSecondsTotal": 5.140171,
+     "rssMb": 164.94140625,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 14.327807,
+     "clients": 100
+    },
+    {
+     "pid": 1469369,
+     "cpuPct": 6.6897548305998535,
+     "cpuSecondsTotal": 5.074314,
+     "rssMb": 165.64453125,
+     "lagP99Ms": 10.969087,
+     "lagMaxMs": 23.494655,
+     "clients": 100
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 9,
+     "upSamples": 8,
+     "cpuPctAvg": 4.4349203748648645,
+     "cpuPctMax": 5.03993948562783,
+     "rssMbMax": 310.0078125,
+     "rssMbEnd": 250.03515625,
+     "heapMbMax": 148.68437957763672,
+     "wsMax": 196,
+     "wsForwardedMax": 80,
+     "docsLoadedMax": 49,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.430271,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0.5465449999974226,
+     "yjsUpdates": -5958,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": -5956,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      }
+     },
+     "http": {},
+     "wsOutcomes": {
+      "accepted": -192,
+      "forwarded": -15
+     }
+    },
+    {
+     "port": 4451,
+     "samples": 9,
+     "upSamples": 9,
+     "cpuPctAvg": 25.823100177470245,
+     "cpuPctMax": 47.2085995676195,
+     "rssMbMax": 352.1953125,
+     "rssMbEnd": 352.1953125,
+     "heapMbMax": 184.42124938964844,
+     "wsMax": 396,
+     "wsForwardedMax": 77,
+     "docsLoadedMax": 99,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.774334999999997,
+     "queueBytesMax": 56,
+     "redisPingMaxMs": 0.7028169999975944,
+     "yjsUpdates": 13145,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 13135,
+       "meanMs": 2.7149496114960834,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      },
+      "compact": {
+       "count": 51,
+       "meanMs": 2.8176244117654003,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 980,
+       "meanMs": 4.9559434377551845,
+       "p95UpperMs": 25
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 980,
+       "meanMs": 4.9559434377551845,
+       "p95UpperMs": 25
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 272,
+      "forwarded": 2
+     }
+    }
+   ],
+   "hostLoadMax": 10.6,
+   "extra": {
+    "sigtermAt": "2026-11-12T03:30:40.488Z",
+    "shutdownMs": 127,
+    "startToHealthyMs": 367,
+    "readyClientsAtEnd": 400,
+    "total": 400
+   }
+  },
+  {
+   "name": "restart of instance 2 (SIGTERM, 5s down, start)",
+   "durationS": 35.467,
+   "latency": {
+    "u": {
+     "remote": {
+      "n": 12106,
+      "min": 0.12060546875,
+      "p50": 0.660400390625,
+      "p95": 1.653076171875,
+      "p99": 6686.201171875,
+      "mean": 164.89227431048525,
+      "max": 9234.755859375
+     },
+     "ack": {
+      "n": 12385,
+      "min": 1.666015625,
+      "p50": 3.416015625,
+      "p95": 4.972900390625,
+      "p99": 6.13134765625,
+      "mean": 7.007422978905935,
+      "max": 7774.981689453125
+     },
+     "ticketMs": {
+      "n": 1478,
+      "min": 1.9189453125,
+      "p50": 4.39697265625,
+      "p95": 50.9580078125,
+      "p99": 81.72216796875,
+      "mean": 10.686011039517084,
+      "max": 90.03857421875
+     },
+     "ackOffline": {
+      "n": 1823,
+      "min": 5.050048828125,
+      "p50": 3264.42333984375,
+      "p95": 7491.268310546875,
+      "p99": 8412.306396484375,
+      "mean": 3494.118455611672,
+      "max": 9245.814697265625
+     },
+     "reconnect": {
+      "n": 398,
+      "min": 319.862548828125,
+      "p50": 5498.55029296875,
+      "p95": 8734.056884765625,
+      "p99": 9151.215087890625,
+      "mean": 4552.839703277128,
+      "max": 9476.41748046875
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 12106,
+      "min": 0.12060546875,
+      "p50": 0.660400390625,
+      "p95": 1.653076171875,
+      "p99": 6686.201171875,
+      "mean": 164.89227431048525,
+      "max": 9234.755859375
+     },
+     "ack": {
+      "n": 12385,
+      "min": 1.666015625,
+      "p50": 3.416015625,
+      "p95": 4.972900390625,
+      "p99": 6.13134765625,
+      "mean": 7.007422978905935,
+      "max": 7774.981689453125
+     },
+     "ticketMs": {
+      "n": 1478,
+      "min": 1.9189453125,
+      "p50": 4.39697265625,
+      "p95": 50.9580078125,
+      "p99": 81.72216796875,
+      "mean": 10.686011039517084,
+      "max": 90.03857421875
+     },
+     "ackOffline": {
+      "n": 1823,
+      "min": 5.050048828125,
+      "p50": 3264.42333984375,
+      "p95": 7491.268310546875,
+      "p99": 8412.306396484375,
+      "mean": 3494.118455611672,
+      "max": 9245.814697265625
+     },
+     "reconnect": {
+      "n": 398,
+      "min": 319.862548828125,
+      "p50": 5498.55029296875,
+      "p95": 8734.056884765625,
+      "p99": 9151.215087890625,
+      "mean": 4552.839703277128,
+      "max": 9476.41748046875
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "edits": 14208,
+     "shutdown_notice": 396,
+     "connect_errors": 1241,
+     "reconnects": 398
+    }
+   },
+   "errors": {
+    "net_UND_ERR_SOCKET": 98,
+    "ws_close_1006": 1080,
+    "net_ECONNRESET": 63
+   },
+   "closeCodes": {
+    "4503 server_shutdown": 398
+   },
+   "generator": [
+    {
+     "pid": 1469266,
+     "cpuPct": 7.696035805716388,
+     "cpuSecondsTotal": 8.051687,
+     "rssMb": 236.29296875,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 12.894207,
+     "clients": 100
+    },
+    {
+     "pid": 1469325,
+     "cpuPct": 7.9297560535383935,
+     "cpuSecondsTotal": 8.046785,
+     "rssMb": 224.30859375,
+     "lagP99Ms": 10.969087,
+     "lagMaxMs": 12.222463,
+     "clients": 100
+    },
+    {
+     "pid": 1469353,
+     "cpuPct": 7.789794347492244,
+     "cpuSecondsTotal": 7.904626,
+     "rssMb": 224.47265625,
+     "lagP99Ms": 10.977279,
+     "lagMaxMs": 11.673599,
+     "clients": 100
+    },
+    {
+     "pid": 1469369,
+     "cpuPct": 7.397306626821064,
+     "cpuSecondsTotal": 7.699492,
+     "rssMb": 222.67578125,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 11.878399,
+     "clients": 100
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 9,
+     "upSamples": 9,
+     "cpuPctAvg": 29.20393092357979,
+     "cpuPctMax": 64.5064155064155,
+     "rssMbMax": 392.53515625,
+     "rssMbEnd": 392.53515625,
+     "heapMbMax": 210.4176483154297,
+     "wsMax": 376,
+     "wsForwardedMax": 65,
+     "docsLoadedMax": 94,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.708799,
+     "queueBytesMax": 56,
+     "redisPingMaxMs": 0.6678250000040862,
+     "yjsUpdates": 12030,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 12025,
+       "meanMs": 2.7550264212890063,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      },
+      "compact": {
+       "count": 1,
+       "meanMs": 3.9791460000051297,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 1478,
+       "meanMs": 7.558716472936479,
+       "p95UpperMs": 50
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 1478,
+       "meanMs": 7.558716472936479,
+       "p95UpperMs": 50
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 374,
+      "forwarded": 8
+     }
+    },
+    {
+     "port": 4451,
+     "samples": 9,
+     "upSamples": 8,
+     "cpuPctAvg": 7.260782830068144,
+     "cpuPctMax": 8.968518888666805,
+     "rssMbMax": 352.1953125,
+     "rssMbEnd": 280.98828125,
+     "heapMbMax": 169.70653533935547,
+     "wsMax": 396,
+     "wsForwardedMax": 87,
+     "docsLoadedMax": 99,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.479423,
+     "queueBytesMax": 28,
+     "redisPingMaxMs": 0.5741299999972398,
+     "yjsUpdates": -18781,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": -18772,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      }
+     },
+     "http": {},
+     "wsOutcomes": {
+      "forwarded": 8,
+      "accepted": -452
+     }
+    }
+   ],
+   "hostLoadMax": 6.99,
+   "extra": {
+    "sigtermAt": "2026-11-12T03:31:16.007Z",
+    "shutdownMs": 100,
+    "startToHealthyMs": 362,
+    "readyClientsAtEnd": 400,
+    "total": 400
+   }
+  }
+ ],
+ "results": {
+  "restarts": [
+   {
+    "instance": 1,
+    "shutdownMs": 127,
+    "startToHealthyMs": 367
+   },
+   {
+    "instance": 2,
+    "shutdownMs": 100,
+    "startToHealthyMs": 362
+   }
+  ],
+  "quiesce": {
+   "ok": true,
+   "unacked": 0,
+   "waitedMs": 501
+  },
+  "verification": {
+   "docs": 100,
+   "checked": 40403,
+   "missing": 0,
+   "missingSamples": [],
+   "unackedAtEnd": 0,
+   "exportErrors": 0
+  }
+ },
+ "notes": [
+  "Host load average (1 min) peaked at 18.6 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T03:31:52.128Z"
+}

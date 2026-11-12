@@ -6,6 +6,12 @@ environment variable, upgrades, backups and restore, password reset, retention, 
 and the limits of a single-server deployment. The last section lists what was and was not verified.
 For a first local run, start with the [README](../README.md).
 
+Related documents: [scaling.md](scaling.md) (running several instances behind a load balancer),
+[observability.md](observability.md) (logs, `/metrics`, alerts), [upgrade-and-rollback.md](upgrade-and-rollback.md)
+(rehearsal, upgrade and rollback of the live deployment), [incident-response.md](incident-response.md)
+(runbooks and disaster recovery), [database-schema.md](database-schema.md) and
+[security-checklist.md](security-checklist.md).
+
 ## What a deployment consists of
 
 ```text
@@ -22,7 +28,12 @@ server container      127.0.0.1:4310   web app, /api, /collab (WebSocket)
 ```
 
 `docker-compose.yml` defines the two containers and the three volumes (`rd_pgdata`, `rd_assets` and `rd_downloads`, the last for desktop builds). It publishes both ports on
-`127.0.0.1` only. The server does not speak TLS (the encryption behind `https://` and `wss://`)
+`127.0.0.1` only.
+
+This is the single-instance layout, which is the default and the only one the live deployment uses. With
+`REDIS_URL` set, several server instances can run behind one load balancer; that layout (Redis, a second
+server, an nginx balancer) is the overlay `deploy/scale/docker-compose.scale.yml` and is described in
+[scaling.md](scaling.md). The server does not speak TLS (the encryption behind `https://` and `wss://`)
 itself; a reverse proxy in front of it does. Without the proxy, the product is reachable from the
 server machine only, which is right for a first look and wrong for anything else.
 
@@ -307,6 +318,10 @@ on) and one WebSocket.
 "Open in Desktop" links carry `PUBLIC_ORIGIN`. A client accepts such a link only if it is set to
 that same address, so tell people to enter the address exactly as they see it in the browser.
 
+The app asks the server about new versions (`GET /api/v1/desktop/update`) and never installs one by itself;
+the operator side is in [desktop-release.md](desktop-release.md). Interview candidates cannot use the desktop
+handoff (the server answers 403).
+
 ## Remote development and local desktop connectivity
 
 This section is for the setup where the repository and its services live on a remote machine that
@@ -531,38 +546,38 @@ whatever `.env` says: `NODE_ENV=production`, `RD_HOST=0.0.0.0`, `RD_PORT=4310`,
 
 ### Required
 
-| Variable            | Default | Meaning                                                                                                                                                             |
-| ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POSTGRES_PASSWORD` | none    | Compose only. Password of the database user `realtimedocs`. It is placed inside a connection address, so use letters and digits                                     |
-| `SESSION_SECRET`    | none    | At least 32 characters and not repetitive. Key of the per-session anti-forgery (CSRF) token. Changing it signs nobody out; open browser tabs have to reload once    |
-| `DATABASE_URL`      | none    | `postgres://user:password@host:port/database`. Required when the server runs on the host. The Compose server container ignores the value in `.env` and uses its own |
+| Variable            | Default | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POSTGRES_PASSWORD` | none    | Compose only. Password of the database user `realtimedocs`. It is placed inside a connection address, so use letters and digits                                                                                                                                                                                                                                                                                                            |
+| `SESSION_SECRET`    | none    | At least 32 characters and not repetitive. Root key for four things: the per-session anti-forgery (CSRF) token, the encryption of webhook signing secrets, the encryption of stored idempotent API responses, and the key that authenticates sockets forwarded between instances. Changing it signs nobody out, but it has side effects: see [Rotating `SESSION_SECRET`](#rotating-session_secret). It must be identical on every instance |
+| `DATABASE_URL`      | none    | `postgres://user:password@host:port/database`. Required when the server runs on the host. The Compose server container ignores the value in `.env` and uses its own                                                                                                                                                                                                                                                                        |
 
 ### Addresses and trust
 
-| Variable          | Default                      | Meaning                                                                                                                                             |
-| ----------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PUBLIC_ORIGIN`   | `http://127.0.0.1:<RD_PORT>` | The address people use, without a path. Generated links, `Secure` cookies and HSTS follow from it                                                   |
-| `ALLOWED_ORIGINS` | empty                        | Further web origins that may use cookie sessions, comma separated. `.env.example` lists the two development origins; leave it empty in a deployment |
-| `DESKTOP_ORIGINS` | `app://realtimedocs`         | Origins of packaged desktop apps. They get cross-origin API access with bearer tokens only, never cookies                                           |
-| `COOKIE_SECURE`   | `auto`                       | `auto`, `true` or `false`. `auto` marks cookies `Secure` when `PUBLIC_ORIGIN` is HTTPS                                                              |
-| `TRUST_PROXY`     | `false`                      | `false`, `true`, or the number of trusted proxies (0 to 16)                                                                                         |
-| `RD_HOST`         | `127.0.0.1`                  | Listen address of a server run on the host                                                                                                          |
-| `RD_PORT`         | `4310`                       | Listen port of a server run on the host; in Compose, the port published on `127.0.0.1`. The server exits if the port is taken                       |
-| `RD_DB_PORT`      | `54310`                      | Compose only. Port on `127.0.0.1` where PostgreSQL is published                                                                                     |
+| Variable          | Default                      | Meaning                                                                                                                                                                                 |
+| ----------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_ORIGIN`   | `http://127.0.0.1:<RD_PORT>` | The address people use, without a path. Generated links, `Secure` cookies and HSTS follow from it                                                                                       |
+| `ALLOWED_ORIGINS` | empty                        | Further web origins that may use cookie sessions, comma separated. `.env.example` lists the two development origins; leave it empty in a deployment                                     |
+| `DESKTOP_ORIGINS` | `app://realtimedocs`         | Origins of packaged desktop apps. They get cross-origin API access with bearer tokens only, never cookies                                                                               |
+| `COOKIE_SECURE`   | `auto`                       | `auto`, `true` or `false`. `auto` marks cookies `Secure` when `PUBLIC_ORIGIN` is HTTPS                                                                                                  |
+| `TRUST_PROXY`     | `false`                      | `false`, `true`, or the number of trusted proxies (0 to 16; `0` means `false`). Use the number: with `true` the left-most `X-Forwarded-For` entry is believed, which a client can forge |
+| `RD_HOST`         | `127.0.0.1`                  | Listen address of a server run on the host                                                                                                                                              |
+| `RD_PORT`         | `4310`                       | Listen port of a server run on the host; in Compose, the port published on `127.0.0.1`. The server exits if the port is taken                                                           |
+| `RD_DB_PORT`      | `54310`                      | Compose only. Port on `127.0.0.1` where PostgreSQL is published                                                                                                                         |
 
 ### General
 
-| Variable                    | Default             | Meaning                                                                                                                                                                              |
-| --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `NODE_ENV`                  | `development`       | `development`, `production` or `test`                                                                                                                                                |
-| `LOG_LEVEL`                 | `info`              | `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`                                                                                                                       |
-| `AUTO_MIGRATE`              | `true`              | Apply pending database migrations at start-up                                                                                                                                        |
-| `ASSET_DIR`                 | `data/assets`       | Private directory for uploaded files                                                                                                                                                 |
-| `WEB_DIST_DIR`              | `apps/web/dist`     | Built web app. It is served only when `index.html` exists there; otherwise the server offers the API only                                                                            |
-| `MIN_CLIENT_SCHEMA_VERSION` | `1`                 | Oldest document format a client may speak. Older clients are told to update                                                                                                          |
-| `ALLOW_SIGNUP`              | `false`             | `true` lets anyone who can reach the server create a member account (no document access until an administrator adds it). Off by default                                              |
-| `DOWNLOAD_DIR`              | unset               | Directory with the desktop builds served at `/download/<file>` and listed by `GET /api/downloads`. Unset: nothing is offered. Compose sets `/data/downloads` (volume `rd_downloads`) |
-| `RD_ENV_FILE`               | `<repository>/.env` | Environment file read by the server and the operator commands when they run on the host. Real variables win over it                                                                  |
+| Variable                    | Default             | Meaning                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`                  | `development`       | `development`, `production` or `test`                                                                                                                                                                                                                                                                                                          |
+| `LOG_LEVEL`                 | `info`              | `fatal`, `error`, `warn`, `info`, `debug`, `trace` or `silent`                                                                                                                                                                                                                                                                                 |
+| `AUTO_MIGRATE`              | `true`              | Apply pending database migrations at start-up                                                                                                                                                                                                                                                                                                  |
+| `ASSET_DIR`                 | `data/assets`       | Private directory for uploaded files. With several instances: the same shared storage on all of them                                                                                                                                                                                                                                           |
+| `WEB_DIST_DIR`              | `apps/web/dist`     | Built web app. It is served only when `index.html` exists there; otherwise the server offers the API only                                                                                                                                                                                                                                      |
+| `MIN_CLIENT_SCHEMA_VERSION` | `1`                 | Oldest document format a client may speak. Older clients are told to update                                                                                                                                                                                                                                                                    |
+| `ALLOW_SIGNUP`              | `false`             | `true` lets anyone who can reach the server create a member account (no document access until an administrator adds it). Off by default                                                                                                                                                                                                        |
+| `DOWNLOAD_DIR`              | unset               | Directory with the desktop releases (`releases/`, `channels/`, or the legacy flat files), served under `/download/` and listed by `/api/downloads` and `/api/v1/desktop/releases`. Unset: nothing is offered. Compose sets `/data/downloads` (volume `rd_downloads`). With several instances it must be the same shared storage on all of them |
+| `RD_ENV_FILE`               | `<repository>/.env` | Environment file read by the server and the operator commands when they run on the host. Real variables win over it                                                                                                                                                                                                                            |
 
 ### Session lifetimes (seconds)
 
@@ -600,6 +615,10 @@ whatever `.env` says: `NODE_ENV=production`, `RD_HOST=0.0.0.0`, `RD_PORT=4310`,
 | `AUDIT_RETENTION_DAYS`                | `365`   | Audit events                                                                       |
 | `SESSION_RETENTION_DAYS`              | `30`    | Rows of ended or expired sessions                                                  |
 | `CLEANUP_INTERVAL_MINUTES`            | `360`   | Minutes between retention runs inside the server. `0` turns the timer off          |
+| `HISTORY_RETENTION_DAYS`              | `0`     | Version history rows (see [History](#version-history)). `0` keeps everything       |
+
+No variable limits the age of webhook deliveries, API keys, interview sessions or their participants;
+nothing removes them (see [database-schema.md](database-schema.md)).
 
 ### Collaboration endpoint
 
@@ -624,87 +643,128 @@ whatever `.env` says: `NODE_ENV=production`, `RD_HOST=0.0.0.0`, `RD_PORT=4310`,
 | `DB_LOCK_TIMEOUT_MS`      | `5000`  | Longest wait for a lock           |
 | `DB_CONNECT_TIMEOUT_MS`   | `5000`  | Longest wait for a new connection |
 
+### Multi-instance coordination, shutdown and metrics
+
+All optional. Without `REDIS_URL` the server runs alone and none of the cluster settings are used. Details
+and the failure behaviour are in [scaling.md](scaling.md); metrics are in [observability.md](observability.md).
+
+| Variable                    | Default                       | Meaning                                                                                                                                                                                                                                                                              |
+| --------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `REDIS_URL`                 | unset                         | `redis://` or `rediss://` address. Setting it turns on coordination: document ownership leases, shared collaboration tickets, shared rate-limit counters, revocation messages. Put a password in it; Redis becomes a trust root (see [security-checklist.md](security-checklist.md)) |
+| `CLUSTER_INTERNAL_URL`      | `http://<hostname>:<RD_PORT>` | Origin (`http(s)://host[:port]`, no path) at which the **other instances** reach this one on the private network. Never a public address                                                                                                                                             |
+| `CLUSTER_LEASE_TTL_SECONDS` | `10`                          | 3 to 300. After an instance dies without saying goodbye, its documents can be taken over this many seconds later                                                                                                                                                                     |
+| `SHUTDOWN_DRAIN_SECONDS`    | `0`                           | 0 to 120. Time between `/api/ready` turning 503 and the sockets being closed on a stop. Set it a little above the load balancer's health-check interval. Keep the container's stop grace period longer than this                                                                     |
+| `METRICS_TOKEN`             | unset                         | At least 24 characters. Enables `GET /metrics` for `Authorization: Bearer <token>`. Unset: `/metrics` answers 404                                                                                                                                                                    |
+
+### Version history
+
+| Variable                   | Default | Meaning                                                                                                                                                                                                                      |
+| -------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `HISTORY_ENABLED`          | `true`  | Record the attributed history. With `false` nothing new is recorded; existing rows stay readable. A document edited while it is off gets a new starting point ("History starts here") when it is next opened with history on |
+| `HISTORY_CHECKPOINT_EVERY` | `500`   | 1 to 1,000,000. History rows after which a compaction also stores a complete checkpoint. Smaller: faster revision views, more storage                                                                                        |
+| `HISTORY_RETENTION_DAYS`   | `0`     | 0 to 36,500. Days of history kept; `0` keeps everything. Rows are removed only in front of the newest checkpoint older than the limit, so actual retention can be longer                                                     |
+
+### Webhooks
+
+| Variable                         | Default                        | Meaning                                                                                                                                     |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WEBHOOK_POLL_MS`                | `2000`                         | How often each instance looks for due deliveries. `0` turns the worker off on that instance (events are still queued)                       |
+| `WEBHOOK_TIMEOUT_MS`             | `10000`                        | 100 to 120,000. An unanswered attempt is abandoned after this long                                                                          |
+| `WEBHOOK_RETRY_SCHEDULE_SECONDS` | `60,300,1800,7200,21600,86400` | Seconds to wait after the 1st, 2nd, ... failed attempt (each 0 to 604,800). One more failure after the last entry marks the delivery `dead` |
+
 ### Rate limits
 
-Counters live in the memory of the server process and start again when it restarts. A caller over
+Without `REDIS_URL` the counters live in the memory of the server process and start again when it
+restarts. With `REDIS_URL` they are kept in Redis and are the same whichever instance a request reaches,
+except `RATE_WS_UPGRADE_PER_MINUTE`, which stays per instance. **When Redis cannot be reached, a limiter
+lets the request through** and logs a warning ("rate limit could not be counted; request allowed"). A caller over
 a limit gets status 429 with a `Retry-After` header.
 
-| Variable                        | Default | Counted                                                                     | Window     |
-| ------------------------------- | ------- | --------------------------------------------------------------------------- | ---------- |
-| `RATE_LOGIN_PER_IP`             | `20`    | Failed sign-ins per client address                                          | 5 minutes  |
-| `RATE_LOGIN_PER_EMAIL`          | `8`     | Failed sign-ins per email address                                           | 15 minutes |
-| `RATE_SHARE_EXCHANGE_PER_IP`    | `30`    | Failed share-link exchanges per client address                              | 5 minutes  |
-| `RATE_SHARE_EXCHANGE_PER_GRANT` | `20`    | Failed share-link exchanges per link                                        | 5 minutes  |
-| `RATE_INVITE_PER_IP`            | `20`    | Failed invitation look-ups and accepts per client address                   | 10 minutes |
-| `RATE_DESKTOP_REDEEM_PER_IP`    | `20`    | Failed "Open in Desktop" redemptions per client address                     | 5 minutes  |
-| `RATE_COLLAB_TICKET_PER_MINUTE` | `120`   | Connection tickets per session                                              | 1 minute   |
-| `RATE_UPLOAD_PER_MINUTE`        | `60`    | Uploads per session                                                         | 1 minute   |
-| `RATE_WS_UPGRADE_PER_MINUTE`    | `120`   | WebSocket connections per client address                                    | 1 minute   |
-| `RATE_API_PER_MINUTE`           | `1200`  | All API requests per client address                                         | 1 minute   |
-| `RATE_SIGNUP_PER_IP`            | `10`    | Sign-up attempts per client address (counted only when `ALLOW_SIGNUP=true`) | 10 minutes |
-| `RATE_SIGNUP_PER_EMAIL`         | `3`     | Sign-up attempts per email address (counted only when `ALLOW_SIGNUP=true`)  | 1 hour     |
+| Variable                        | Default | Counted                                                                                                                                                                      | Window     |
+| ------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| `RATE_LOGIN_PER_IP`             | `20`    | Failed sign-ins per client address                                                                                                                                           | 5 minutes  |
+| `RATE_LOGIN_PER_EMAIL`          | `8`     | Failed sign-ins per email address from one client address. A second limit, ten times this value (80 by default), counts failures for the account from all addresses together | 15 minutes |
+| `RATE_SHARE_EXCHANGE_PER_IP`    | `30`    | Failed share-link exchanges per client address                                                                                                                               | 5 minutes  |
+| `RATE_SHARE_EXCHANGE_PER_GRANT` | `20`    | Failed share-link exchanges per link                                                                                                                                         | 5 minutes  |
+| `RATE_INVITE_PER_IP`            | `20`    | Failed invitation look-ups and accepts per client address                                                                                                                    | 10 minutes |
+| `RATE_DESKTOP_REDEEM_PER_IP`    | `20`    | Failed "Open in Desktop" redemptions per client address                                                                                                                      | 5 minutes  |
+| `RATE_COLLAB_TICKET_PER_MINUTE` | `120`   | Connection tickets per session                                                                                                                                               | 1 minute   |
+| `RATE_UPLOAD_PER_MINUTE`        | `240`   | Uploads per session (raised from 60; the editor waits and retries instead of failing)                                                                                        | 1 minute   |
+| `RATE_WS_UPGRADE_PER_MINUTE`    | `120`   | WebSocket connections per client address                                                                                                                                     | 1 minute   |
+| `RATE_API_PER_MINUTE`           | `1200`  | All API requests per client address                                                                                                                                          | 1 minute   |
+| `RATE_API_KEY_PER_MINUTE`       | `600`   | Requests per service API key on `/api/v1`                                                                                                                                    | 1 minute   |
+| `RATE_DOWNLOAD_PER_IP`          | `60`    | Desktop release file downloads (GET) per client address                                                                                                                      | 10 minutes |
+| `RATE_SIGNUP_PER_IP`            | `10`    | Sign-up attempts per client address (counted only when `ALLOW_SIGNUP=true`)                                                                                                  | 10 minutes |
+| `RATE_SIGNUP_PER_EMAIL`         | `3`     | Sign-up attempts per email address (counted only when `ALLOW_SIGNUP=true`)                                                                                                   | 1 hour     |
+
+One limit has no variable: failed API key authentications are throttled at 60 per client address per 5
+minutes.
 
 ### Read by Docker Compose only
 
-| Variable              | Default                     | Meaning                                                                                         |
-| --------------------- | --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `RD_COMPOSE_ENV_FILE` | `.env`                      | Environment file handed to the server container. The backup and restore scripts set it          |
-| `RD_IMAGE`            | `realtimedocs-server:local` | Name of the server image                                                                        |
-| `RD_BUILD_TARGET`     | `runtime`                   | `runtime` builds the image with the web app; `server-runtime` builds API and collaboration only |
+| Variable              | Default                     | Meaning                                                                                                                                                           |
+| --------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `RD_COMPOSE_ENV_FILE` | `.env`                      | Environment file handed to the server container. The backup and restore scripts set it                                                                            |
+| `RD_IMAGE`            | `realtimedocs-server:local` | Name of the server image                                                                                                                                          |
+| `RD_BUILD_TARGET`     | `runtime`                   | `runtime` builds the image with the web app; `server-runtime` builds API and collaboration only                                                                   |
+| `REDIS_PASSWORD`      | none                        | Only with the scale overlay `deploy/scale/docker-compose.scale.yml`, which refuses to start without it. Used for the Redis `--requirepass` and inside `REDIS_URL` |
+| `RD_LB_PORT`          | `4460`                      | Only with the scale overlay. Port on `127.0.0.1` where the nginx balancer is published                                                                            |
+
+### Docker image and the bundled documents
+
+The server image contains the web app, and the web app bundles five Markdown files at build time (`?raw`
+imports in `apps/web/src/features/guides/documents.ts`) for its in-app reader at `/guides/:name`:
+`README.md`, `docs/windows-client.md`, `docs/macos-client.md`, `docs/linux-client.md` and `docs/security.md`.
+The `Dockerfile` copies exactly those files into the web build stage, and `.dockerignore` excludes the rest of
+`docs/` (`docs/*`, then `!docs/windows-client.md`, `!docs/macos-client.md`, `!docs/linux-client.md`,
+`!docs/security.md`). If a bundled document is added or renamed, change `documents.ts`, the `COPY` line and the
+`.dockerignore` exception together; otherwise the image build fails (see
+[troubleshooting.md](troubleshooting.md)). The links in a bundled document that point to a file that is not
+bundled are shown as plain text in the reader.
 
 ## Publish desktop downloads
 
-The server can offer the packaged desktop apps on the landing page and at `/download/<file>`, but it
-never builds them: the operator copies them in. **Until that is done the site says "Release not
-published" and offers no link, and that is the honest state** (the live site is in it today).
+The server offers the packaged desktop apps at `/download` and on the landing page, but it never
+builds or signs them: the operator publishes them as files. The complete guide (layout, manifest,
+signing flags, rollout, rollback, CI) is [desktop-release.md](desktop-release.md); this section is the
+short operational version. **Until something is published the site says "Release not published" and
+offers no link, and that is the honest state.**
 
-**Use these four file names, exactly.** The server serves only these names; anything else is a 404.
-
-| File name to publish             | Built from (in `apps/desktop/out/` on the build server) |
-| -------------------------------- | ------------------------------------------------------- |
-| `realtimedocs-windows-x64.zip`   | `RealtimeDocs-0.1.0-win32-x64.zip`                      |
-| `realtimedocs-windows-arm64.zip` | `RealtimeDocs-0.1.0-win32-arm64.zip`                    |
-| `realtimedocs-macos-arm64.zip`   | `RealtimeDocs-0.1.0-darwin-arm64.zip`                   |
-| `realtimedocs-macos-x64.zip`     | `RealtimeDocs-0.1.0-darwin-x64.zip`                     |
-
-The files in `apps/desktop/out` have different names (they carry the product name, the version and
-the Electron platform name), so **they must be renamed when they are copied**. Publish a file only
-if you know what it is:
-
-- The zips built on the Linux server are **unsigned and have never been started on Windows or
-  macOS**, and the Apple Silicon one **cannot start on a Mac until it is signed there**
-  ([macos-client.md](macos-client.md)). Do not publish them as "ready to use". Publish builds that
-  were made and signed on Windows and macOS, once those exist, or publish the unsigned ones with
-  `"signed": false` so that the landing page says so and names SmartScreen and Gatekeeper.
-- The installers (`*-setup.exe`) have no download name; the download page serves zips only.
-
-**Copy the files into the downloads volume** (`DOWNLOAD_DIR`, `/data/downloads` in the container,
-volume `rd_downloads`; `realtimedocs_rd_downloads` in the live deployment). One way for a running
-Compose deployment, run from the repository root (**these commands were not run**):
+**Versioned releases (current method).** Build, then publish with the operator script into a staging
+directory and copy that into the `rd_downloads` volume (`DOWNLOAD_DIR`, `/data/downloads` in the
+container; `realtimedocs_rd_downloads` in the live deployment):
 
 ```sh
-docker cp apps/desktop/out/RealtimeDocs-0.1.0-win32-x64.zip realtimedocs-server-1:/data/downloads/realtimedocs-windows-x64.zip
+node scripts/publish-release.mjs apps/desktop/out --channel stable --notes-file NOTES.md --target ./release-staging
+# Not run on this host. Copy the new version directory first, the channel pointer last:
+docker cp ./release-staging/releases/. realtimedocs-server-1:/data/downloads/releases/
+docker cp ./release-staging/channels/. realtimedocs-server-1:/data/downloads/channels/
 ```
 
-For a deployment started from the root `docker-compose.yml`, `docker compose cp <file>
-server:/data/downloads/<name>` does the same. The server reads the directory on every request, so no
-restart is needed.
+- Files must be named `RealtimeDocs-<version>-<windows|macos|linux>-<arch>.<ext>`; the packaging
+  scripts now produce exactly those names.
+- Pass `--signed-windows` / `--notarized-macos` only for files that really are. Without the flags
+  every Windows and macOS file is recorded as unsigned, and the page says "Unsigned build — Windows
+  SmartScreen / macOS Gatekeeper will warn you". The server never infers signing.
+- Releases are immutable and previous ones stay on disk; roll back with `--rollback <version>`; a staged
+  rollout is `--rollout <percent>`.
+- The server re-reads the directory every couple of seconds, checks name, size and SHA-256 of every
+  file, and offers only what verifies. `GET /api/admin/releases` and the page `/admin/releases` (signed
+  in as an administrator) show what it found, with problems and download counts.
+- `RATE_DOWNLOAD_PER_IP` (default 60 downloads per client address per 10 minutes) limits file downloads.
 
-**Optionally add `release.json`** in the same directory, to give the page a version, notes and a
-statement about signing:
+**Legacy flat files (still served).** The four names `realtimedocs-windows-x64.zip`,
+`realtimedocs-windows-arm64.zip`, `realtimedocs-macos-arm64.zip` and `realtimedocs-macos-x64.zip` in the
+top of `DOWNLOAD_DIR`, with an optional `release.json` (`{"version","notes","signed"}`), keep working at
+`/download/<file>` and in `GET /api/downloads`, so the live site does not change until you publish a
+versioned release. Once a current stable release with verified files exists, `/api/downloads` is fed
+from it instead. Migration: publish a versioned release, check `/download`, then delete the flat files.
 
-```json
-{ "version": "0.1.0", "notes": "First unsigned test build.", "signed": false }
-```
-
-All three fields are optional; a field you leave out is shown as unknown. `signed` is only what you
-write: **the server never checks or claims that a build is signed**. A file that is not valid JSON of
-this shape (or larger than 64 KiB) is ignored.
-
-**Check the result:** `GET /api/downloads` lists each published build with its size, a SHA-256 and a
-URL, and `release` is `null` without a valid `release.json`. People can compare the SHA-256 with
-their downloaded file (`Get-FileHash` on Windows, `shasum -a 256` on macOS). The checksum proves the
-file is the one on the server, not who built it.
+Do not publish zips built on the Linux server as "ready to use": the Windows and macOS packages made
+there are unsigned and have never been started on those systems, and the cross-built Apple Silicon app
+cannot start until it is signed on a Mac ([macos-client.md](macos-client.md)). People can compare the
+SHA-256 on the page with their download (`Get-FileHash` on Windows, `shasum -a 256` on macOS,
+`sha256sum` on Linux); the checksum proves the file is the one on the server, not who built it.
 
 ## Cloudflare settings
 
@@ -768,7 +828,9 @@ exists; the sequence as a whole was run once, on 2026-11-11 ([status.md](status.
    Run the integration tests as well (`pnpm test:integration`, needs Docker; it uses its own
    containers and ports) when server code changed.
 
-2. **Backup.** From the repository root, before anything is replaced:
+2. **Backup** (and, for a release that contains a migration, a rehearsal and a tag of the running image;
+   see [upgrade-and-rollback.md](upgrade-and-rollback.md)). From the repository root, before anything is
+   replaced:
 
    ```sh
    scripts/backup.sh --env-file deploy/.env.production
@@ -805,11 +867,16 @@ machine that runs the live deployment, and never `docker compose down -v`.
 
 ## Upgrades and migrations
 
-The database schema is changed by numbered SQL files in `apps/server/migrations/`. One exists so
-far (`0001_init.sql`). With `AUTO_MIGRATE=true`, the default, the server applies pending files at
-start-up, each in its own transaction and under a database lock, so that two processes cannot
+The database schema is changed by numbered SQL files in `apps/server/migrations/`. Four exist
+(`0001_init.sql`, `0002_service_api.sql`, `0003_history.sql`, `0004_releases.sql`; the tables are in
+[database-schema.md](database-schema.md)). With `AUTO_MIGRATE=true`, the default, the server applies pending
+files at start-up, each in its own transaction and under a database lock, so that two processes cannot
 migrate at once. It records a checksum of every applied file and refuses to start if an applied
-file was changed afterwards.
+file was changed afterwards. Migrations 0002 to 0004 only add tables and columns and widen one `CHECK`
+constraint, so the previous server version can keep running on the migrated database after the migration
+records are parked. Rehearse on a backup copy first, and use the rollback steps, in
+[upgrade-and-rollback.md](upgrade-and-rollback.md); for the live deployment follow that guide rather than the
+generic steps below.
 
 To upgrade a Compose deployment:
 
@@ -827,15 +894,19 @@ saved and send it again after they reconnect.
 
 Things to know:
 
-- **There is no downgrade.** A server refuses to start against a database that a newer version has
-  migrated. To go back, restore the backup from step 1 with the old version.
+- **There are no down migrations.** A server refuses to start against a database that records a
+  migration it does not know ("The database is at schema version N, which is newer than this server (M).
+  Upgrade the server."). To run an older server on a migrated database, park the newer migration records
+  with `deploy/rollback/park-schema.sql` ([upgrade-and-rollback.md](upgrade-and-rollback.md)); restoring the
+  backup from step 1 is the last resort and loses everything written since.
 - With `AUTO_MIGRATE=false` the server only checks the schema version and refuses to start when it
   does not match. The migrations are then applied with `realtimedocs migrate` (host form:
   `pnpm db:migrate`). This mode was not exercised in a Compose deployment.
 - The web app is part of the server image, so browsers get the new version on their next page
   load. Desktop apps are installed separately. A desktop app that is too old for a document is told
   so and shows "Update required" instead of opening it.
-- Only one schema version exists, so an upgrade from one version to another has not been exercised.
+- The upgrade from schema version 1 to 4 was rehearsed on a copy of a production backup in throw-away
+  containers (`scripts/rehearse-migration.sh`), not on the live deployment ([upgrade-and-rollback.md](upgrade-and-rollback.md)).
 
 ## Backups and restore
 
@@ -848,7 +919,9 @@ Three points to keep in mind here:
 
 - A backup contains password hashes and the full content of every document. Store it encrypted
   and access-controlled.
-- Nothing is scheduled, rotated or encrypted for you, and there is no point-in-time recovery.
+- Nothing is scheduled, rotated or encrypted for you, and there is no point-in-time recovery (WAL
+  archiving is not configured). Restoring on a new host and what to do first when data loss is suspected
+  are in [incident-response.md](incident-response.md).
 - Never run `docker compose down -v` on a live project: it deletes the database and the uploaded
   files.
 
@@ -881,6 +954,21 @@ document that the person has open is disconnected at the server's next periodic 
 
 On a server that runs on the host, the same command is `pnpm reset:password` with the same options.
 
+## Rotating `SESSION_SECRET`
+
+`SESSION_SECRET` is no longer only the key of the anti-forgery token. Replacing it (edit the env file,
+then `deploy/up.sh` for the live deployment) has these effects, read from the code:
+
+| Used for                                                         | Effect of changing it                                                                                                                                                                                                                                                                                |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Anti-forgery (CSRF) token of a signed-in session                 | The token changes. Sessions stay valid (session tokens are random and stored as hashes). A tab opened before the change sends the old token and is refused until the page is reloaded                                                                                                                |
+| Webhook endpoint signing secrets                                 | The stored secrets cannot be decrypted. Every delivery to those endpoints fails with the recorded error "The endpoint secret cannot be decrypted." until each endpoint is deleted and created again (a new secret is shown once and must be given to the receiver)                                   |
+| Stored responses of idempotent `POST /api/v1/interview-sessions` | A replay of a key used in the last 24 hours reads a response that can no longer be decrypted. The code does not catch that error, so the caller can receive an internal error instead of the stored result. Not tested. Access links of the original response are not recoverable from it either way |
+| Authentication of forwarded sockets between instances            | Instances with different values cannot forward sockets to each other. Change all instances together, not one by one                                                                                                                                                                                  |
+
+Nothing else is encrypted with it. Share link, invitation, API key and session secrets are random values
+stored as SHA-256 hashes, independent of `SESSION_SECRET`.
+
 ## Retention and cleanup
 
 The retention job runs inside the server every `CLEANUP_INTERVAL_MINUTES` (six hours by default;
@@ -902,19 +990,30 @@ What it removes, with the default periods:
   deletes them.
 - Rows of ended sessions after 30 days, "Open in Desktop" codes a day after they expired, audit
   events after 365 days.
+- Stored idempotency records of the service API, 24 hours after they were created.
+- Version history, only when `HISTORY_RETENTION_DAYS` is above 0 (default: nothing is removed).
+
+Nothing removes webhook deliveries, API keys, interview sessions or participants; see
+[database-schema.md](database-schema.md). With several instances, every instance runs the timer, and the
+database lock lets only one run at a time.
 
 With `CLEANUP_INTERVAL_MINUTES=0` the timer is off; run the command above from cron instead. Two
 runs at the same time are safe: the second one reports that it was skipped.
 
 ## Health endpoints
 
-| Endpoint          | Answer                                                                                              |
-| ----------------- | --------------------------------------------------------------------------------------------------- |
-| `GET /api/health` | 200 while the process runs. Checks nothing else. The container's own health check uses it           |
-| `GET /api/ready`  | 200 when the database answers, 503 when it does not                                                 |
-| `GET /api/meta`   | Product name, version, document format versions, the public origin and the effective limits. Public |
+| Endpoint          | Answer                                                                                                                                                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/health` | 200 while the process runs. Checks nothing else. The container's own health check uses it                                                                              |
+| `GET /api/ready`  | 200 `{"status":"ok"}` when PostgreSQL answers, Redis answers (only if `REDIS_URL` is set) and the instance is not shutting down. Otherwise 503 `{"status":"degraded"}` |
+| `GET /api/meta`   | Product name, version, document format versions, the public origin, the effective limits and the desktop client version fields. Public                                 |
+| `GET /metrics`    | Prometheus text. 404 unless `METRICS_TOKEN` is set and sent as `Authorization: Bearer <token>`. Not under `/api`: no cookie, no session, no rate limit                 |
 
-There is no metrics endpoint.
+`/api/ready` checks the database and Redis with a 2 second timeout each. From the moment a stop begins
+(`SIGTERM`) it answers 503, which is the signal for a load balancer to stop sending new connections; the
+sockets are closed after `SHUTDOWN_DRAIN_SECONDS`. With Redis configured and unreachable it answers 503 while
+open documents keep saving ([scaling.md](scaling.md)). The metric names, alerts and the dashboard layout are in
+[observability.md](observability.md).
 
 ## Logs
 
@@ -937,7 +1036,8 @@ membership changes, share links created, changed, used, revoked or rotated, snap
 rejected uploads with active content) are also stored in the database as an audit trail, without
 document content, and shown to administrators under "People" → "Audit log".
 
-The operator commands write their result to standard output and their log to standard error.
+The operator commands write their result to standard output and their log to standard error. Metrics,
+recommended alerts and the tracing status (not implemented) are in [observability.md](observability.md).
 
 `docker-compose.yml` gives the `db` and `server` containers the `json-file` log driver capped at
 10 MB for 5 files each, so container logs do not grow without bound. (The "Logs are not rotated"
@@ -945,20 +1045,24 @@ remark in `deploy/README.md` predates this setting.)
 
 ## Scaling boundary
 
-Run one server process. These things live in the memory of that process and are not shared:
+**Default: one server process.** Without `REDIS_URL` these things live in the memory of that process: the
+open documents and their ordered write queues, connection tickets, rate-limit counters and the list of live
+connections used to disconnect people when access is revoked. This is how the live deployment runs.
 
-- the open documents and their ordered write queues,
-- connection tickets,
-- rate-limit counters,
-- the list of live connections that is used to disconnect people when access is revoked.
+**Optional: several instances.** With `REDIS_URL` on every instance, instances share document ownership
+(a Redis lease; a socket that lands on a non-owner is forwarded to the owner), tickets, rate-limit counters and
+revocation messages. Requirements, failure behaviour, the rolling deployment and what was verified are in
+[scaling.md](scaling.md). The limits that remain:
 
-A second instance would need, at the least, routing that sends everyone on one document to the same
-instance, or a shared message channel together with a single-writer lease per document, plus shared
-tickets and counters. None of that is built. The database already serialises writers per document,
-so a second writer would not corrupt data, but the "Saved" acknowledgement would no longer be
-trustworthy without the lease. See [architecture.md](architecture.md), section 10.
+- Redis is a dependency of new collaboration connections. Open documents keep saving without it.
+- `ASSET_DIR` and `DOWNLOAD_DIR` must be the same shared storage on every instance; there is no S3-compatible
+  storage adapter.
+- Instances on different hosts, a network file system, TLS between instances and Redis Sentinel or Cluster
+  were not verified.
+- `RATE_WS_UPGRADE_PER_MINUTE` is counted per instance.
 
-`COLLAB_MAX_CONNECTIONS=1000` is a safety limit. No load or capacity measurement stands behind it.
+`COLLAB_MAX_CONNECTIONS=1000` is a per-process safety limit. Measured capacity, if any, is in
+[load-test-report.md](load-test-report.md); no number from it is repeated here.
 
 ## What was and was not verified
 
@@ -999,7 +1103,8 @@ Everything was done on the build host: Ubuntu 24.04 on arm64, Docker 29.6.2, Doc
   `cleanup` from cron.
 - The hidden password prompt of `bootstrap-admin` and `reset-password` through
   `docker compose exec`; the rehearsal pipes the password in.
-- Load or capacity measurements.
+- Load or capacity measurements are reported in [load-test-report.md](load-test-report.md), not here.
+- Several instances: verified on this host as described in [scaling.md](scaling.md); not on the live deployment.
 - Copying desktop builds into the downloads volume: the commands under "Publish desktop downloads"
   were not run, and the live site has no build published.
 - The volume guard was checked on scratch volumes (Docker refused to delete a volume in use), not by

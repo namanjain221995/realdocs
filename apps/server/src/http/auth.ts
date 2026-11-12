@@ -9,6 +9,7 @@ import {
   isUuid,
   shareCookieName,
 } from '@realtimedocs/contracts';
+import type { ServiceScope } from '@realtimedocs/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { resolveAccess, type AccessGranted } from '../access/resolve';
 import { findSessionByToken, sessionStatus, touchSessions } from '../auth/sessions';
@@ -16,10 +17,18 @@ import { csrfTokenFor, safeEqualString } from '../auth/tokens';
 import type { AppContext } from '../context';
 import { USER_COLUMNS, type SessionRow, type UserRow } from '../db/rows';
 import { errors, type AppError } from '../errors';
+import { hasScope, looksLikeApiKey } from '../service/api-key-format';
+import { authenticateApiKey, type ServicePrincipal } from '../service/api-keys';
+import type { Limiters } from './rate-limits';
 
 export interface RequestAuth {
   /** An `Authorization: Bearer` header was sent. Cookies are then ignored entirely. */
   bearerPresented: boolean;
+  /**
+   * The bearer token looks like a service API key (`rdk_…`). It is never looked up as a
+   * desktop session and is only honoured by `requireService` on `/api/v1/*` routes.
+   */
+  apiKeyToken: string | null;
   /** Desktop session behind the bearer token (may be expired or revoked). */
   bearer: SessionRow | null;
   /** False for cross-site requests and for requests from desktop origins. */
@@ -51,9 +60,23 @@ function cookiesHonoured(ctx: AppContext, request: FastifyRequest): boolean {
 async function load(ctx: AppContext, request: FastifyRequest): Promise<RequestAuth> {
   const token = bearerToken(request);
   if (token !== null) {
+    // API keys are recognised first, by their distinct prefix: they are never mistaken for
+    // desktop session tokens, and a request that carries one never honours cookies.
+    if (looksLikeApiKey(token)) {
+      return {
+        bearerPresented: true,
+        apiKeyToken: token,
+        bearer: null,
+        cookiesHonoured: false,
+        account: null,
+        accountStatus: 'none',
+        user: null,
+      };
+    }
     const bearer = await findSessionByToken(ctx.db, ctx.workspace.id, token);
     return {
       bearerPresented: true,
+      apiKeyToken: null,
       bearer: bearer && bearer.kind === 'desktop' ? bearer : null,
       cookiesHonoured: false,
       account: null,
@@ -68,6 +91,7 @@ async function load(ctx: AppContext, request: FastifyRequest): Promise<RequestAu
   if (!account || account.kind !== 'user' || !account.userId) {
     return {
       bearerPresented: false,
+      apiKeyToken: null,
       bearer: null,
       cookiesHonoured: honoured,
       account: null,
@@ -86,6 +110,7 @@ async function load(ctx: AppContext, request: FastifyRequest): Promise<RequestAu
   }
   return {
     bearerPresented: false,
+    apiKeyToken: null,
     bearer: null,
     cookiesHonoured: honoured,
     account,
@@ -140,6 +165,36 @@ export async function requireAdmin(
   return principal;
 }
 
+/** True for the service API, the only routes that accept an API key. */
+export function isServiceRoute(request: FastifyRequest): boolean {
+  return (request.url.split('?')[0] ?? '').startsWith('/api/v1/');
+}
+
+/**
+ * An API key with the given scope. Only `/api/v1/*` routes call this; the key must arrive in an
+ * `Authorization: Bearer rdk_…` header. Cookies are never consulted, so a browser session
+ * (even an administrator's) cannot be combined with, or substituted for, a key.
+ */
+export async function requireService(
+  ctx: AppContext,
+  limits: Limiters,
+  request: FastifyRequest,
+  scope: ServiceScope,
+): Promise<ServicePrincipal> {
+  const auth = await getAuth(ctx, request);
+  if (!auth.apiKeyToken || !isServiceRoute(request)) throw errors.unauthenticated();
+  // Guessing keys is throttled per address; only failures count.
+  await limits.apiKeyFailures.assertAllowed(request, request.ip);
+  const principal = await authenticateApiKey(ctx, request, auth.apiKeyToken, () =>
+    limits.apiKeyFailures.recordFailure(request, request.ip),
+  );
+  await limits.apiKey.consume(request, principal.keyId);
+  if (!hasScope(principal.scopes, scope)) {
+    throw errors.forbidden(`This API key does not have the "${scope}" scope.`);
+  }
+  return principal;
+}
+
 export interface DocumentAccessOptions {
   /** Administrator lifecycle routes may reach trashed documents. */
   allowTrashed?: boolean;
@@ -151,6 +206,7 @@ type AccessFailure =
   | 'share_revoked'
   | 'share_expired'
   | 'document_trashed'
+  | 'session_closed'
   | 'not_found';
 
 function accessError(code: AccessFailure): AppError {
@@ -165,6 +221,8 @@ function accessError(code: AccessFailure): AppError {
       return errors.shareExpired();
     case 'document_trashed':
       return errors.documentTrashed();
+    case 'session_closed':
+      return errors.sessionClosed();
     case 'not_found':
       return errors.notFound();
   }

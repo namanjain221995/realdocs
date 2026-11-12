@@ -164,6 +164,10 @@ export function createTestEditor(options: TestEditorOptions = {}): TestEditor {
     api: api.client,
     documentId: DOCUMENT_ID,
     concurrency: options.concurrency,
+    // One attempt per file and no joining of identical fixtures: document tests
+    // drive every upload call by hand.
+    maxAttempts: 1,
+    dedupe: false,
   });
   const ydoc = new Y.Doc();
   const awareness = new Awareness(ydoc);

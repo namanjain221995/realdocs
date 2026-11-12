@@ -1989,16 +1989,29 @@ await check('upload-states', async () => {
     'cancelled upload inserted nothing',
   );
 
-  // Failure, then retry.
+  // A transient failure heals by itself: the file waits, is sent again and arrives,
+  // without the person doing anything. (Giving up after the last attempt and the
+  // manual Retry button are covered by the unit tests; the backoff makes them too
+  // slow for a browser check.)
   await control(page, { action: 'failUploads', count: 1 });
   await paste(page, 'editor', file('retry-me.png', BLUE));
-  const failed = content(page, 'editor').locator(
-    '[data-testid="rd-upload-placeholder"][data-upload-state="failed"]',
+  const waiting = content(page, 'editor').locator('[data-testid="rd-upload-placeholder"]');
+  await waiting.waitFor();
+  await page.waitForFunction(
+    (s) =>
+      /Waiting to retry/.test(
+        document.querySelector(`${s} [data-testid="rd-upload-placeholder"]`)?.textContent ?? '',
+      ),
+    contentSel('editor'),
   );
-  await failed.waitFor();
-  assert((await failed.innerText()).includes('could not store'), 'failure message');
-  await shot(page, 'upload-failed');
-  await failed.getByRole('button', { name: 'Retry' }).click();
+  assertEqual(
+    await content(page, 'editor')
+      .locator('[data-testid="rd-upload-placeholder"][data-upload-state="failed"]')
+      .count(),
+    0,
+    'a transient failure is not shown as failed',
+  );
+  await shot(page, 'upload-retrying');
   await imagesLoaded(page, `${contentSel('editor2')} .rd-image__img`, 1);
 
   // Undo while uploading: no later insertion. Redo after completion: the node gets its asset.
@@ -3026,6 +3039,489 @@ await check('upload-cancel', async () => {
   );
   await session.close();
   return 'queued and active uploads cancelled: placeholders vanished in both panes, only the other three arrived, undo leaves no image and no placeholder';
+});
+
+// ── Page settings, page surface and ruler ───────────────────────────────────
+
+const WIDE_2 = { width: 2800, height: 900 };
+const pageSel = (name) => `${paneSel(name)} .rd-editor__page`;
+const rulerSel = (name) => `${paneSel(name)} [data-testid="rd-ruler"]`;
+const handleSel = (name, side) => `${paneSel(name)} [data-testid="rd-ruler-${side}"]`;
+const pageMapOf = (page, name) =>
+  page.evaluate((n) => window.__rd.panes[n].session.ydoc.getMap('page').toJSON(), name);
+const pageBox = (page, name) =>
+  page.evaluate((selector) => {
+    const element = document.querySelector(selector);
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return {
+      width: rect.width,
+      left: rect.left,
+      top: rect.top,
+      pl: parseFloat(style.paddingLeft),
+      pr: parseFloat(style.paddingRight),
+      pt: parseFloat(style.paddingTop),
+      pb: parseFloat(style.paddingBottom),
+      background: style.backgroundColor,
+    };
+  }, pageSel(name));
+const near = (actual, expected, tolerance, message) =>
+  assert(
+    Math.abs(actual - expected) <= tolerance,
+    `${message}: expected ${expected} ±${tolerance}, got ${actual}`,
+  );
+/** Number of undo steps the editor pane's own undo manager holds. */
+const undoDepth = (page, name) =>
+  page.evaluate((n) => {
+    const view = document.querySelector(`[data-pane="${n}"] [data-testid="rd-editor-content"]`)
+      .editor.view;
+    const plugin = view.state.plugins.find((p) => p.key?.startsWith?.('y-undo'));
+    return plugin?.getState(view.state)?.undoManager.undoStack.length ?? -1;
+  }, name);
+
+await check('page-surface', async () => {
+  const session = await open({ panes: 'editor,viewer', viewport: WIDE_2 });
+  const { page } = session;
+  // The whole sheet and ruler are drawn for the editor; a read-only viewer gets the sheet only.
+  const editor = await pageBox(page, 'editor');
+  near(editor.width, 793.7 + 0, 3, 'A4 width in CSS px');
+  near(editor.pl, 96, 1.5, 'left margin 25.4 mm = 96 px');
+  near(editor.pt, 96, 1.5, 'top margin');
+  assert((await page.locator(rulerSel('editor')).count()) === 1, 'the editor has a ruler');
+  assert((await page.locator(rulerSel('viewer')).count()) === 0, 'a viewer has no ruler');
+  assertEqual(
+    await page.locator(`${paneSel('editor')} [data-testid="rd-ruler"] [role="slider"]`).count(),
+    2,
+    'two margin markers',
+  );
+  const left = page.locator(handleSel('editor', 'left'));
+  assertEqual(
+    [
+      await left.getAttribute('aria-valuenow'),
+      await left.getAttribute('aria-valuemin'),
+      await left.getAttribute('aria-valuetext'),
+      await left.getAttribute('aria-label'),
+    ],
+    ['25.4', '0', '25.4 mm', 'Left margin'],
+    'slider semantics',
+  );
+  // Ruler and page share one left edge and one width.
+  const ruler = await page.evaluate(
+    (s) => document.querySelector(s).getBoundingClientRect().toJSON(),
+    rulerSel('editor'),
+  );
+  near(ruler.width, editor.width, 1, 'ruler as wide as the page');
+  near(ruler.left, editor.left, 1, 'ruler aligned with the page');
+  const viewer = await pageBox(page, 'viewer');
+  near(viewer.width, 793.7, 3, 'viewer page width');
+  // A long document makes the sheet grow with it: the sheet always contains its text.
+  const longSession = await open({
+    panes: 'editor',
+    kind: 'long',
+    viewport: { width: 1280, height: 860 },
+  });
+  const contained = await longSession.page.evaluate((selector) => {
+    const sheet = document.querySelector(selector);
+    const text = sheet.querySelector('.ProseMirror').getBoundingClientRect();
+    return { sheet: sheet.getBoundingClientRect().bottom, text: text.bottom, tall: text.height };
+  }, pageSel('editor'));
+  assert(contained.tall > 2000, 'the long document is long');
+  assert(
+    contained.sheet >= contained.text,
+    `sheet contains its text (${JSON.stringify(contained)})`,
+  );
+  await longSession.close();
+  await shot(page, 'page-surface');
+  assertEqual(await page.evaluate(() => window.__rd.violations), [], 'no CSP violations');
+  assertEqual(session.problems, [], 'console errors');
+  await session.close();
+  return `A4 sheet ${Math.round(editor.width)} px wide with 96 px margins, ruler aligned, no ruler for the viewer`;
+});
+
+await check('ruler-drag', async () => {
+  const session = await open({
+    panes: 'editor,editor2,viewer',
+    viewport: { width: 3000, height: 900 },
+  });
+  const { page } = session;
+  assertEqual(await pageMapOf(page, 'editor'), {}, 'fresh document has no page settings');
+  const handle = page.locator(handleSel('editor', 'left'));
+  const box = await handle.boundingBox();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const before = await undoDepth(page, 'editor');
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 20, y, { steps: 4 });
+  await page.mouse.move(x + 60, y, { steps: 6 });
+  // While the button is down: local preview and a tooltip, nothing shared yet.
+  const tip = await page.locator(`${paneSel('editor')} [data-testid="rd-ruler-tip"]`).textContent();
+  assert(/^\d+(\.\d)? mm$/.test(tip ?? ''), `tooltip shows the measurement (${tip})`);
+  const live = await pageBox(page, 'editor');
+  near(live.pl, 96 + 60, 6, 'the text area follows the pointer');
+  assertEqual(await pageMapOf(page, 'editor'), {}, 'nothing is written while dragging');
+  assertEqual(await pageMapOf(page, 'viewer'), {}, 'nothing reached the viewer');
+  await page.mouse.up();
+  await page.waitForFunction(
+    (n) => window.__rd.panes[n].session.ydoc.getMap('page').get('marginLeft') !== undefined,
+    'viewer',
+  );
+  const stored = await pageMapOf(page, 'editor');
+  const keys = Object.keys(stored);
+  assertEqual(keys, ['marginLeft'], 'only the dragged margin is written');
+  near(stored.marginLeft, 25.4 + 60 / (793.7 / 210), 1.2, 'dragged margin in mm');
+  assert(
+    Number.isInteger(stored.marginLeft),
+    `snapped to a whole millimetre (${stored.marginLeft})`,
+  );
+  assertEqual(await undoDepth(page, 'editor'), before + 1, 'one drag is one undo step');
+  assertEqual(
+    (await pageMapOf(page, 'editor2')).marginLeft,
+    stored.marginLeft,
+    'the second editor has the same margin',
+  );
+  const viewerBox = await pageBox(page, 'viewer');
+  near(viewerBox.pl, (stored.marginLeft * 96) / 25.4, 1.5, 'the viewer renders the new margin');
+  // Escape cancels a drag.
+  const box2 = await handle.boundingBox();
+  await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box2.x + 80, box2.y + 5, { steps: 5 });
+  await handle.press('Escape');
+  await page.mouse.up();
+  assertEqual((await pageMapOf(page, 'editor')).marginLeft, stored.marginLeft, 'Escape cancelled');
+  near(
+    (await pageBox(page, 'editor')).pl,
+    (stored.marginLeft * 96) / 25.4,
+    1.5,
+    'preview reverted',
+  );
+  await shot(page, 'ruler-drag');
+  assertEqual(session.problems, [], 'console errors');
+  await session.close();
+  return `dragged left margin to ${stored.marginLeft} mm: preview locally, one write on release, synced to 2 clients, one undo step`;
+});
+
+await check('ruler-keyboard', async () => {
+  const session = await open({ panes: 'editor,viewer', viewport: WIDE_2 });
+  const { page } = session;
+  const left = page.locator(handleSel('editor', 'left'));
+  const right = page.locator(handleSel('editor', 'right'));
+  const value = async (handle) => Number(await handle.getAttribute('aria-valuenow'));
+  await left.focus();
+  await page.keyboard.press('ArrowRight');
+  assertEqual(await value(left), 26, 'one step right: 25.4 snaps to 26 mm');
+  await page.keyboard.press('ArrowRight');
+  assertEqual(await value(left), 27, 'next step');
+  await page.keyboard.press('Shift+ArrowRight');
+  assertEqual(await value(left), 37, 'Shift = ten steps');
+  await page.keyboard.press('ArrowLeft');
+  assertEqual(await value(left), 36, 'ArrowLeft');
+  await page.keyboard.press('Home');
+  assertEqual(await value(left), 0, 'Home = smallest margin');
+  await page.keyboard.press('ArrowLeft');
+  assertEqual(await value(left), 0, 'not below zero');
+  await page.keyboard.press('End');
+  // 210 mm paper, 25.4 mm on the other side, 50 mm of text kept.
+  assertEqual(await value(left), 100, 'End = largest margin (100 mm)');
+  assertEqual(await left.getAttribute('aria-valuemax'), '100', 'valuemax');
+  // With a wide opposite margin the text area limit applies instead.
+  assertEqual(
+    await right.getAttribute('aria-valuemax'),
+    '60',
+    'right valuemax leaves 50 mm of text',
+  );
+  await right.focus();
+  await page.keyboard.press('End');
+  assertEqual(await value(right), 60, 'minimum text width enforced');
+  await page.keyboard.press('ArrowLeft');
+  assertEqual(await value(right), 60, 'cannot grow past the limit');
+  await page.keyboard.press('Home');
+  assertEqual(await value(right), 0, 'right Home');
+  // The right marker moves with the arrows: Right makes its margin smaller.
+  await right.focus();
+  await page.keyboard.press('ArrowRight');
+  assertEqual(await value(right), 0, 'right marker, ArrowRight shrinks the margin (not below 0)');
+  await page.keyboard.press('ArrowLeft');
+  assertEqual(await value(right), 1, 'ArrowLeft grows the right margin');
+  await page.keyboard.press('ArrowUp');
+  assertEqual(await right.getAttribute('aria-valuetext'), '2 mm', 'ArrowUp raises the margin');
+  await page.waitForFunction(
+    () => window.__rd.panes.viewer.session.ydoc.getMap('page').get('marginLeft') === 100,
+  );
+  const viewerBox = await pageBox(page, 'viewer');
+  near(viewerBox.pl, (100 * 96) / 25.4, 1.5, 'viewer follows');
+  // Inches: sixteenths.
+  await page.evaluate(() => window.__rd.panes.editor.session.ydoc.getMap('page').set('unit', 'in'));
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector).getAttribute('data-unit') === 'in',
+    rulerSel('editor'),
+  );
+  await left.focus();
+  await page.keyboard.press('Home');
+  await page.keyboard.press('ArrowRight');
+  assertEqual(await value(left), 1.6, '1/16 in = 1.6 mm');
+  assertEqual(await left.getAttribute('aria-valuetext'), '0.06 in', 'valuetext in inches');
+  await page.keyboard.press('Shift+ArrowRight');
+  assertEqual(await left.getAttribute('aria-valuetext'), '0.69 in', 'ten more sixteenths');
+  assertEqual(session.problems, [], 'console errors');
+  await session.close();
+  return 'arrows, shift, home, end, minimum width, mm and 1/16 in steps, right marker direction, aria values';
+});
+
+await check('page-undo', async () => {
+  const session = await open({ panes: 'editor,editor2', kind: 'empty', viewport: WIDE_2 });
+  const { page, mod } = session;
+  const left = page.locator(handleSel('editor', 'left'));
+  const value = async (handle) => Number(await handle.getAttribute('aria-valuenow'));
+  await focusAt(page, 'editor', 'end');
+  await page.keyboard.type('Hello');
+  await left.focus();
+  await page.keyboard.press('Shift+ArrowRight');
+  assertEqual(await value(left), 35, 'margin changed');
+  // A collaborator's margin change must not be undone by this person's undo.
+  await page.evaluate(() =>
+    window.__rd.panes.editor2.session.ydoc.getMap('page').set('marginTop', 40),
+  );
+  await page.waitForFunction(
+    () => window.__rd.panes.editor.session.ydoc.getMap('page').get('marginTop') === 40,
+  );
+  // Ctrl+Z on the marker undoes the margin, not the typing.
+  await page.keyboard.press(`${mod}+z`);
+  await page.waitForFunction(
+    () => window.__rd.panes.editor.session.ydoc.getMap('page').get('marginLeft') === undefined,
+  );
+  assertEqual(await value(left), 25.4, 'marginLeft back to the default');
+  assertEqual((await pageMapOf(page, 'editor')).marginTop, 40, "the collaborator's change stays");
+  await page.waitForFunction(
+    () => window.__rd.panes.editor2.session.ydoc.getMap('page').get('marginLeft') === undefined,
+  );
+  assert(
+    blocks(await json(page, 'editor')).some((b) => b.text.includes('Hello')),
+    'the text is still there',
+  );
+  await page.keyboard.press(`${mod}+Shift+z`);
+  assertEqual(await value(left), 35, 'redo');
+  // From the document: undo steps through margin, then typing.
+  await content(page, 'editor').focus();
+  await page.keyboard.press(`${mod}+z`);
+  await page.waitForFunction(
+    () => window.__rd.panes.editor.session.ydoc.getMap('page').get('marginLeft') === undefined,
+  );
+  await page.keyboard.press(`${mod}+z`);
+  await page.waitForFunction(
+    (selector) => !document.querySelector(selector).textContent.includes('Hello'),
+    contentSel('editor'),
+  );
+  assertEqual(session.problems, [], 'console errors');
+  await session.close();
+  return "margin change undone and redone from the ruler and from the document, in order with typing, without touching a collaborator's change";
+});
+
+await check('page-setup-dialog', async () => {
+  const session = await open({ panes: 'editor,viewer', viewport: WIDE_2 });
+  const { page } = session;
+  await page.locator('[data-testid="rd-tool-page-setup"]').click();
+  const dialog = page.locator('[data-testid="page-setup"]');
+  await dialog.waitFor();
+  await dialog.locator('select[data-testid="page-setup-size"]').selectOption('letter');
+  await page.waitForFunction(
+    () => window.__rd.panes.viewer.session.ydoc.getMap('page').get('size') === 'letter',
+  );
+  await dialog.locator('[data-testid="page-setup-orientation"] >> text=Landscape').click();
+  await page.waitForFunction(
+    () => window.__rd.panes.viewer.session.ydoc.getMap('page').get('orientation') === 'landscape',
+  );
+  // Letter landscape is 279.4 mm wide: the sheet and the ruler follow in both panes.
+  const wide = await pageBox(page, 'editor');
+  near(wide.width, (279.4 * 96) / 25.4, 3, 'Letter landscape width');
+  const viewerWide = await pageBox(page, 'viewer');
+  near(viewerWide.width, (279.4 * 96) / 25.4, 3, 'the viewer follows');
+  // Typed margins: units, validation.
+  const field = dialog.locator('[data-testid="page-setup-marginLeft"]');
+  await field.fill('2.5 cm');
+  await field.press('Enter');
+  await page.waitForFunction(
+    () => window.__rd.panes.viewer.session.ydoc.getMap('page').get('marginLeft') === 25,
+  );
+  await field.fill('900');
+  await page.waitForTimeout(100);
+  assert(
+    /more than 100/.test(await dialog.textContent()),
+    'validation message for an excessive margin',
+  );
+  await field.press('Enter');
+  assertEqual((await pageMapOf(page, 'editor')).marginLeft, 25, 'invalid entry not written');
+  await field.fill('abc');
+  assert(/Enter a length/.test(await dialog.textContent()), 'validation message for text');
+  await field.press('Tab');
+  await dialog.locator('[data-testid="page-setup-unit"] >> text=Inches').click();
+  await page.waitForFunction(
+    () => window.__rd.panes.viewer.session.ydoc.getMap('page').get('unit') === 'in',
+  );
+  assertEqual(await field.inputValue(), '0.98 in', 'margin shown in inches');
+  await dialog.locator('select[data-testid="page-setup-background"]').selectOption('cream');
+  await page.waitForFunction(
+    () => window.__rd.panes.viewer.session.ydoc.getMap('page').get('background') === 'cream',
+  );
+  const cream = await pageBox(page, 'viewer');
+  assertEqual(cream.background, 'rgb(247, 241, 225)', 'cream paper in the viewer');
+  await shot(page, 'page-setup');
+  await dialog.locator('[data-testid="page-setup-reset"]').click();
+  await page.waitForFunction(
+    () => Object.keys(window.__rd.panes.viewer.session.ydoc.getMap('page').toJSON()).length === 0,
+  );
+  const reset = await pageBox(page, 'viewer');
+  near(reset.width, 793.7, 3, 'back to A4 portrait');
+  assertEqual(session.problems, [], 'console errors');
+  await session.close();
+  return 'Page setup changes size, orientation, margins (typed, validated), unit and colour live in both panes; reset empties the map';
+});
+
+await check('page-viewer-cannot-write', async () => {
+  const session = await open({ panes: 'editor,viewer', viewport: WIDE_2 });
+  const { page } = session;
+  assertEqual(
+    await page.locator('[data-pane="viewer"] [data-testid="rd-tool-page-setup"]').count(),
+    0,
+    'no Page setup button for a viewer',
+  );
+  // Even a forced local write is not accepted by the server and never reaches the editor.
+  await page.evaluate(() =>
+    window.__rd.panes.viewer.session.ydoc.getMap('page').set('marginLeft', 90),
+  );
+  await page.waitForTimeout(1500);
+  assertEqual((await pageMapOf(page, 'editor')).marginLeft, undefined, 'the editor never sees it');
+  await session.close();
+  return 'no control for a viewer; a forced write is refused by the server';
+});
+
+await check('page-hostile-values', async () => {
+  const session = await open({ panes: 'editor,viewer', viewport: WIDE_2 });
+  const { page } = session;
+  await page.evaluate(() => {
+    const map = window.__rd.panes.editor.session.ydoc.getMap('page');
+    map.set('marginLeft', 1e12);
+    map.set('marginRight', 'calc(100vw)');
+    map.set('size', 'url(//evil.example/x)');
+    map.set('background', 'red; background-image: url(//evil.example/y)');
+    map.set('marginTop', -50);
+    map.set('unit', { x: 1 });
+  });
+  await page.waitForFunction(
+    () => window.__rd.panes.viewer.session.ydoc.getMap('page').get('marginTop') === -50,
+  );
+  await page.waitForTimeout(300);
+  const box = await pageBox(page, 'viewer');
+  near(box.width, 793.7, 3, 'size falls back to A4');
+  near(box.pl, (100 * 96) / 25.4, 1.5, 'huge left margin clamps to 100 mm');
+  near(box.pr, 96, 1.5, 'right margin falls back');
+  near(box.pt, 0, 1.5, 'negative top margin clamps to 0');
+  const ruler = page.locator(handleSel('editor', 'left'));
+  assertEqual(
+    await ruler.getAttribute('aria-valuetext'),
+    '100 mm',
+    'ruler uses the normalised value',
+  );
+  assert(
+    !(await page.evaluate(() => document.documentElement.outerHTML)).includes('evil.example'),
+    'nothing hostile reached the DOM',
+  );
+  assertEqual(await page.evaluate(() => window.__rd.violations), [], 'no CSP violations');
+  assertEqual(session.external, [], 'no external requests');
+  await session.close();
+  return 'out-of-range, wrong-type and CSS-looking values render as defaults or clamps; no request, no CSP violation';
+});
+
+await check('page-fit-320', async () => {
+  const session = await open({
+    panes: 'editor',
+    viewport: { width: 320, height: 640 },
+    contextOptions: { hasTouch: true },
+  });
+  const { page } = session;
+  const metrics = () =>
+    page.evaluate((selector) => {
+      const scroll = document.querySelector('[data-pane="editor"] .rd-editor__scroll');
+      const pageElement = document.querySelector(selector);
+      const rect = pageElement.getBoundingClientRect();
+      const style = getComputedStyle(pageElement);
+      return {
+        docScroll: document.documentElement.scrollWidth,
+        scrollerOverflow: scroll.scrollWidth - scroll.clientWidth,
+        left: rect.left,
+        right: rect.right,
+        pl: parseFloat(style.paddingLeft),
+        contentWidth: rect.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+      };
+    }, pageSel('editor'));
+  let m = await metrics();
+  assert(m.docScroll <= 320, `no horizontal page scroll (${m.docScroll})`);
+  assert(m.scrollerOverflow <= 0, `no horizontal scroll in the editor (${m.scrollerOverflow})`);
+  assert(m.left >= 0 && m.right <= 320, `page inside the viewport (${m.left}..${m.right})`);
+  // Margins scale with the sheet: 25.4/210 of the width, not 96 px.
+  near(m.pl, (m.right - m.left) * (25.4 / 210), 2, 'proportional margin');
+  assert(m.contentWidth > 150, `text area stays usable (${m.contentWidth})`);
+  // The ruler fits too, and a marker still works by keyboard.
+  const left = page.locator(handleSel('editor', 'left'));
+  await left.focus();
+  await page.keyboard.press('Shift+ArrowRight');
+  await page.waitForFunction(
+    () => window.__rd.panes.editor.session.ydoc.getMap('page').get('marginLeft') === 35,
+  );
+  m = await metrics();
+  assert(
+    m.docScroll <= 320 && m.scrollerOverflow <= 0,
+    'still no horizontal scroll with a wider margin',
+  );
+  // Caret and selection geometry: every sampled position maps back to itself from its own coordinates.
+  const roundTrip = await page.evaluate((selector) => {
+    const view = document.querySelector(selector).editor.view;
+    const bad = [];
+    let tested = 0;
+    view.state.doc.descendants((node, pos) => {
+      if (!node.isText || tested > 40) return;
+      for (const offset of [1, Math.floor(node.text.length / 2)]) {
+        if (offset < 1 || offset >= node.text.length) continue;
+        const at = pos + offset;
+        const rect = view.coordsAtPos(at);
+        const hit = view.posAtCoords({ left: rect.left + 0.5, top: (rect.top + rect.bottom) / 2 });
+        tested += 1;
+        if (!hit || Math.abs(hit.pos - at) > 1) bad.push({ at, hit: hit?.pos ?? null });
+      }
+    });
+    return { tested, bad: bad.slice(0, 5), badCount: bad.length };
+  }, contentSel('editor'));
+  assert(roundTrip.tested >= 10, 'enough positions were sampled');
+  assert(roundTrip.badCount <= 1, `caret coordinates round-trip (${JSON.stringify(roundTrip)})`);
+  await shot(page, 'page-fit-320');
+  assertEqual(session.problems, [], 'console errors');
+  await session.close();
+  return `320 px: sheet fills the width, margins ${m.pl.toFixed(1)} px, no horizontal scroll, ${roundTrip.tested} caret positions round-trip`;
+});
+
+await check('page-reading-layout', async () => {
+  const session = await open({ panes: 'editor', query: '&variant=panel' });
+  const { page } = session;
+  const layout = await page.evaluate(
+    (root) => {
+      const element = document.querySelector(root);
+      const pageElement = element.querySelector('.rd-editor__page');
+      return {
+        layout: element.getAttribute('data-layout'),
+        maxWidth: getComputedStyle(pageElement).maxWidth,
+        border: getComputedStyle(pageElement).borderTopWidth,
+        ruler: element.querySelectorAll('[data-testid="rd-ruler"]').length,
+      };
+    },
+    `${paneSel('editor')} .rd-editor`,
+  );
+  assertEqual(layout.layout, 'reading', 'panel keeps the reading layout');
+  assertEqual(layout.ruler, 0, 'no ruler in the panel');
+  assertEqual(layout.border, '0px', 'no sheet border in the panel');
+  assertEqual(layout.maxWidth, '780px', 'reading width unchanged');
+  await session.close();
+  return 'the compact panel keeps its per-user reading width and shows no sheet or ruler';
 });
 
 await browser.close();

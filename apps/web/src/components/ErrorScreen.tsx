@@ -92,6 +92,12 @@ export function standardErrorCopy(
         description:
           'It no longer opens the document. Ask the person who sent it for a new link if you still need access.',
       };
+    case 'session_closed':
+      return {
+        title: 'This interview has ended',
+        description:
+          'The session this link belongs to was completed, cancelled or archived, so the document can no longer be opened. If you still need it, contact the organiser.',
+      };
     case 'invite_invalid':
       return {
         title: 'This invitation is not valid',
@@ -145,6 +151,7 @@ const ICONS: Record<ErrorScreenKind, ReactNode> = {
   link_invalid: <Link2Off />,
   link_expired: <TimerOff />,
   link_revoked: <Ban />,
+  session_closed: <Ban />,
   invite_invalid: <Link2Off />,
   invite_expired: <TimerOff />,
   rate_limited: <Hourglass />,

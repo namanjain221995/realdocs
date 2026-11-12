@@ -109,6 +109,8 @@ export interface CollabSessionOptions {
 }
 
 export interface CollabSession {
+  /** Labels the next change of this client as a paste in the version history. */
+  announcePaste(): void;
   readonly documentId: string;
   /** Current Y.Doc. Replaced when the generation changes (subscribe to `onDocumentReplaced`). */
   readonly ydoc: Y.Doc;
@@ -912,6 +914,22 @@ class Session implements CollabSession {
       this.markTimer = null;
       this.sendMark();
     }, this.timing.markCoalesceMs);
+  }
+
+  /**
+   * Tells the server that the next change of this client is a paste. Only a
+   * label for the version history: the server attributes and timestamps the
+   * change itself. Nothing is sent while offline (the label is then lost; the
+   * change is not).
+   */
+  announcePaste(): void {
+    const link = this.link;
+    if (!link || !link.helloSent || !this.isLive(link)) return;
+    try {
+      link.provider.sendStateless(JSON.stringify({ t: 'hint', kind: 'paste', at: Date.now() }));
+    } catch {
+      // A label is never worth an error in the editor.
+    }
   }
 
   private sendMark(): void {

@@ -1,63 +1,89 @@
 # Implementation checkpoint
 
-_Last updated: 2026-11-11, after the final verification and the last redeploy._
+_Last updated: 2026-11-12, at the end of the enterprise upgrade. Nothing of the upgrade is deployed: the
+public site still runs the image built on 2026-11-11._
 
 ## How to resume
 
 1. `. scripts/dev-env.sh` (pinned Node 24.22.2 + pnpm 12.18.0 in `.toolchain/`), then
    `node scripts/verify-install.mjs`.
-2. Read `docs/architecture.md`, `docs/decisions.md`, `docs/requirements-checklist.md`, `docs/testing.md`,
-   then the area notes in `docs/notes/` (server, web, editor, desktop, perf).
-3. The live deployment is described in `deploy/README.md`. Operate it only through `deploy/*.sh`; never run
-   a plain `docker compose … down -v` in this repository.
+2. Read [enterprise-upgrade-report.md](enterprise-upgrade-report.md) (what was done and what was not),
+   [enterprise-upgrade-plan.md](enterprise-upgrade-plan.md), [decisions.md](decisions.md),
+   [known-limitations.md](known-limitations.md), then the area notes in `docs/notes/`.
+3. The live deployment is described in `deploy/README.md`. Operate it only through `deploy/*.sh`; never
+   run a plain `docker compose … down -v` in this repository. Upgrading it:
+   [upgrade-and-rollback.md](upgrade-and-rollback.md).
+4. Git: the repository has one commit; everything of the upgrade is uncommitted working-tree change. The
+   owner commits.
 
 ## State
 
-| Area                                                                                                                                           | State                                                                 |
-| ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Server (Fastify, Hocuspocus, PostgreSQL, durable log, assets, exports, CLI, sign-up, downloads)                                                | done                                                                  |
-| Web app (landing page, sign-in/up, dashboard, editor, sharing, snapshots, reading mode, docs reader)                                           | done                                                                  |
-| Editor package (schema v2 with callouts, collaboration session, clipboard, uploads, Mermaid)                                                   | done                                                                  |
-| Desktop app (normal window and Private Presenter Mode, tray/menu bar, shortcuts, Safe Share Guide, Privacy Test Center, packaging, installers) | done in code and packaging configuration; **nothing native executed** |
-| Windows diagnostics N-API module                                                                                                               | written and reviewed; **never compiled or run**                       |
-| Acceptance layer (`tests/e2e`, 20 scenarios mapped in `docs/testing.md`)                                                                       | done                                                                  |
-| Performance harness (`tests/perf`, results in `docs/performance.md`)                                                                           | done                                                                  |
-| Documentation (README and every required `docs/*.md`)                                                                                          | done                                                                  |
-| Public deployment `https://realdocs.techsarasolutions.com` (Cloudflare Tunnel)                                                                 | live; desktop downloads deliberately unpublished                      |
+Labels: IMPLEMENTED AND VERIFIED (ran on this host), IMPLEMENTED BUT NOT NATIVE-TESTED, CONFIGURED BUT
+REQUIRES CREDENTIAL, PARTIALLY IMPLEMENTED, BLOCKED WITH EXACT REASON.
 
-## Verified results (observed on this host on 2026-11-11; details and commands in `docs/testing.md`)
+| Area                                                                                                   | State                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Upload queue (automatic retry, pause on rate limit, de-duplication)                                    | IMPLEMENTED AND VERIFIED                                                                                                                     |
+| Unsupported content (named, pauses editing in that window, clears itself)                              | IMPLEMENTED AND VERIFIED in unit tests; PARTIALLY IMPLEMENTED against the request (no per-node placeholders, no browser check of the notice) |
+| Interview session API, API keys, idempotency, webhooks, OpenAPI, `/docs` portal, admin pages           | IMPLEMENTED AND VERIFIED (server); portal and admin pages have unit tests only, no browser spec                                              |
+| Page settings, margins, ruler, print                                                                   | IMPLEMENTED AND VERIFIED; printing on paper or to PDF not checked; no indent markers, no pagination                                          |
+| Version history (attributed log, timeline, diff, preview, restore, copy, export, attachment retention) | IMPLEMENTED AND VERIFIED                                                                                                                     |
+| Release store, manifest and update endpoints, OS-aware download, publish script                        | IMPLEMENTED AND VERIFIED                                                                                                                     |
+| Desktop packages: Linux arm64                                                                          | IMPLEMENTED AND VERIFIED (Xvfb smoke only)                                                                                                   |
+| Desktop packages: Windows x64/arm64, macOS x64/arm64 zips                                              | IMPLEMENTED BUT NOT NATIVE-TESTED (cross-built, unsigned)                                                                                    |
+| Windows installer, macOS dmg and universal build, Linux x64                                            | BLOCKED WITH EXACT REASON: need a Windows host, a Mac, and an x64 Electron download                                                          |
+| Windows signing, macOS signing and notarisation                                                        | CONFIGURED BUT REQUIRES CREDENTIAL                                                                                                           |
+| Desktop update check, verified download, "update required" state                                       | IMPLEMENTED BUT NOT NATIVE-TESTED (unit tests; no silent self-update by decision)                                                            |
+| CI and desktop release workflows                                                                       | IMPLEMENTED, NOT EXECUTED (no runner)                                                                                                        |
+| Several server instances (Redis lease, forwarded sockets, shared tickets and limits)                   | IMPLEMENTED AND VERIFIED (integration tests, Compose trial, load tests on one host)                                                          |
+| Metrics, readiness with Redis and drain                                                                | IMPLEMENTED AND VERIFIED; no tracing                                                                                                         |
+| Landing page                                                                                           | IMPLEMENTED AND VERIFIED (three browsers, six widths); 200 % zoom not checked                                                                |
+| Load tests                                                                                             | PARTIALLY IMPLEMENTED: see [load-test-report.md](load-test-report.md) for what ran and what did not                                          |
+| Migration and rollback                                                                                 | Rehearsed on a copy of the production database; not applied to production                                                                    |
+| Everything native on Windows and macOS, every meeting application                                      | NOT TESTED                                                                                                                                   |
 
-- Unit tests: contracts, ui, editor, server and web 991 passed; desktop 670 passed.
-- Server integration (real PostgreSQL and server process): 149 passed. Backup → restore rehearsal: passed.
-- Web: mocked suite 832 passed (2 skipped) in Chromium, Firefox and WebKit; real-stack suite 69 + 18 passed.
-- Editor browser checks: Chromium 38/38, Firefox 36/36, WebKit 36/36 (2 skipped each in Firefox and WebKit).
-- Desktop (Linux/Xvfb smoke only): smoke 64/64, real-stack 20/20; packages: `inspect-package` 212 ok,
-  `test:packaged` 39/39 (reported by the desktop agent).
-- Acceptance suite: 54 passed, 0 failed, plus 3 expected failures that pin the known defect below.
-  Fresh documented Compose setup: passed twice.
-- Performance: p95 text edit → visible remote render 4.2–10.2 ms on loopback, 16.7–23.4 ms at an emulated
-  10 ms RTT, 55.8–62.0 ms at an emulated 50 ms RTT (2/5/10 clients, small and large documents); the
-  < 100 ms target holds in all 18 configurations. Emulation is a userspace delay proxy, not a real LAN.
+## Verified results (observed on this host on 2026-11-12)
+
+| Suite                                                                        | Result                                                                                                |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `pnpm run format:check`, `pnpm run lint`, `pnpm run typecheck`               | clean (lint: 27 `any` warnings in `tests/load`, no errors)                                            |
+| `pnpm test` (unit, all packages)                                             | 80 files, 1,915 passed                                                                                |
+| `pnpm test:integration` (real PostgreSQL, real server, Redis for cluster)    | 21 files, 225 passed                                                                                  |
+| `pnpm test:backup-restore`                                                   | passed (35 s)                                                                                         |
+| Web, mocked API (`apps/web/test-browser`), Chromium + Firefox + WebKit       | 949 passed, 2 skipped                                                                                 |
+| Web, real stack (`apps/web/test-real`)                                       | 69 passed; outage group 18 passed                                                                     |
+| Acceptance (`pnpm test:e2e`)                                                 | 42 passed (3 of them are the expected failures of the known defect below); disruptive group 12 passed |
+| Editor browser checks (`packages/editor/demo/e2e.mjs`)                       | Chromium 47/47; Firefox 45/45, 2 skipped; WebKit 45/45, 2 skipped                                     |
+| Desktop: Xvfb smoke, packaged-app check (Linux)                              | 64/64, 39/39                                                                                          |
+| `scripts/rehearse-migration.sh … --rollback-image realtimedocs-server:local` | data unchanged; rollback and roll-forward rehearsed                                                   |
+| Two-instance Compose trial (`deploy/scale/`)                                 | ran once; details in [scaling.md](scaling.md)                                                         |
+
+Two things seen during the day that were not product defects: the editor's WebKit checks
+`scroll-stability-manual` and `typing-performance` failed while the load tests held the host at a load
+average of 21 and passed at a load of 9 and again in the final run; the acceptance suite's disruptive
+group could not start its database while the load-test proxy held local port 54330.
 
 ## Known defects and open items
 
-- **Simultaneous Enter (acceptance scenario 3):** when two or three editors press Enter at the same instant
-  in the same or adjacent paragraphs, every client converges on the same document, but it is not what was
-  typed (empty paragraphs; characters in or duplicated into another editor's paragraph). Splits taken in
-  turns and ordinary concurrent typing are correct. Pinned by `tests/e2e/specs/convergence.spec.ts`
-  (`test.fail`). Cause not investigated; it matches how the Yjs–ProseMirror binding turns a paragraph split
-  into delete + insert operations. Re-test with `@tiptap/y-tiptap` 3.3.0 or later once the release-age policy
-  allows it.
-- Three editor toolbar menus (block type, font size, code language) use a native `<select>`; on Windows such
-  popups are separate windows that private mode does not cover. They show option names, not document text.
-- A cold load of a document with a Mermaid diagram transfers about 3.9 MiB (about 1.5 MiB without one);
-  images below the fold load lazily; a silent network loss is detected after the 15 s ping / 45 s idle timeout.
-- Cloudflare settings for the owner: disable Web Analytics injection for the hostname (blocked by the CSP);
-  optionally "Always Use HTTPS" (the server already redirects) and "Respect Existing Headers" for browser cache.
+- **Simultaneous Enter:** unchanged from 2026-11-11 (pinned by `tests/e2e/specs/convergence.spec.ts`,
+  `test.fail`). Not investigated in this upgrade.
+- **Reconnect after an instance restart:** p95 8.7–8.9 s in the load harness (objective 5 s). The server
+  hands documents over at once (integration test); the rest was not isolated. See the load-test report.
+- **Soak test:** 12 minutes ran, not 60. Paste-burst, hot-document, upload and history-read load
+  scenarios and the tuned-pool topology did not run.
+- **Document size limit** is a warning only.
+- **Developer portal and admin pages** have no browser spec; the notice for unsupported content has no
+  browser check.
+- **Retention:** no automatic removal of interview participants' e-mail addresses, API keys or download
+  counts.
+- **Backups** are not automated.
+- Everything else: [known-limitations.md](known-limitations.md).
 
-## NOT TESTED (needs real machines; steps in `docs/windows-client.md`, `docs/macos-client.md`, `docs/capture-compatibility.md`)
+## For the owner before the live upgrade
 
-Everything native on Windows and macOS: transparency, click-through, tray and menu bar, shortcuts, focus,
-multiple monitors, Spaces and fullscreen, capture exclusion, key stores, deep links, installers, signing,
-notarisation, the diagnostics module, and all 114 meeting-capture combinations in the matrix. Real Safari,
-real phones and tablets, screen readers, HTTPS on a reverse proxy other than the Cloudflare tunnel.
+1. Read [upgrade-and-rollback.md](upgrade-and-rollback.md) and run the rehearsal once more on a fresh
+   backup.
+2. `docker tag realtimedocs-server:local realtimedocs-server:previous`, take a backup, `deploy/up.sh`.
+3. Delete `deploy/admin-credentials.txt` once the password is stored elsewhere.
+4. Publishing desktop builds needs a Windows machine, a Mac and signing credentials
+   ([desktop-release.md](desktop-release.md)).

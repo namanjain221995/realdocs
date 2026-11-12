@@ -49,6 +49,7 @@ import {
   SessionReportInput,
   SetBoundsInput,
   SetServerInput,
+  UpdatesOpenInput,
   ShortcutRecordingInput,
   ShortcutResetInput,
   ShortcutSetInput,
@@ -124,6 +125,10 @@ export interface MainApi {
   resetShortcuts(action: ShortcutAction | undefined): void;
   setShortcutRecording(active: boolean): void;
   openExternal(url: string, source: 'panel' | 'settings'): Promise<void>;
+  checkForUpdates(): Promise<void>;
+  downloadUpdate(): Promise<void>;
+  deferUpdate(): Promise<void>;
+  openUpdate(action: 'show-in-folder' | 'open-installer'): Promise<void>;
   getDiagnostics(): Promise<Diagnostics>;
   openProbe(): void;
   closeProbe(): void;
@@ -369,6 +374,32 @@ export function buildInvokeHandlers(api: MainApi): HandlerSpec[] {
       handle: (input) => api.setShortcutRecording(input.active),
     }),
 
+    // Updates: the settings window only. The panel renders other people's content and can only
+    // ask (through the window action 'open-settings') to be taken to the Updates tab.
+    defineHandler({
+      channel: CH.updatesCheck,
+      schema: NoInput,
+      allowed: SETTINGS,
+      handle: () => api.checkForUpdates(),
+    }),
+    defineHandler({
+      channel: CH.updatesDownload,
+      schema: NoInput,
+      allowed: SETTINGS,
+      handle: () => api.downloadUpdate(),
+    }),
+    defineHandler({
+      channel: CH.updatesDefer,
+      schema: NoInput,
+      allowed: SETTINGS,
+      handle: () => api.deferUpdate(),
+    }),
+    defineHandler({
+      channel: CH.updatesOpen,
+      schema: UpdatesOpenInput,
+      allowed: SETTINGS,
+      handle: (input) => api.openUpdate(input.action),
+    }),
     defineHandler({
       channel: CH.externalOpen,
       schema: ExternalOpenInput,

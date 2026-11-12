@@ -1,16 +1,34 @@
 import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { findDocument, resolveDocumentLink } from '../src/features/docs/documents';
-import { renderMarkdown } from '../src/features/docs/markdown';
+import { findDocument, resolveDocumentLink } from '../src/features/guides/documents';
+import { renderMarkdown } from '../src/features/guides/markdown';
 import {
   CompatibilityMatrix,
   isVerifiedConfiguration,
   VERIFIED_CONFIGURATIONS,
   type VerifiedConfiguration,
 } from '../src/features/landing/compatibility';
-import { buildLabel, formatBytes, orderBuilds } from '../src/features/landing/downloads';
+import { PROTECTION_STATUS_LABELS } from '../../desktop/src/shared/privacy/status';
+import {
+  CAVEAT,
+  MACOS_WARNING,
+  REQUEST_STATES,
+  REQUIRED_SENTENCE,
+  VERIFICATION_STATES,
+} from '../src/features/landing/copy';
+import { buildLabel, formatBytes } from '../src/features/landing/downloads';
+import { ApiSection } from '../src/features/landing/sections/ApiSection';
+import { Faq } from '../src/features/landing/sections/Faq';
+import { HistoryShowcase } from '../src/features/landing/sections/History';
+import { Platforms } from '../src/features/landing/sections/Platforms';
+import { Presenter } from '../src/features/landing/sections/Presenter';
+import { Product } from '../src/features/landing/sections/Product';
+import { Reliability } from '../src/features/landing/sections/Reliability';
+import { Security } from '../src/features/landing/sections/Security';
+import { Sessions } from '../src/features/landing/sections/Sessions';
 import {
   parseReadingMode,
   resetReadingModeCacheForTests,
@@ -83,19 +101,19 @@ describe('bundled documents', () => {
     const from = (file: string, href: string) => resolveDocumentLink(file, 'x', href);
     expect(from('README.md', 'docs/security.md#desktop-app')).toEqual({
       kind: 'internal',
-      to: '/docs/security#desktop-app',
+      to: '/guides/security#desktop-app',
     });
     expect(from('docs/windows-client.md', 'security.md')).toEqual({
       kind: 'internal',
-      to: '/docs/security',
+      to: '/guides/security',
     });
     expect(from('docs/security.md', '../README.md')).toEqual({
       kind: 'internal',
-      to: '/docs/readme',
+      to: '/guides/readme',
     });
     expect(from('docs/security.md', '../deploy/README.md')).toEqual({ kind: 'none' });
     expect(from('docs/security.md', 'testing.md')).toEqual({ kind: 'none' });
-    expect(from('README.md', '#top')).toEqual({ kind: 'internal', to: '/docs/x#top' });
+    expect(from('README.md', '#top')).toEqual({ kind: 'internal', to: '/guides/x#top' });
     expect(from('README.md', 'https://example.com')).toEqual({
       kind: 'external',
       href: 'https://example.com',
@@ -302,22 +320,80 @@ describe('compatibility matrix', () => {
 });
 
 describe('desktop builds', () => {
-  const base = { bytes: 1, sha256: 'a'.repeat(64), modifiedAt: '2026-11-10T10:00:00.000Z' };
-  it('labels and orders only what the server listed', () => {
-    const listed = [
-      { ...base, file: 'm', platform: 'macos' as const, arch: 'x64' as const, url: '/download/m' },
-      {
-        ...base,
-        file: 'w',
-        platform: 'windows' as const,
-        arch: 'arm64' as const,
-        url: '/download/w',
-      },
-    ];
-    expect(orderBuilds(listed).map((item) => buildLabel(item))).toEqual([
-      'Windows arm64',
-      'macOS Intel (x64)',
-    ]);
-    expect(orderBuilds([])).toEqual([]);
+  it('names a build by platform, architecture and format', () => {
+    expect(buildLabel({ platform: 'windows', arch: 'arm64', format: 'zip' })).toBe(
+      'Windows Arm (arm64) — ZIP archive',
+    );
+    expect(buildLabel({ platform: 'macos', arch: 'x64', format: 'dmg' })).toBe(
+      'macOS Intel (x64) — Disk image (.dmg)',
+    );
+    expect(buildLabel({ platform: 'linux', arch: 'x64', format: 'appimage' })).toBe(
+      'Linux 64-bit (x64) — AppImage',
+    );
+  });
+});
+
+describe('landing wording', () => {
+  const page = renderToStaticMarkup(
+    <MemoryRouter>
+      <Product />
+      <Presenter />
+      <Sessions />
+      <HistoryShowcase />
+      <ApiSection />
+      <Security />
+      <Reliability />
+      <Platforms />
+      <Faq />
+    </MemoryRouter>,
+  );
+  const text = page.replace(/<[^>]+>/g, ' ').replace(/&#x27;|&#39;/g, '’');
+
+  it('uses the protection vocabulary of the desktop app and no other status words', () => {
+    const labels = Object.values(PROTECTION_STATUS_LABELS);
+    for (const state of [...REQUEST_STATES, ...VERIFICATION_STATES]) {
+      expect(labels).toContain(state);
+    }
+    // Every label of the desktop vocabulary is shown on the page.
+    for (const label of labels) expect(page).toContain(label);
+  });
+
+  it('states the required caveat exactly and keeps the owner’s sentences', () => {
+    expect(REQUIRED_SENTENCE).toBe(
+      'OS-assisted capture exclusion. Verify your exact meeting and capture setup before relying on it.',
+    );
+    expect(CAVEAT).toContain('Verify your setup before relying on it.');
+    expect(MACOS_WARNING).toContain('Whole-display capture may include RealtimeDocs');
+  });
+
+  it('never makes a claim it cannot keep', () => {
+    const lower = text.toLowerCase();
+    for (const word of [
+      'undetect',
+      'invisib',
+      'guaranteed',
+      '100%',
+      'bypass',
+      'proctor',
+      'cannot be recorded',
+      'works with every',
+    ]) {
+      expect(lower, word).not.toContain(word);
+    }
+    expect(text).toContain('We make no claim about detection.');
+    expect(text).toContain('No combination of meeting app and capture mode has been tested');
+  });
+
+  it('quotes no performance figures and says why', () => {
+    expect(text).not.toMatch(/\d+\s?(ms|concurrent|users|editors)/i);
+    expect(text).toContain('no load-test report is published');
+  });
+
+  it('shows a copyable request taken from the interview-session contract', () => {
+    expect(page).toContain('/api/v1/interview-sessions');
+    for (const field of ['candidate', 'interviewers', 'companyName', 'scheduledAt', 'expiresAt']) {
+      expect(page).toContain(`&quot;${field}&quot;`);
+    }
+    expect(page).toContain('Copy request');
   });
 });

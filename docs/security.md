@@ -693,7 +693,7 @@ captured from real Google Docs, Word or Excel sessions.
 - **No TLS in the server.** Confidentiality in transit depends entirely on what is put in front of
   it. The reverse-proxy examples of the deployment guide were not run. The deployment that does
   run uses a Cloudflare Tunnel, which means Cloudflare sees the traffic in the clear.
-- **Rate limits are per process and in memory.** They reset on restart. Behind a proxy they work
+- **Rate limits are per process and in memory unless `REDIS_URL` is set** (then they are counted in Redis for all instances, and let requests through while Redis is unreachable). They reset on restart. Behind a proxy they work
   per client only if `TRUST_PROXY` is set correctly; set wrongly, either everyone shares one
   counter or a client can forge its address. With `TRUST_PROXY` set, any program that can reach
   the server's port directly, without going through the proxy, can present whatever client address

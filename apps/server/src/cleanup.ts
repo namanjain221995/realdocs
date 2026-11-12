@@ -18,6 +18,7 @@ import type { Db } from './db/pool';
 import { loadDurableState } from './documents/store';
 import { stateToJson } from './documents/ydoc';
 import type { Logger } from './logger';
+import { IDEMPOTENCY_RETENTION_HOURS } from './service/idempotency';
 
 /** Arbitrary constant identifying the cleanup lock ("rdcl"). */
 const CLEANUP_LOCK_ID = 0x7264_636c;
@@ -35,6 +36,8 @@ export interface CleanupReport {
   sessionsRemoved: number;
   handoffsRemoved: number;
   auditEventsRemoved: number;
+  idempotencyKeysRemoved: number;
+  historyRowsRemoved: number;
 }
 
 export interface CleanupDeps {
@@ -59,6 +62,8 @@ function emptyReport(): CleanupReport {
     sessionsRemoved: 0,
     handoffsRemoved: 0,
     auditEventsRemoved: 0,
+    idempotencyKeysRemoved: 0,
+    historyRowsRemoved: 0,
   };
 }
 
@@ -138,6 +143,14 @@ async function referencedAssetIds(deps: CleanupDeps, documentId: string): Promis
     [documentId, deps.workspaceId],
   );
   for (const row of snapshots.rows) for (const id of row.assetIds) referenced.add(id);
+  // Every asset a retained history row added or a retained checkpoint contains:
+  // a historical revision must still be able to show its images.
+  const history = await deps.db.query<{ id: string }>(
+    `SELECT DISTINCT unnest(attachment_ids) AS id FROM doc_history
+      WHERE document_id = $1 AND workspace_id = $2`,
+    [documentId, deps.workspaceId],
+  );
+  for (const row of history.rows) referenced.add(row.id);
   return referenced;
 }
 
@@ -220,11 +233,50 @@ async function trimRecords(deps: CleanupDeps, report: CleanupReport): Promise<vo
   );
   report.handoffsRemoved = handoffs.rowCount ?? 0;
 
+  // Idempotency records only need to outlive a client's retry window (24 hours).
+  const idempotency = await db.query(
+    `DELETE FROM idempotency_keys
+      WHERE workspace_id = $1 AND created_at <= now() - make_interval(hours => $2)`,
+    [workspaceId, IDEMPOTENCY_RETENTION_HOURS],
+  );
+  report.idempotencyKeysRemoved = idempotency.rowCount ?? 0;
+
   const audit = await db.query(
     `DELETE FROM audit_events WHERE workspace_id = $1 AND at <= now() - make_interval(days => $2)`,
     [workspaceId, retention.auditDays],
   );
   report.auditEventsRemoved = audit.rowCount ?? 0;
+
+  // Finished webhook deliveries (delivered or given up) are kept as long as the
+  // audit trail; pending and retrying ones are never removed here.
+  await db.query(
+    `DELETE FROM webhook_deliveries d
+      USING webhook_endpoints e
+      WHERE e.id = d.endpoint_id AND e.workspace_id = $1
+        AND d.status IN ('delivered', 'dead')
+        AND d.created_at <= now() - make_interval(days => $2)`,
+    [workspaceId, retention.auditDays],
+  );
+
+  // Version history by age. A revision is rebuilt from the latest checkpoint
+  // before it, so rows are only removed in front of a checkpoint that is itself
+  // older than the limit: everything that stays can still be rebuilt.
+  if (retention.historyDays > 0) {
+    const history = await db.query(
+      `DELETE FROM doc_history h
+        USING (
+          SELECT document_id, generation, max(hseq) AS keep_from
+            FROM doc_history
+           WHERE workspace_id = $1 AND kind = 'checkpoint'
+             AND server_committed_at <= now() - make_interval(days => $2)
+           GROUP BY document_id, generation
+        ) c
+        WHERE h.workspace_id = $1 AND h.document_id = c.document_id
+          AND h.generation = c.generation AND h.hseq < c.keep_from`,
+      [workspaceId, retention.historyDays],
+    );
+    report.historyRowsRemoved = history.rowCount ?? 0;
+  }
 }
 
 /**

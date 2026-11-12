@@ -1,0 +1,768 @@
+{
+ "scenario": "s15",
+ "title": "15. large documents",
+ "topology": "A",
+ "startedAt": "2026-11-12T03:13:10.679Z",
+ "config": {
+  "targetsMiB": [
+   1,
+   5,
+   20
+  ],
+  "paragraphBytes": 1000,
+  "batchParagraphs": 100,
+  "serverEnvOverrides": {}
+ },
+ "phases": [
+  {
+   "name": "fresh clients opening the 1 MiB document",
+   "durationS": 2.812,
+   "latency": {
+    "u": {
+     "ack": {
+      "n": 19,
+      "min": 2.1259765625,
+      "p50": 3.26123046875,
+      "p95": 4.878173828125,
+      "p99": 4.878173828125,
+      "mean": 3.2888055098684212,
+      "max": 4.878173828125
+     },
+     "remote": {
+      "n": 15,
+      "min": 0.13916015625,
+      "p50": 0.55810546875,
+      "p95": 0.821533203125,
+      "p99": 0.821533203125,
+      "mean": 0.5183430989583333,
+      "max": 0.821533203125
+     }
+    },
+    "seed": {
+     "ticketMs": {
+      "n": 1,
+      "min": 2.66259765625,
+      "p50": 2.66259765625,
+      "p95": 2.66259765625,
+      "p99": 2.66259765625,
+      "mean": 2.66259765625,
+      "max": 2.66259765625
+     },
+     "connect": {
+      "n": 1,
+      "min": 37.13427734375,
+      "p50": 37.13427734375,
+      "p95": 37.13427734375,
+      "p99": 37.13427734375,
+      "mean": 37.13427734375,
+      "max": 37.13427734375
+     }
+    },
+    "reader": {
+     "ticketMs": {
+      "n": 5,
+      "min": 2.979248046875,
+      "p50": 3.382568359375,
+      "p95": 3.629150390625,
+      "p99": 3.629150390625,
+      "mean": 3.339013671875,
+      "max": 3.629150390625
+     },
+     "connect": {
+      "n": 5,
+      "min": 49.1083984375,
+      "p50": 53.19775390625,
+      "p95": 70.85986328125,
+      "p99": 70.85986328125,
+      "mean": 55.77236328125,
+      "max": 70.85986328125
+     }
+    },
+    "ALL": {
+     "ack": {
+      "n": 19,
+      "min": 2.1259765625,
+      "p50": 3.26123046875,
+      "p95": 4.878173828125,
+      "p99": 4.878173828125,
+      "mean": 3.2888055098684212,
+      "max": 4.878173828125
+     },
+     "remote": {
+      "n": 15,
+      "min": 0.13916015625,
+      "p50": 0.55810546875,
+      "p95": 0.821533203125,
+      "p99": 0.821533203125,
+      "mean": 0.5183430989583333,
+      "max": 0.821533203125
+     },
+     "ticketMs": {
+      "n": 6,
+      "min": 2.66259765625,
+      "p50": 3.240478515625,
+      "p95": 3.629150390625,
+      "p99": 3.629150390625,
+      "mean": 3.2262776692708335,
+      "max": 3.629150390625
+     },
+     "connect": {
+      "n": 6,
+      "min": 37.13427734375,
+      "p50": 50.349365234375,
+      "p95": 70.85986328125,
+      "p99": 70.85986328125,
+      "mean": 52.666015625,
+      "max": 70.85986328125
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "edits": 15
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 406
+   },
+   "generator": [
+    {
+     "pid": 1349629,
+     "cpuPct": 8.516630495979257,
+     "cpuSecondsTotal": 5.961215,
+     "rssMb": 165.0703125,
+     "lagP99Ms": 13.524991,
+     "lagMaxMs": 17.874943,
+     "clients": 0
+    },
+    {
+     "pid": 1349637,
+     "cpuPct": 0.7759238106863638,
+     "cpuSecondsTotal": 5.408359,
+     "rssMb": 162.73828125,
+     "lagP99Ms": 10.452991,
+     "lagMaxMs": 13.606911,
+     "clients": 0
+    },
+    {
+     "pid": 1349646,
+     "cpuPct": 1.1942862758844552,
+     "cpuSecondsTotal": 5.465914,
+     "rssMb": 165.4453125,
+     "lagP99Ms": 10.608639,
+     "lagMaxMs": 11.460607,
+     "clients": 0
+    },
+    {
+     "pid": 1349700,
+     "cpuPct": 0.8730102332460595,
+     "cpuSecondsTotal": 5.309463,
+     "rssMb": 164.1640625,
+     "lagP99Ms": 10.461183,
+     "lagMaxMs": 13.778943,
+     "clients": 0
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 4,
+     "upSamples": 4,
+     "cpuPctAvg": 9.08293074465182,
+     "cpuPctMax": 15.946767001114823,
+     "rssMbMax": 359.66796875,
+     "rssMbEnd": 352.1328125,
+     "heapMbMax": 150.3304672241211,
+     "wsMax": 0,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 1,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.135359,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 1,
+       "meanMs": 31.481692999994372,
+       "p95UpperMs": 50,
+       "p99UpperMs": 50
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 10,
+       "meanMs": 9.980544499997645,
+       "p95UpperMs": 50
+      },
+      "/api/share/exchange": {
+       "count": 5,
+       "meanMs": 17.723237199999886,
+       "p95UpperMs": 50
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 5,
+       "meanMs": 2.237851799995405,
+       "p95UpperMs": 5
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 5
+     }
+    }
+   ],
+   "hostLoadMax": 2.98
+  },
+  {
+   "name": "fresh clients opening the 5 MiB document",
+   "durationS": 3.201,
+   "latency": {
+    "seed": {
+     "ticketMs": {
+      "n": 1,
+      "min": 1.75,
+      "p50": 1.75,
+      "p95": 1.75,
+      "p99": 1.75,
+      "mean": 1.75,
+      "max": 1.75
+     },
+     "connect": {
+      "n": 1,
+      "min": 27.97509765625,
+      "p50": 27.97509765625,
+      "p95": 27.97509765625,
+      "p99": 27.97509765625,
+      "mean": 27.97509765625,
+      "max": 27.97509765625
+     }
+    },
+    "reader": {
+     "ticketMs": {
+      "n": 5,
+      "min": 2.397216796875,
+      "p50": 2.76123046875,
+      "p95": 3.886474609375,
+      "p99": 3.886474609375,
+      "mean": 2.905859375,
+      "max": 3.886474609375
+     },
+     "connect": {
+      "n": 5,
+      "min": 66.591796875,
+      "p50": 120.876708984375,
+      "p95": 167.256103515625,
+      "p99": 167.256103515625,
+      "mean": 122.7318359375,
+      "max": 167.256103515625
+     }
+    },
+    "ALL": {
+     "ticketMs": {
+      "n": 6,
+      "min": 1.75,
+      "p50": 2.63818359375,
+      "p95": 3.886474609375,
+      "p99": 3.886474609375,
+      "mean": 2.7132161458333335,
+      "max": 3.886474609375
+     },
+     "connect": {
+      "n": 6,
+      "min": 27.97509765625,
+      "p50": 119.149658203125,
+      "p95": 167.256103515625,
+      "p99": 167.256103515625,
+      "mean": 106.93904622395833,
+      "max": 167.256103515625
+     }
+    }
+   },
+   "counts": {},
+   "errors": {},
+   "closeCodes": {
+    "1005": 6
+   },
+   "generator": [
+    {
+     "pid": 1349629,
+     "cpuPct": 30.05739933203581,
+     "cpuSecondsTotal": 7.239066,
+     "rssMb": 344.9453125,
+     "lagP99Ms": 26.443775,
+     "lagMaxMs": 41.910271,
+     "clients": 0
+    },
+    {
+     "pid": 1349637,
+     "cpuPct": 0.26063917494297134,
+     "cpuSecondsTotal": 5.419614,
+     "rssMb": 162.73828125,
+     "lagP99Ms": 10.264575,
+     "lagMaxMs": 10.510335,
+     "clients": 0
+    },
+    {
+     "pid": 1349646,
+     "cpuPct": 0.24932870346684763,
+     "cpuSecondsTotal": 5.476738,
+     "rssMb": 165.4453125,
+     "lagP99Ms": 10.313727,
+     "lagMaxMs": 10.559487,
+     "clients": 0
+    },
+    {
+     "pid": 1349700,
+     "cpuPct": 0.26354817876786313,
+     "cpuSecondsTotal": 5.320812,
+     "rssMb": 164.1640625,
+     "lagP99Ms": 10.297343,
+     "lagMaxMs": 11.231231,
+     "clients": 0
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 4,
+     "upSamples": 4,
+     "cpuPctAvg": 30.80402044293019,
+     "cpuPctMax": 30.80402044293019,
+     "rssMbMax": 456.86328125,
+     "rssMbEnd": 456.86328125,
+     "heapMbMax": 136.2544403076172,
+     "wsMax": 0,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 1,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 58.163199,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 1,
+       "meanMs": 123.8338090000033,
+       "p95UpperMs": 250,
+       "p99UpperMs": 250
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 10,
+       "meanMs": 6.811967000000063,
+       "p95UpperMs": 25
+      },
+      "/api/share/exchange": {
+       "count": 5,
+       "meanMs": 11.595186999999108,
+       "p95UpperMs": 25
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 5,
+       "meanMs": 2.028747000001019,
+       "p95UpperMs": 5
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 5
+     }
+    }
+   ],
+   "hostLoadMax": 2.9
+  },
+  {
+   "name": "fresh clients opening the 20 MiB document",
+   "durationS": 4.836,
+   "latency": {
+    "seed": {
+     "ticketMs": {
+      "n": 1,
+      "min": 2.73095703125,
+      "p50": 2.73095703125,
+      "p95": 2.73095703125,
+      "p99": 2.73095703125,
+      "mean": 2.73095703125,
+      "max": 2.73095703125
+     },
+     "connect": {
+      "n": 1,
+      "min": 29.4765625,
+      "p50": 29.4765625,
+      "p95": 29.4765625,
+      "p99": 29.4765625,
+      "mean": 29.4765625,
+      "max": 29.4765625
+     }
+    },
+    "reader": {
+     "ticketMs": {
+      "n": 5,
+      "min": 2.302001953125,
+      "p50": 3.72119140625,
+      "p95": 4.270263671875,
+      "p99": 4.270263671875,
+      "mean": 3.379248046875,
+      "max": 4.270263671875
+     },
+     "connect": {
+      "n": 5,
+      "min": 272.238525390625,
+      "p50": 428.6162109375,
+      "p95": 453.4931640625,
+      "p99": 453.4931640625,
+      "mean": 402.895703125,
+      "max": 453.4931640625
+     }
+    },
+    "ALL": {
+     "ticketMs": {
+      "n": 6,
+      "min": 2.302001953125,
+      "p50": 2.73095703125,
+      "p95": 4.270263671875,
+      "p99": 4.270263671875,
+      "mean": 3.2711995442708335,
+      "max": 4.270263671875
+     },
+     "connect": {
+      "n": 6,
+      "min": 29.4765625,
+      "p50": 408.630615234375,
+      "p95": 453.4931640625,
+      "p99": 453.4931640625,
+      "mean": 340.6591796875,
+      "max": 453.4931640625
+     }
+    }
+   },
+   "counts": {},
+   "errors": {},
+   "closeCodes": {
+    "1005": 6
+   },
+   "generator": [
+    {
+     "pid": 1349629,
+     "cpuPct": 122.9795168273721,
+     "cpuSecondsTotal": 24.206251,
+     "rssMb": 1304.5859375,
+     "lagP99Ms": 71.368703,
+     "lagMaxMs": 155.058175,
+     "clients": 0
+    },
+    {
+     "pid": 1349637,
+     "cpuPct": 0.2536409989077447,
+     "cpuSecondsTotal": 5.454848,
+     "rssMb": 162.73828125,
+     "lagP99Ms": 10.280959,
+     "lagMaxMs": 10.600447,
+     "clients": 0
+    },
+    {
+     "pid": 1349646,
+     "cpuPct": 0.5087107080550434,
+     "cpuSecondsTotal": 5.547161,
+     "rssMb": 113.62890625,
+     "lagP99Ms": 10.264575,
+     "lagMaxMs": 18.923519,
+     "clients": 0
+    },
+    {
+     "pid": 1349700,
+     "cpuPct": 0.5450423762293295,
+     "cpuSecondsTotal": 5.396216,
+     "rssMb": 110.90625,
+     "lagP99Ms": 10.272767,
+     "lagMaxMs": 18.006015,
+     "clients": 0
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 4,
+     "upSamples": 4,
+     "cpuPctAvg": 45.7136919593198,
+     "cpuPctMax": 55.662093596059115,
+     "rssMbMax": 553.91796875,
+     "rssMbEnd": 553.91796875,
+     "heapMbMax": 160.97614288330078,
+     "wsMax": 0,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 1,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 78.05337499999999,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 1,
+       "meanMs": 419.84275899999204,
+       "p95UpperMs": 500,
+       "p99UpperMs": 500
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 10,
+       "meanMs": 7.190857600000123,
+       "p95UpperMs": 25
+      },
+      "/api/share/exchange": {
+       "count": 5,
+       "meanMs": 12.058061400003428,
+       "p95UpperMs": 25
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 5,
+       "meanMs": 2.3236537999968165,
+       "p95UpperMs": 5
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 5
+     }
+    }
+   ],
+   "hostLoadMax": 2.68
+  }
+ ],
+ "results": {
+  "documents": [
+   {
+    "mib": 1,
+    "seed": {
+     "ok": true,
+     "stateBytes": 1144025,
+     "batches": 11,
+     "ms": 161.821044921875,
+     "paragraphs": 1102
+    },
+    "probe": [
+     {
+      "ms": 70.90869140625,
+      "stateBytes": 1144025,
+      "blocks": 1102
+     },
+     {
+      "ms": 53.222412109375,
+      "stateBytes": 1144025,
+      "blocks": 1102
+     },
+     {
+      "ms": 55.369873046875,
+      "stateBytes": 1144025,
+      "blocks": 1102
+     },
+     {
+      "ms": 50.373291015625,
+      "stateBytes": 1144025,
+      "blocks": 1102
+     },
+     {
+      "ms": 49.127685546875,
+      "stateBytes": 1144025,
+      "blocks": 1102
+     }
+    ],
+    "rssMb": [
+     {
+      "port": 4450,
+      "beforeSeed": 344.2,
+      "afterSeed": 359.7,
+      "afterProbes": 352.1
+     }
+    ]
+   },
+   {
+    "mib": 5,
+    "seed": {
+     "ok": true,
+     "stateBytes": 5328347,
+     "batches": 51,
+     "ms": 975.764892578125,
+     "paragraphs": 5102
+    },
+    "probe": [
+     {
+      "ms": 66.629150390625,
+      "stateBytes": 5328347,
+      "blocks": 5102
+     },
+     {
+      "ms": 139.803466796875,
+      "stateBytes": 5328347,
+      "blocks": 5102
+     },
+     {
+      "ms": 120.896240234375,
+      "stateBytes": 5328347,
+      "blocks": 5102
+     },
+     {
+      "ms": 167.281005859375,
+      "stateBytes": 5328347,
+      "blocks": 5102
+     },
+     {
+      "ms": 119.177001953125,
+      "stateBytes": 5328347,
+      "blocks": 5102
+     }
+    ],
+    "rssMb": [
+     {
+      "port": 4450,
+      "beforeSeed": 352.1,
+      "afterSeed": 391.3,
+      "afterProbes": 456.9
+     }
+    ]
+   },
+   {
+    "mib": 20,
+    "seed": {
+     "ok": true,
+     "stateBytes": 21018348,
+     "batches": 201,
+     "ms": 8817.53076171875,
+     "paragraphs": 20102
+    },
+    "probe": [
+     {
+      "ms": 272.28564453125,
+      "stateBytes": 21018348,
+      "blocks": 20102
+     },
+     {
+      "ms": 453.510009765625,
+      "stateBytes": 21018348,
+      "blocks": 20102
+     },
+     {
+      "ms": 451.510498046875,
+      "stateBytes": 21018348,
+      "blocks": 20102
+     },
+     {
+      "ms": 428.628662109375,
+      "stateBytes": 21018348,
+      "blocks": 20102
+     },
+     {
+      "ms": 408.64208984375,
+      "stateBytes": 21018348,
+      "blocks": 20102
+     }
+    ],
+    "rssMb": [
+     {
+      "port": 4450,
+      "beforeSeed": 456.9,
+      "afterSeed": 449.2,
+      "afterProbes": 553.9
+     }
+    ]
+   }
+  ]
+ },
+ "notes": [
+  "Host load average (1 min) peaked at 6.8 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T03:13:31.776Z"
+}

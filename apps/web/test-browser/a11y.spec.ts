@@ -17,6 +17,12 @@ import {
   USERS,
 } from './support/test';
 
+// The landing page offers the build of the detected platform; these specs publish a Linux build.
+test.use({
+  userAgent:
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+});
+
 async function audit(page: Page, label: string): Promise<void> {
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
@@ -45,17 +51,29 @@ for (const theme of ['dark', 'light'] as const satisfies readonly ThemeName[]) {
       // Colours are measured in the settled state, not half-way through the entrance animation.
       await page.emulateMedia({ reducedMotion: 'reduce' });
       api.signupEnabled = true;
-      api.downloads = {
-        release: { version: '0.1.0', notes: 'First build.', signed: false },
-        artifacts: [
+      api.desktopReleases = {
+        channel: 'stable',
+        releases: [
           {
-            file: 'realtimedocs-windows-x64.zip',
-            platform: 'windows',
-            arch: 'x64',
-            bytes: 84_300_000,
-            sha256: 'a'.repeat(64),
-            modifiedAt: '2026-11-10T10:00:00.000Z',
-            url: '/download/realtimedocs-windows-x64.zip',
+            version: '1.0.0',
+            channel: 'stable',
+            publishedAt: '2026-11-12T10:00:00.000Z',
+            notes: 'First build.',
+            minimumSupportedVersion: null,
+            current: true,
+            artifacts: [
+              {
+                platform: 'linux',
+                arch: 'x64',
+                format: 'tar.gz',
+                fileName: 'RealtimeDocs-1.0.0-linux-x64.tar.gz',
+                sizeBytes: 84_300_000,
+                sha256: 'a'.repeat(64),
+                minimumOsVersion: 'Desktop Linux',
+                signatureStatus: 'unsigned',
+                downloadUrl: '/download/releases/stable/1.0.0/RealtimeDocs-1.0.0-linux-x64.tar.gz',
+              },
+            ],
           },
         ],
       };
@@ -109,7 +127,7 @@ for (const theme of ['dark', 'light'] as const satisfies readonly ThemeName[]) {
     });
 
     test('guide pages', async ({ page }) => {
-      await page.goto('/docs/security');
+      await page.goto('/guides/security');
       await expect(page.getByTestId('docs-article')).toBeVisible();
       await audit(page, 'docs');
     });
@@ -124,7 +142,7 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
     const names: string[] = [];
-    for (let index = 0; index < 8; index += 1) {
+    for (let index = 0; index < 16; index += 1) {
       await page.keyboard.press('Tab');
       names.push(
         await page.evaluate(
@@ -134,7 +152,7 @@ test.describe('keyboard', () => {
       );
     }
     expect(names).toContain('Sign in');
-    expect(names).toContain('Download the desktop app');
+    expect(names.some((name) => name.startsWith('Download'))).toBe(true);
     // Every focused control shows a visible focus indicator.
     const outlined = await page.evaluate(() => {
       const element = document.querySelector('[data-testid="hero-sign-in"]') as HTMLElement;

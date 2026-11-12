@@ -13,7 +13,9 @@
  *                    default; when a tone is forced it falls back to --rd-bg
  *                    so text stays readable. The desktop panel sets its own.
  *   --rd-doc-scale   font scale (set from `display.fontScale`)
- *   --rd-doc-width   reading width (set from `display.readingWidth`)
+ *   --rd-doc-width   reading width (set from `display.readingWidth`); used by
+ *                    the reading layout only, the page layout takes its width
+ *                    from the document's page settings (section 14)
  *
  * Contents
  *   1. Tokens for code       6. Images, attachments, uploads   11. Status, banners
@@ -21,6 +23,7 @@
  *   3. ProseMirror base      8. Carets, find, placeholder      13. Motion, small screens
  *   4. Typography            9. Toolbar, find bar, popovers
  *   5. Tables and code      10. Notices and Follow Latest
+ *  14. Page surface, ruler and page setup
  */
 
 /* ---------------------------------------------------------- 1. Code tokens */
@@ -1464,5 +1467,233 @@
 
   .rd-find__count {
     min-width: 4em;
+  }
+}
+
+/* ------------------------------------------- 14. Page surface, ruler, setup */
+/*
+ * The page layout (`data-layout='page'`, set by the component) draws the
+ * document as a sheet whose size and margins come from the shared page
+ * settings, as custom properties on `.rd-editor`:
+ *
+ *   --rd-page-width    paper width in CSS px (96 per inch)
+ *   --rd-page-ratio    width / height, so a short document is still a sheet
+ *   --rd-page-mt|mr|mb|ml          margins in CSS px
+ *   --rd-page-mt-pct ... ml-pct    the same margins as a share of the paper width
+ *
+ * Narrow containers: the sheet becomes `100%` wide and each margin becomes
+ * the smaller of its real size and its share of the paper width, which for a
+ * percentage padding is the share of the sheet's own width (the containing
+ * block is the scroll area, and the sheet fills it). Margins therefore shrink
+ * in proportion, the text keeps its size and reflows, and nothing is
+ * transformed or zoomed, so selection and caret geometry stay exact.
+ * There is no pagination: the sheet is one continuous page.
+ */
+.rd-editor[data-layout='page'] .rd-editor__scroll {
+  box-sizing: border-box;
+  padding: 0 var(--rd-space-4);
+  background: var(--rd-surface-2);
+}
+
+.rd-editor[data-layout='page'] .rd-editor__page {
+  --rd-page-paper: var(--rd-surface-1);
+  width: min(100%, var(--rd-page-width, 794px));
+  max-width: none;
+  /* `auto`, not 0: the ratio sets the height of a short document, a long one makes it grow. */
+  min-height: auto;
+  aspect-ratio: var(--rd-page-ratio, 210 / 297);
+  margin: var(--rd-space-4) auto 96px;
+  padding: min(var(--rd-page-mt, 96px), var(--rd-page-mt-pct, 12%))
+    min(var(--rd-page-mr, 96px), var(--rd-page-mr-pct, 12%))
+    min(var(--rd-page-mb, 96px), var(--rd-page-mb-pct, 12%))
+    min(var(--rd-page-ml, 96px), var(--rd-page-ml-pct, 12%));
+  color: var(--rd-text);
+  background: var(--rd-page-paper);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: 2px;
+  box-shadow: var(--rd-shadow-2);
+}
+
+/* A named paper colour: light ink on dark theme would be unreadable. */
+.rd-editor[data-layout='page'] .rd-editor__page[data-page-bg='white'] {
+  --rd-page-paper: #ffffff;
+}
+
+.rd-editor[data-layout='page'] .rd-editor__page[data-page-bg='cream'] {
+  --rd-page-paper: #f7f1e1;
+}
+
+.rd-editor[data-layout='page'] .rd-editor__page[data-page-bg='gray'] {
+  --rd-page-paper: #e6e9ec;
+}
+
+.rd-editor[data-layout='page'] .rd-editor__ruler + .rd-editor__page {
+  margin-top: 0;
+}
+
+.rd-editor__ruler {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  padding: var(--rd-space-2) 0 var(--rd-space-1);
+  background: var(--rd-surface-2);
+}
+
+.rd-ruler {
+  position: relative;
+  box-sizing: border-box;
+  width: min(100%, var(--rd-page-width, 794px));
+  height: 24px;
+  margin: 0 auto;
+  color: var(--rd-text-muted);
+  background: var(--rd-surface-1);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: 2px;
+  user-select: none;
+}
+
+.rd-ruler__scale {
+  position: absolute;
+  inset: 0;
+  display: block;
+  stroke: currentColor;
+  stroke-width: 1;
+  fill: currentColor;
+  font: 9px / 1 var(--rd-font-ui);
+  pointer-events: none;
+}
+
+.rd-ruler__scale text {
+  stroke: none;
+}
+
+.rd-ruler__shade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--rd-surface-3);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.rd-ruler__shade--left {
+  left: 0;
+}
+
+.rd-ruler__shade--right {
+  right: 0;
+}
+
+.rd-ruler__marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  z-index: 1;
+  width: 20px;
+  margin-left: -10px;
+  cursor: ew-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.rd-ruler__marker::before {
+  content: '';
+  position: absolute;
+  inset: 3px 7px;
+  background: var(--rd-accent);
+  border-radius: 1px;
+}
+
+.rd-ruler__marker:hover::before,
+.rd-ruler__marker[data-dragging]::before {
+  background: var(--rd-accent-hover);
+}
+
+.rd-ruler__marker:focus-visible::before {
+  outline: 2px solid var(--rd-focus-ring);
+  outline-offset: 2px;
+}
+
+.rd-ruler[data-editable='false'] .rd-ruler__marker {
+  cursor: default;
+}
+
+.rd-ruler__tip {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  padding: 2px var(--rd-space-2);
+  font: var(--rd-text-xs) / 1.4 var(--rd-font-ui);
+  color: var(--rd-text);
+  white-space: nowrap;
+  background: var(--rd-surface-3);
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-sm);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.rd-page-setup {
+  display: grid;
+  gap: var(--rd-space-4);
+}
+
+.rd-page-setup__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-4);
+}
+
+.rd-page-setup__group {
+  display: grid;
+  gap: var(--rd-space-1);
+}
+
+.rd-page-setup__label,
+.rd-page-setup__margins legend {
+  font: var(--rd-text-sm) / var(--rd-leading-normal) var(--rd-font-ui);
+  color: var(--rd-text-muted);
+}
+
+.rd-page-setup__margins {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rd-space-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rd-page-setup__margins legend {
+  grid-column: 1 / -1;
+  padding: 0;
+}
+
+.rd-page-setup__note {
+  margin: 0;
+  font: var(--rd-text-sm) / var(--rd-leading-normal) var(--rd-font-ui);
+  color: var(--rd-text-faint);
+}
+
+@media print {
+  .rd-editor[data-layout='page'] .rd-editor__scroll {
+    padding: 0;
+    background: none;
+  }
+
+  .rd-editor[data-layout='page'] .rd-editor__page {
+    width: auto;
+    aspect-ratio: auto;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .rd-editor__ruler {
+    display: none !important;
   }
 }

@@ -7,11 +7,19 @@
  * - `RemoteChangeTracker`: remembers where the latest remote change happened
  *   (for Follow Latest) without touching scroll, focus or selection.
  * - `Carets`: remote cursors, with cursor publishing disabled for viewers.
+ * - `CaretKeeper`: keeps the local caret in its own block when a remote change adds
+ *   an identical block (for example an empty paragraph) before it.
  */
 import { Extension } from '@tiptap/core';
-import { Plugin, PluginKey, type EditorState } from '@tiptap/pm/state';
-import { yCursorPlugin, ySyncPluginKey } from '@tiptap/y-tiptap';
+import { Plugin, PluginKey, TextSelection, type EditorState } from '@tiptap/pm/state';
+import {
+  relativePositionToAbsolutePosition,
+  yCursorPlugin,
+  ySyncPluginKey,
+  type ProsemirrorBinding,
+} from '@tiptap/y-tiptap';
 import type { Awareness } from 'y-protocols/awareness';
+import * as Y from 'yjs';
 
 interface SyncMeta {
   isChangeOrigin?: boolean;
@@ -97,9 +105,89 @@ export const RemoteChangeTracker = Extension.create({
   },
 });
 
+/**
+ * True when the shared type a relative position points into still exists: neither it nor one of
+ * its ancestors was deleted. Such a position is exact; nothing has to be guessed.
+ */
+function anchoredInLiveType(doc: Y.Doc, position: Y.RelativePosition): boolean {
+  let type: Y.AbstractType<unknown> | null;
+  try {
+    type = Y.createAbsolutePositionFromRelativePosition(position, doc)?.type ?? null;
+  } catch {
+    return false;
+  }
+  if (type === null) return false;
+  for (
+    let item = type._item;
+    item !== null;
+    item = (item.parent as Y.AbstractType<unknown>)._item
+  ) {
+    if (item.deleted) return false;
+    if (!(item.parent instanceof Y.AbstractType)) return false;
+  }
+  return true;
+}
+
+/**
+ * After a remote change the binding restores the local selection from Yjs relative positions and
+ * then, for a caret at the start of a text block, second-guesses the result by looking for "the
+ * n-th block with this type and text". When a remote editor has just added an identical block
+ * before the caret's block (two people pressing Enter at the same place both create an empty
+ * paragraph), that guess moves the caret into the other person's block, and the next keystrokes
+ * land there. The relative position itself is exact as long as the block it points into still
+ * exists, so in that case it wins over the guess. A block that was deleted and created again
+ * (the case the guess exists for) is left to the binding.
+ */
+export const CaretKeeper = Extension.create({
+  name: 'rdCaretKeeper',
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey('rdCaretKeeper'),
+        appendTransaction(transactions, _oldState, newState) {
+          const remote = transactions.some((transaction) => {
+            const sync = transaction.getMeta(ySyncPluginKey) as SyncMeta | undefined;
+            return sync?.isChangeOrigin === true && sync.isUndoRedoOperation !== true;
+          });
+          if (!remote || !(newState.selection instanceof TextSelection)) return null;
+          const binding = (
+            ySyncPluginKey.getState(newState) as { binding?: ProsemirrorBinding } | undefined
+          )?.binding;
+          const before = binding?.beforeTransactionSelection;
+          if (!binding || !before || before.type !== 'text') return null;
+          if (before.anchor === null || before.head === null) return null;
+          if (binding.invalidContentError !== null) return null;
+          if (
+            !anchoredInLiveType(binding.doc, before.anchor) ||
+            !anchoredInLiveType(binding.doc, before.head)
+          ) {
+            return null;
+          }
+          const { doc, type, mapping } = binding;
+          const anchor = relativePositionToAbsolutePosition(doc, type, before.anchor, mapping);
+          const head = relativePositionToAbsolutePosition(doc, type, before.head, mapping);
+          if (anchor === null || head === null) return null;
+          const size = newState.doc.content.size;
+          if (anchor < 0 || head < 0 || anchor > size || head > size) return null;
+          const { selection } = newState;
+          if (selection.anchor === anchor && selection.head === head) return null;
+          const $anchor = newState.doc.resolve(anchor);
+          const $head = newState.doc.resolve(head);
+          // Only exact text positions: anything else is left as the binding set it.
+          if (!$anchor.parent.isTextblock || !$head.parent.isTextblock) return null;
+          return newState.tr
+            .setSelection(TextSelection.create(newState.doc, anchor, head))
+            .setMeta('addToHistory', false);
+        },
+      }),
+    ];
+  },
+});
+
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
-function buildCaret(user: { name: string; color: string }): HTMLElement {
+function buildCaret(user: { name: string; color: string; roleLabel?: unknown }): HTMLElement {
   const color = HEX_COLOR.test(user.color) ? user.color : '#8a8f98';
   const caret = document.createElement('span');
   caret.className = 'rd-caret';
@@ -107,7 +195,12 @@ function buildCaret(user: { name: string; color: string }): HTMLElement {
   const label = document.createElement('span');
   label.className = 'rd-caret__label';
   // textContent: a display name is never interpreted as markup.
-  label.textContent = user.name.slice(0, 40);
+  // Interview participants carry a server-set role label: "Aarav — Candidate".
+  const roleLabel =
+    typeof user.roleLabel === 'string' && user.roleLabel !== '' ? user.roleLabel.slice(0, 20) : '';
+  label.textContent = roleLabel
+    ? `${user.name.slice(0, 40)} \u2014 ${roleLabel}`
+    : user.name.slice(0, 40);
   caret.append(document.createTextNode('\u2060'), label, document.createTextNode('\u2060'));
   return caret;
 }

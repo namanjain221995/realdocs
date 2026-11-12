@@ -1,4 +1,4 @@
-import './docs.css';
+import './guides.css';
 import { useMemo } from 'react';
 import { Link, useParams } from 'react-router';
 import { Brand } from '../../components/Brand';
@@ -9,7 +9,7 @@ import { useSession } from '../../lib/session';
 import { BUNDLED_DOCUMENTS, findDocument, resolveDocumentLink } from './documents';
 import { renderMarkdown } from './markdown';
 
-function DocsReader({ name }: { name: string }) {
+function GuidesReader({ name }: { name: string }) {
   const entry = findDocument(name);
   useDocumentTitle(entry?.title);
   const { user } = useSession();
@@ -31,7 +31,7 @@ function DocsReader({ name }: { name: string }) {
           {BUNDLED_DOCUMENTS.map((item) => (
             <Link
               key={item.slug}
-              to={`/docs/${item.slug}`}
+              to={`/guides/${item.slug}`}
               aria-current={item.slug === entry.slug ? 'page' : undefined}
               className="docs__nav-link"
             >
@@ -64,9 +64,9 @@ function DocsReader({ name }: { name: string }) {
   );
 }
 
-/** `/docs/:name`: README and the guides, rendered in the app. */
-export function DocsPage() {
+/** `/guides/:name`: README and the guides, rendered in the app. */
+export function GuidesPage() {
   const { name } = useParams();
   if (!findDocument(name)) return <NotFoundPage />;
-  return <DocsReader key={name} name={name ?? ''} />;
+  return <GuidesReader key={name} name={name ?? ''} />;
 }

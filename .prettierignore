@@ -11,3 +11,4 @@ test-results
 data
 *.min.js
 RealtimeDocs_Claude_Code_Master_Prompt.txt
+tests/load/results

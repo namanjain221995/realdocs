@@ -11,14 +11,12 @@
  *     typing; only the Enter key presses are taken in turns (see EnterTurns). Converged and
  *     conserved: the clients, the export and a fresh browser agree, and every typed paragraph
  *     exists exactly once, intact and in its author's order.
- *  3. KNOWN PRODUCT DEFECT, marked `test.fail` (see docs/testing.md, "Defects found"): Enter
- *     pressed by two or three editors at the same instant. The clients still converge on one
- *     document, but it is not what was typed: empty paragraphs appear and characters land in or
- *     are duplicated into another editor's paragraph. This test uses one place for all three;
- *     the same corruption was also seen, intermittently, with simultaneous Enters in adjacent
- *     paragraphs (the first version of test 2 failed that way in 2 of 3 browsers in one run).
- *     The test asserts the intended result; Playwright reports it as a failure if it ever
- *     passes, so the mark must then be removed.
+ *  3. Enter pressed by all three editors at the same instant at the same place, then typing.
+ *     Every editor's caret must stay in the paragraph that editor created. Until 2026-11-12 this
+ *     was a known defect: the shared document was right, but every caret was moved into the first
+ *     of the identical empty paragraphs, so the typing of all three landed in one paragraph. Fixed
+ *     by `CaretKeeper` (packages/editor/src/editor/collabPlugins.ts); unit-level reproduction in
+ *     packages/editor/test/concurrent-enter.test.ts.
  */
 import type { BrowserContext, Page } from '@playwright/test';
 import {
@@ -248,12 +246,7 @@ test('three editors creating paragraphs at once, in different places, keep every
   await expect.poll(() => paragraphs(late)).toEqual(final);
 });
 
-test.describe('known product defect', () => {
-  test.fail(
-    !process.env.E2E_SHOW_KNOWN_DEFECTS,
-    'simultaneous Enter at one place corrupts paragraphs; see docs/testing.md',
-  );
-
+test.describe('simultaneous Enter', () => {
   test('editors pressing Enter at the same instant at the same place get the paragraphs they typed', async ({
     page,
     openContext,

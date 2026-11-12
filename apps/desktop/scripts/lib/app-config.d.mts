@@ -6,6 +6,15 @@ export declare const APP_ID: string;
 export declare const URL_SCHEME: string;
 export declare const LINUX_EXECUTABLE: string;
 export declare const PLATFORMS: readonly PackagePlatform[];
+export declare const PUBLIC_PLATFORM: Readonly<
+  Record<PackagePlatform, 'windows' | 'macos' | 'linux'>
+>;
+export declare function artifactFileName(
+  version: string,
+  platform: PackagePlatform,
+  arch: string,
+  ext: string,
+): string;
 export declare const ARCHS: Readonly<Record<PackagePlatform, readonly string[]>>;
 
 /** Fuse name (as in `FuseV1Options`) to enabled/disabled. */

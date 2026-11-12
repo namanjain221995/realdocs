@@ -6,6 +6,7 @@ import { DoorOpen } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router';
 import { PublicShell } from '../../components/PublicShell';
+import { accessFlags } from '../../lib/accessCapabilities';
 import { api } from '../../lib/api';
 import { useDisplayPreferences } from '../../lib/displayPreferences';
 import { useReadingMode } from '../../lib/readingMode';
@@ -127,11 +128,13 @@ function Workspace({
   const wakeLock = useWakeLock(readingOn);
   const { rename, changeStatus } = useDocumentActions();
   const desktop = useDesktopHandoff(document.id);
+  const flags = accessFlags(document.access);
   const narrow = useMediaQuery('(max-width: 639px)');
   // Phone and tablet headers have no room for the indicator's words: icons with tooltips.
   const compactStatus = useMediaQuery('(max-width: 959px)');
   const [statusSlot, setStatusSlot] = useState<HTMLElement | null>(null);
   const [participantsSlot, setParticipantsSlot] = useState<HTMLElement | null>(null);
+  const [pageSetupOpen, setPageSetupOpen] = useState(false);
   useDocumentTitle(document.title);
 
   const capabilities = documentCapabilities(document, user);
@@ -256,6 +259,7 @@ function Workspace({
           onPanel={setPanel}
           onRename={(title) => rename.mutate({ document, title })}
           onOpenInDesktop={desktop.start}
+          onPageSetup={() => setPageSetupOpen(true)}
           onLeave={() => leave.mutate()}
           leaving={leave.isPending}
           statusSlotRef={setStatusSlot}
@@ -293,6 +297,8 @@ function Workspace({
               documentTitle={document.title}
               displayPreferences={shownPreferences}
               reading={readingOn}
+              pageSetupOpen={pageSetupOpen}
+              onPageSetupOpenChange={setPageSetupOpen}
               statusSlot={statusSlot}
               participantsSlot={participantsSlot}
               compact={compactStatus}
@@ -305,27 +311,29 @@ function Workspace({
           <Suspense fallback={<PanelFallback />}>
             {panel === 'share' ? (
               <SharingPanel document={document} onClose={() => setPanel(null)} />
-            ) : (
+            ) : flags.canViewHistory ? (
               <SnapshotsPanel document={document} onClose={() => setPanel(null)} />
-            )}
+            ) : null}
           </Suspense>
         ) : null}
       </div>
 
       {readingOn ? null : (
         <footer className="doc-statusbar">
-          <CaptureStatus onOpenInDesktop={desktop.start} />
+          <CaptureStatus onOpenInDesktop={flags.canUseDesktop ? desktop.start : undefined} />
           {document.access.expiresAt && document.access.via === 'share_link' ? (
             <AccessExpiry expiresAt={document.access.expiresAt} />
           ) : null}
         </footer>
       )}
 
-      <OpenInDesktopDialog
-        controls={desktop}
-        isGuest={capabilities.isGuest}
-        onOpenSharing={capabilities.canManage ? () => setPanel('share') : undefined}
-      />
+      {flags.canUseDesktop ? (
+        <OpenInDesktopDialog
+          controls={desktop}
+          isGuest={capabilities.isGuest}
+          onOpenSharing={capabilities.canManage ? () => setPanel('share') : undefined}
+        />
+      ) : null}
       {openDraftId ? (
         <DraftPreviewDialog
           draft={{ draftId: openDraftId, documentId: document.id, documentTitle: document.title }}

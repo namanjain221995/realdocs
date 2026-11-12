@@ -25,10 +25,21 @@ import {
   CreateInvitationResponse,
   CreateShareRequest,
   CreateSnapshotRequest,
+  CopyRevisionRequest,
   CSRF_HEADER,
   DEFAULT_LIMITS,
+  HistoryQuery,
+  HistoryResponse,
+  HistoryRevisionResponse,
+  NameRevisionRequest,
+  CopyRevisionResponse,
+  type HistoryEntry,
+  type HistoryEvent,
   DesktopHandoffResponse,
+  AdminReleasesResponse,
   DownloadsResponse,
+  ReleaseListResponse,
+  ReleaseSummary,
   DocumentResponse,
   DocumentsResponse,
   type DocumentSummary,
@@ -87,6 +98,8 @@ import {
   type StoredDocument,
   USERS,
 } from './fixtures';
+
+import { revisionContent, revisionDiff, seedHistory, seedHistoryEvents } from './historyFixtures';
 
 export const PUBLIC_ORIGIN = 'https://docs.northwind.example';
 
@@ -209,6 +222,13 @@ export class MockApi {
   live: Record<string, Participant[]> = seedLive();
   invitations: Invitation[] = seedInvitations();
   audit = seedAudit();
+  /** Version history: revisions (newest first) and administrative events per document. */
+  history: Record<string, HistoryEntry[]> = seedHistory();
+  historyEvents: Record<string, HistoryEvent[]> = seedHistoryEvents();
+  /** Rows per history page, at most; a test lowers it to exercise "Load more". */
+  historyPageSize = 50;
+  /** `retentionDays` of the history answer. */
+  historyRetentionDays = 0;
 
   /** Share links the exchange endpoint accepts: grant id → secret and target. */
   readonly shareSecrets = new Map<string, { secret: string; documentId: string }>();
@@ -234,6 +254,15 @@ export class MockApi {
   signupEnabled = false;
   /** What `GET /api/downloads` answers: nothing published unless a test says so. */
   downloads: z.input<typeof DownloadsResponse> = { release: null, artifacts: [] };
+
+  /** What `GET /api/v1/desktop/releases` answers: nothing published unless a test says so. */
+  desktopReleases: z.input<typeof ReleaseListResponse> = { channel: 'stable', releases: [] };
+  /** What `GET /api/admin/releases` answers. */
+  adminReleases: z.input<typeof AdminReleasesResponse> = {
+    configured: true,
+    channels: [],
+    legacyFiles: [],
+  };
 
   private readonly overrides: Override[] = [];
   private readonly routes: { method: string; pattern: RegExp; handler: Handler }[] = [];
@@ -552,6 +581,14 @@ export class MockApi {
     );
 
     this.route('GET', '/api/downloads', () => ok(DownloadsResponse, this.downloads));
+    this.route('GET', '/api/v1/desktop/releases', () =>
+      ok(ReleaseListResponse, this.desktopReleases),
+    );
+    this.route('GET', '/api/v1/desktop/releases/:any', ({ params }) => {
+      const found = this.desktopReleases.releases.find((r) => r.version === params[0]);
+      return found ? ok(ReleaseSummary, found) : fail('not_found');
+    });
+    this.route('GET', '/api/admin/releases', () => ok(AdminReleasesResponse, this.adminReleases));
 
     this.route('POST', '/api/auth/signup', ({ call }) => {
       const body = this.input(call, SignupRequest);
@@ -1187,6 +1224,106 @@ export class MockApi {
         (snapshot) => snapshot.id !== params[1],
       );
       return empty;
+    });
+
+    /* ----- version history */
+    this.route('GET', '/api/documents/:id/history', ({ call, params, query }) => {
+      const found = this.adminDocument(params[0] ?? '');
+      if (isReply(found)) return found;
+      const parsed = HistoryQuery.safeParse(Object.fromEntries(query));
+      if (!parsed.success) {
+        this.violations.push(`History query ${call.search} is invalid: ${parsed.error.message}`);
+        return fail('validation_failed');
+      }
+      const q = parsed.data;
+      const matching = (this.history[found.id] ?? []).filter(
+        (each) =>
+          (q.before === undefined || each.revision < q.before) &&
+          (q.actor === undefined ||
+            each.actor.name.toLowerCase().includes(q.actor.toLowerCase())) &&
+          (q.operation === undefined || each.operation === q.operation) &&
+          (q.from === undefined || Date.parse(each.committedAt) >= Date.parse(q.from)) &&
+          (q.to === undefined || Date.parse(each.committedAt) <= Date.parse(q.to)),
+      );
+      const size = Math.min(q.limit, this.historyPageSize);
+      const entries = matching.slice(0, size);
+      const last = entries.at(-1);
+      return ok(HistoryResponse, {
+        entries,
+        nextBefore: matching.length > size && last ? last.revision : null,
+        events: q.before === undefined ? (this.historyEvents[found.id] ?? []) : [],
+        retentionDays: this.historyRetentionDays,
+      });
+    });
+
+    this.route('GET', '/api/documents/:id/history/export', ({ params, query }) => {
+      const found = this.adminDocument(params[0] ?? '');
+      if (isReply(found)) return found;
+      const format = query.get('format') === 'csv' ? 'csv' : 'json';
+      return {
+        kind: 'text',
+        body: format === 'csv' ? 'revision,operation\r\n' : '{"entries":[]}',
+        contentType: format === 'csv' ? 'text/csv' : 'application/json',
+        filename: `history.${format}`,
+      };
+    });
+
+    this.route('GET', '/api/documents/:id/history/:any/export', ({ params, query }) => {
+      const found = this.adminDocument(params[0] ?? '');
+      if (isReply(found)) return found;
+      const format = query.get('format') ?? 'json';
+      return {
+        kind: 'text',
+        body: `Revision ${params[1]} (${format})`,
+        contentType: 'text/plain',
+        filename: `revision-${params[1]}.${format}`,
+      };
+    });
+
+    this.route('GET', '/api/documents/:id/history/:any', ({ params }) => {
+      const found = this.adminDocument(params[0] ?? '');
+      if (isReply(found)) return found;
+      const revision = Number(params[1]);
+      const row = (this.history[found.id] ?? []).find((each) => each.revision === revision);
+      if (!row) return fail('not_found');
+      return ok(HistoryRevisionResponse, {
+        entry: row,
+        diff: revisionDiff(revision),
+        diffTruncated: false,
+        content: revisionContent(revision),
+        pageSettings: null,
+      });
+    });
+
+    this.route('POST', '/api/documents/:id/history/:any/name', ({ call, params }) => {
+      const found = this.adminDocument(params[0] ?? '');
+      if (isReply(found)) return found;
+      const body = this.input(call, NameRevisionRequest);
+      if (!body) return fail('validation_failed');
+      if (!(this.history[found.id] ?? []).some((each) => each.revision === Number(params[1]))) {
+        return fail('not_found');
+      }
+      return ok(SnapshotResponse, { snapshot: addSnapshot(found, body.name, 'named') }, 201);
+    });
+
+    this.route('POST', '/api/documents/:id/history/:any/copy', ({ call, params }) => {
+      const found = this.adminDocument(params[0] ?? '');
+      if (isReply(found)) return found;
+      const body = this.input(call, CopyRevisionRequest);
+      if (!body) return fail('validation_failed');
+      const title = body.title ?? `${found.title} (revision ${params[1]})`;
+      const copy: StoredDocument = {
+        ...found,
+        id: newId(),
+        title,
+        status: 'active',
+        generation: 1,
+        createdAt: NOW,
+        updatedAt: NOW,
+        contentUpdatedAt: NOW,
+      };
+      this.documents = [copy, ...this.documents];
+      return ok(CopyRevisionResponse, { documentId: copy.id, title }, 201);
     });
 
     /* ----- desktop handoff, audit */

@@ -200,7 +200,7 @@ export function describeUploadError(error: unknown): UploadFailure {
       };
     case 'rate_limited':
       return {
-        message: 'Too many uploads at once. Try again in a moment.',
+        message: 'The server is receiving uploads faster than it accepts them.',
         retryable: true,
         cancelled: false,
       };
@@ -221,4 +221,25 @@ export function describeUploadError(error: unknown): UploadFailure {
     default:
       return { message: 'The upload failed.', retryable: true, cancelled: false };
   }
+}
+
+const TRANSIENT_CODES: ReadonlySet<string> = new Set([
+  'rate_limited',
+  'network_error',
+  'server_busy',
+  'storage_unavailable',
+  'internal',
+]);
+
+/** A later attempt with the same file can succeed without the user doing anything. */
+export function isTransientUploadError(error: unknown): boolean {
+  return error instanceof ApiError && TRANSIENT_CODES.has(error.code);
+}
+
+/** How long the server asked uploads to wait (rate limit), capped at two minutes. */
+export function uploadRetryAfterMs(error: unknown): number | null {
+  if (!(error instanceof ApiError) || error.code !== 'rate_limited') return null;
+  const seconds = error.retryAfterSeconds;
+  if (seconds === undefined || !Number.isFinite(seconds)) return 5_000;
+  return Math.min(120_000, Math.max(1_000, seconds * 1000));
 }

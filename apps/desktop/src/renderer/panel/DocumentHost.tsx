@@ -24,8 +24,8 @@ import {
   type DisplayPreferences,
   type DocJSON,
 } from '@realtimedocs/editor';
-import { Button, EmptyState, Spinner, TextField } from '@realtimedocs/ui';
-import { FileText, FileX2, Link2, Server } from 'lucide-react';
+import { Banner, Button, EmptyState, Spinner, TextField } from '@realtimedocs/ui';
+import { Download, FileText, FileX2, Link2, Server } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -39,6 +39,36 @@ import { attempt, desktop } from '../shared/desktop';
 import { endedAccess } from '../shared/labels';
 import { useAction } from './PanelApp';
 import type { LiveDocument } from './useDocumentSession';
+
+/** Offered by the editor when a document uses content this version cannot show. */
+const UPDATE_ACTION = {
+  label: 'Update RealtimeDocs',
+  hint: 'Install the current version of the desktop app to edit this document.',
+  // The panel only asks to be taken to Settings → Updates; downloading happens there.
+  run: () => void desktop?.window.action('open-settings', { tab: 'updates' }),
+};
+
+function UpdateRequired() {
+  return (
+    <div className="rdp-empty" data-testid="rd-update-required">
+      <EmptyState
+        compact
+        icon={<Download />}
+        title="Update required"
+        description="This version of RealtimeDocs Desktop is too old for your server. Download the current version, install it, and open this document again. Your unsaved work stays on this computer."
+        action={
+          <Button
+            variant="primary"
+            data-testid="rd-update-required-action"
+            onClick={() => UPDATE_ACTION.run()}
+          >
+            {UPDATE_ACTION.label}
+          </Button>
+        }
+      />
+    </div>
+  );
+}
 
 function PasteShareLink({ primary }: { primary: boolean }) {
   const [link, setLink] = useState('');
@@ -230,6 +260,7 @@ function LivePanelDocument({ state, live }: { state: AppState; live: LiveDocumen
           followLatest={behaviour.followLatest}
           onFollowLatestChange={onFollowLatestChange}
           onOpenLink={onOpenLink}
+          upgrade={UPDATE_ACTION}
         />
       </div>
     </div>
@@ -253,6 +284,10 @@ export function DocumentHost({ state, live }: { state: AppState; live: LiveDocum
       </div>
     );
   }
+
+  // The server (or the update check) says this version cannot be used: block, with the way out.
+  const updateRequired = server.status === 'update_required' || state.updates.required;
+  if (updateRequired && !session) return <UpdateRequired />;
 
   if (!server.origin) {
     return (
@@ -314,5 +349,23 @@ export function DocumentHost({ state, live }: { state: AppState; live: LiveDocum
   }
 
   // Keyed by the session: nothing of one document (an open draft, a notice) carries over to the next.
-  return <LivePanelDocument key={live.key} state={state} live={live} />;
+  return (
+    <>
+      {updateRequired && (
+        <Banner
+          tone="danger"
+          data-testid="rd-update-required-banner"
+          action={
+            <Button size="sm" variant="secondary" onClick={() => UPDATE_ACTION.run()}>
+              {UPDATE_ACTION.label}
+            </Button>
+          }
+        >
+          Update required: this version is too old for your server. Your unsaved work stays on this
+          computer.
+        </Banner>
+      )}
+      <LivePanelDocument key={live.key} state={state} live={live} />
+    </>
+  );
 }

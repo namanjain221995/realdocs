@@ -3,7 +3,7 @@
  * and the ProseMirror JSON used by the print view.
  */
 import { PassThrough, type Writable } from 'node:stream';
-import { ExportQuery } from '@realtimedocs/contracts';
+import { ExportQuery, normalizePageSettings, Y_PAGE_FIELD } from '@realtimedocs/contracts';
 import { collectAssetIds, toMarkdown, toPlainText } from '@realtimedocs/editor/export';
 import type { DocJSON } from '@realtimedocs/editor/schema';
 import type { FastifyInstance } from 'fastify';
@@ -12,7 +12,7 @@ import { contentDisposition, extensionOf, sanitizeFilename } from '../../assets/
 import { findReadyAssets } from '../../assets/service';
 import type { AssetRow, DocumentRow } from '../../db/rows';
 import { loadDurableState } from '../../documents/store';
-import { stateToJson, ydocToJson } from '../../documents/ydoc';
+import { pageSettingsFromState, stateToJson, ydocToJson } from '../../documents/ydoc';
 import { errors } from '../../errors';
 import type { RouteDeps } from '../app';
 import { documentAccess } from '../auth';
@@ -63,8 +63,20 @@ export function registerExportRoutes(app: FastifyInstance, { ctx }: RouteDeps): 
     return stateToJson(durable.state, durable.updates);
   }
 
+  /** The page settings collaborators see right now (live document) or the durable ones. */
+  async function currentPageSettings(document: DocumentRow) {
+    const live = ctx.collab.liveDocument(document.id, document.generation);
+    if (live) return normalizePageSettings(live.getMap(Y_PAGE_FIELD).toJSON());
+    const durable = await loadDurableState(db, workspace.id, document.id);
+    return pageSettingsFromState(durable?.state ?? null, durable?.updates ?? []);
+  }
+
   app.get('/api/documents/:documentId/export', async (request, reply) => {
     const access = await documentAccess(ctx, request, param(request, 'documentId'));
+    // Interview candidates export only when the session allows it (also covers the print view).
+    if (!access.capabilities.canExport) {
+      throw errors.forbidden('Exporting this document is not allowed for your link.');
+    }
     const { format } = parseInput(ExportQuery, request.query);
     const document = access.document;
     const content = await currentContent(document);
@@ -75,10 +87,14 @@ export function registerExportRoutes(app: FastifyInstance, { ctx }: RouteDeps): 
     // Every format is a download (the web Export menu uses plain links); the
     // print view reads the JSON with fetch, where the disposition is irrelevant.
     if (format === 'json') {
-      return reply
-        .type('application/json; charset=utf-8')
-        .header('content-disposition', contentDisposition('attachment', `${baseName}.json`))
-        .send(JSON.stringify(content));
+      return (
+        reply
+          .type('application/json; charset=utf-8')
+          .header('content-disposition', contentDisposition('attachment', `${baseName}.json`))
+          // `pageSettings` sits beside the ProseMirror fields; readers that only know the
+          // document ignore it, and the print view uses it for the sheet.
+          .send(JSON.stringify({ ...content, pageSettings: await currentPageSettings(document) }))
+      );
     }
     if (format === 'txt') {
       return reply

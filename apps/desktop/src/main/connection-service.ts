@@ -18,6 +18,7 @@ import {
   COLLAB_PROTOCOL_VERSION,
   DESKTOP_APP_ORIGIN,
   DOCUMENT_SCHEMA_VERSION,
+  compareReleaseVersions,
   createApiClient,
   normalizeServerOrigin,
   type ApiClient,
@@ -33,6 +34,8 @@ export interface ConnectionServiceOptions {
   timeoutMs?: number;
   maxResponseBytes?: number;
   now?: () => Date;
+  /** This app's version. With it, a server that publishes a minimum client version can require an update. */
+  appVersion?: string;
 }
 
 export interface ServerCheck {
@@ -125,12 +128,14 @@ export class ConnectionService {
   private readonly timeoutMs: number;
   private readonly maxResponseBytes: number;
   private readonly now: () => Date;
+  private readonly appVersion: string | null;
 
   constructor(options: ConnectionServiceOptions) {
     this.fetchImpl = options.fetch;
     this.timeoutMs = options.timeoutMs ?? 10_000;
     this.maxResponseBytes = options.maxResponseBytes ?? 256 * 1024;
     this.now = options.now ?? (() => new Date());
+    this.appVersion = options.appVersion ?? null;
   }
 
   /** `GET /api/meta`: is this a RealtimeDocs server this client can talk to? */
@@ -139,6 +144,16 @@ export class ConnectionService {
       const meta = await this.client(origin, null, 'native').meta();
       const publicOrigin = normalizeServerOrigin(meta.publicOrigin);
       if (meta.minClientSchemaVersion > DOCUMENT_SCHEMA_VERSION) {
+        return {
+          status: 'update_required',
+          message: describeFailure('update_required'),
+          serverVersion: meta.version,
+          publicOrigin,
+        };
+      }
+      // The server's stable release can state the oldest app it still supports.
+      const minimum = meta.minimumSupportedClientVersion;
+      if (this.appVersion && minimum && this.isOlder(this.appVersion, minimum)) {
         return {
           status: 'update_required',
           message: describeFailure('update_required'),
@@ -174,6 +189,15 @@ export class ConnectionService {
         serverVersion: null,
         publicOrigin: null,
       };
+    }
+  }
+
+  private isOlder(version: string, minimum: string): boolean {
+    try {
+      return compareReleaseVersions(version, minimum) < 0;
+    } catch {
+      // An unparseable version on either side is not a reason to lock anyone out.
+      return false;
     }
   }
 

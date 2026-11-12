@@ -1,0 +1,236 @@
+{
+ "scenario": "s8",
+ "title": "8. session creation API",
+ "topology": "A",
+ "startedAt": "2026-11-12T02:49:31.330Z",
+ "config": {
+  "requestsPerSecond": 20,
+  "durationS": 60,
+  "apiKeys": 1,
+  "replayShare": 0.3,
+  "serverEnvOverrides": {},
+  "note": "RATE_API_KEY_PER_MINUTE is per API key (default 600/min)"
+ },
+ "phases": [
+  {
+   "name": "20 req/s for 60 s",
+   "durationS": 59.952,
+   "latency": {
+    "u": {
+     "remote": {
+      "n": 12,
+      "min": 0.35498046875,
+      "p50": 1.753173828125,
+      "p95": 3.111083984375,
+      "p99": 3.111083984375,
+      "mean": 1.81439208984375,
+      "max": 3.111083984375
+     },
+     "ack": {
+      "n": 15,
+      "min": 4.452880859375,
+      "p50": 6.2822265625,
+      "p95": 8.314697265625,
+      "p99": 8.314697265625,
+      "mean": 6.28837890625,
+      "max": 8.314697265625
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 12,
+      "min": 0.35498046875,
+      "p50": 1.753173828125,
+      "p95": 3.111083984375,
+      "p99": 3.111083984375,
+      "mean": 1.81439208984375,
+      "max": 3.111083984375
+     },
+     "ack": {
+      "n": 15,
+      "min": 4.452880859375,
+      "p50": 6.2822265625,
+      "p95": 8.314697265625,
+      "p99": 8.314697265625,
+      "mean": 6.28837890625,
+      "max": 8.314697265625
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "edits": 12
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 400
+   },
+   "generator": [
+    {
+     "pid": 1087598,
+     "cpuPct": 0.3151630378385366,
+     "cpuSecondsTotal": 9.50105,
+     "rssMb": 250.265625,
+     "lagP99Ms": 10.395647,
+     "lagMaxMs": 10.928127,
+     "clients": 0
+    },
+    {
+     "pid": 1087621,
+     "cpuPct": 0.2922643001461964,
+     "cpuSecondsTotal": 9.267262,
+     "rssMb": 251.015625,
+     "lagP99Ms": 10.444799,
+     "lagMaxMs": 11.149311,
+     "clients": 0
+    },
+    {
+     "pid": 1087629,
+     "cpuPct": 0.29145315761070995,
+     "cpuSecondsTotal": 9.236101,
+     "rssMb": 240.62109375,
+     "lagP99Ms": 10.444799,
+     "lagMaxMs": 16.793599,
+     "clients": 0
+    },
+    {
+     "pid": 1087637,
+     "cpuPct": 0.265811402401258,
+     "cpuSecondsTotal": 8.824348,
+     "rssMb": 202.97265625,
+     "lagP99Ms": 10.412031,
+     "lagMaxMs": 11.132927,
+     "clients": 0
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 14,
+     "upSamples": 14,
+     "cpuPctAvg": 4.91996219584498,
+     "cpuPctMax": 8.894479830148612,
+     "rssMbMax": 385.109375,
+     "rssMbEnd": 385.109375,
+     "heapMbMax": 206.83119201660156,
+     "wsMax": 0,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 0,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.544959,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 1200,
+       "meanMs": 4.968790110000035,
+       "p95UpperMs": 25
+      },
+      "/api/v1/interview-sessions": {
+       "count": 1200,
+       "meanMs": 4.968790110000035,
+       "p95UpperMs": 25
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/openapi.json": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/admin/api-keys": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 0
+     }
+    }
+   ],
+   "hostLoadMax": 4.1,
+   "extra": {
+    "sent": 1200,
+    "achievedRequestsPerSecond": 20.02,
+    "statusCounts": {
+     "create_201": 434,
+     "replay_201": 166,
+     "replay_429": 182,
+     "create_429": 418
+    },
+    "createLatencyMs": {
+     "n": 434,
+     "min": 7.60815499999444,
+     "p50": 11.768993000005139,
+     "p95": 17.12375999998767,
+     "p99": 22.724431000009645,
+     "mean": 12.215957562212415,
+     "max": 33.315085000009276
+    },
+    "replayLatencyMs": {
+     "n": 166,
+     "min": 2.595039000007091,
+     "p50": 3.7436690000176895,
+     "p95": 4.922587000008207,
+     "p99": 5.4327659999835305,
+     "mean": 3.8075573313255453,
+     "max": 5.7408960000029765
+    },
+    "replayResponsesWithReplayedHeader": 166,
+    "rateLimited429WithRetryAfter": 600
+   }
+  }
+ ],
+ "results": {
+  "openApiPaths": [
+   "/api/v1/interview-sessions",
+   "/api/v1/interview-sessions/{id}",
+   "/api/v1/interview-sessions/{id}/participants",
+   "/api/v1/interview-sessions/{id}/participants/{participantId}",
+   "/api/v1/interview-sessions/{id}/rotate-links",
+   "/api/v1/interview-sessions/{id}/start",
+   "/api/v1/interview-sessions/{id}/complete",
+   "/api/v1/interview-sessions/{id}/cancel",
+   "/api/v1/interview-sessions/{id}/audit",
+   "/api/v1/interview-sessions/{id}/document",
+   "/api/v1/webhooks",
+   "/api/v1/webhooks/{id}",
+   "/api/v1/webhooks/{id}/deliveries",
+   "/api/v1/webhooks/deliveries/{deliveryId}/retry"
+  ]
+ },
+ "notes": [
+  "Host load average (1 min) peaked at 4.6 during the run so far."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-12T02:50:31.322Z"
+}

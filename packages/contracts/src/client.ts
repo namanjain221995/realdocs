@@ -12,9 +12,17 @@
  */
 import type { z } from 'zod';
 import * as api from './api';
+import * as history from './history';
 import type { ErrorCode, UploadRejectReason } from './errors';
 import { ApiErrorBody } from './errors';
 import type { Asset } from './models';
+import {
+  AdminReleasesResponse,
+  LatestReleaseResponse,
+  ReleaseListResponse,
+  ReleaseSummary,
+  type ReleaseChannel,
+} from './releases';
 import { COLLAB_WS_PATH } from './versions';
 
 export type ClientErrorCode = ErrorCode | 'network_error' | 'invalid_response' | 'aborted';
@@ -252,6 +260,25 @@ export function createApiClient(options: ApiClientOptions = {}) {
 
     downloads: () => request('GET', '/api/downloads', { schema: api.DownloadsResponse }),
 
+    desktopReleases: {
+      list: (channel: ReleaseChannel = 'stable') =>
+        request('GET', '/api/v1/desktop/releases', {
+          query: { channel },
+          schema: ReleaseListResponse,
+        }),
+      get: (version: string, channel?: ReleaseChannel) =>
+        request('GET', `/api/v1/desktop/releases/${encodeURIComponent(version)}`, {
+          query: { channel },
+          schema: ReleaseSummary,
+        }),
+      latest: (query: { platform?: string; arch?: string; channel?: string } = {}) =>
+        request('GET', '/api/v1/desktop/releases/latest', {
+          query,
+          schema: LatestReleaseResponse,
+        }),
+      admin: () => request('GET', '/api/admin/releases', { schema: AdminReleasesResponse }),
+    },
+
     auth: {
       session: () => request('GET', '/api/auth/session', { schema: api.SessionResponse }),
       login: (body: api.LoginRequest) =>
@@ -370,6 +397,30 @@ export function createApiClient(options: ApiClientOptions = {}) {
         request('POST', '/api/desktop/redeem', { body, schema: api.DesktopSessionResponse }),
       session: () => request('GET', '/api/desktop/session', { schema: api.DesktopSessionResponse }),
       logout: () => request('POST', '/api/desktop/logout'),
+    },
+
+    history: {
+      list: (id: string, query: Partial<history.HistoryQuery> = {}) =>
+        request('GET', `${doc(id)}/history`, { query, schema: history.HistoryResponse }),
+      revision: (id: string, revision: number) =>
+        request('GET', `${doc(id)}/history/${revision}`, {
+          schema: history.HistoryRevisionResponse,
+        }),
+      name: (id: string, revision: number, body: history.NameRevisionRequest) =>
+        request('POST', `${doc(id)}/history/${revision}/name`, {
+          body,
+          schema: api.SnapshotResponse,
+        }),
+      copy: (id: string, revision: number, body: history.CopyRevisionRequest = {}) =>
+        request('POST', `${doc(id)}/history/${revision}/copy`, {
+          body,
+          schema: history.CopyRevisionResponse,
+        }),
+      /** Download URLs (same origin, cookie-authenticated). */
+      exportUrl: (id: string, format: 'json' | 'csv') =>
+        `${doc(id)}/history/export?format=${format}`,
+      revisionExportUrl: (id: string, revision: number, format: 'json' | 'markdown' | 'text') =>
+        `${doc(id)}/history/${revision}/export?format=${format}`,
     },
 
     audit: {

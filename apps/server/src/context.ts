@@ -1,10 +1,12 @@
 import type { AccessDeps } from './access/resolve';
 import type { AssetStorage } from './assets/storage';
 import type { CollabServer } from './collab/server';
-import type { TicketStore } from './collab/tickets';
+import type { Tickets } from './collab/tickets';
+import type { Cluster } from './cluster/cluster';
 import type { Config } from './config';
 import type { Db } from './db/pool';
 import type { Logger } from './logger';
+import type { Metrics } from './metrics';
 
 export interface Workspace {
   id: string;
@@ -18,9 +20,12 @@ export interface AppContext {
   logger: Logger;
   workspace: Workspace;
   storage: AssetStorage;
-  tickets: TicketStore;
+  tickets: Tickets;
+  /** Coordination with other instances; null when the server runs alone. */
+  cluster: Cluster | null;
   collab: CollabServer;
   accessDeps: AccessDeps;
+  metrics: Metrics;
   version: string;
 }
 

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { CH } from '../../src/shared/channels';
 import { WINDOW_ACTIONS } from '../../src/shared/ipc-schemas';
 import { PRIVACY_CH } from '../../src/shared/privacy/ipc';
+import { initialUpdateSnapshot } from '../../src/shared/updates';
 import {
   PANEL_ACTIVATION_REQUIRED,
   decidePanelRequest,
@@ -530,6 +531,7 @@ describe('declared actions', () => {
       },
       displays: [{ id: 1, bounds: { x: 0, y: 0, width: 3840, height: 2160 } }],
       probe: { open: false, record: { result: 'works', notes: 'a note the user wrote' } },
+      updates: initialUpdateSnapshot('1.0.0'),
     };
     spyOf(api, 'getState').mockReturnValue(full);
     const router = createIpcRouter(buildInvokeHandlers(api));
@@ -546,9 +548,39 @@ describe('declared actions', () => {
         capture: { requested: true, status: { label: 'OS protection accepted' }, native: null },
         displays: [],
         probe: { open: false, record: null },
+        updates: initialUpdateSnapshot('1.0.0'),
       },
     });
     expect(JSON.stringify(forPanel)).not.toMatch(/private0hash|a note the user wrote|3840/);
+  });
+
+  it('lets only the settings window use the update actions, with validated input', async () => {
+    const api = fakeApi();
+    const router = createIpcRouter(buildInvokeHandlers(api));
+    for (const [channel, arg] of [
+      [CH.updatesCheck, []],
+      [CH.updatesDownload, []],
+      [CH.updatesDefer, []],
+      [CH.updatesOpen, [{ action: 'open-installer' }]],
+    ] as const) {
+      expect(await router.dispatch(channel, sender('panel'), arg)).toMatchObject({
+        ok: false,
+        error: { code: 'forbidden_window' },
+      });
+      expect(await router.dispatch(channel, sender('probe'), arg)).toMatchObject({
+        ok: false,
+        error: { code: 'forbidden_window' },
+      });
+      expect((await router.dispatch(channel, sender('settings'), arg)).ok).toBe(true);
+    }
+    // No path, URL or other free-form input reaches the handler.
+    for (const bad of [{ action: 'run' }, { action: 'open-installer', path: '/etc/passwd' }, {}]) {
+      expect(await router.dispatch(CH.updatesOpen, sender('settings'), [bad])).toMatchObject({
+        ok: false,
+        error: { code: 'invalid_input' },
+      });
+    }
+    expect(spyOf(api, 'openUpdate').mock.calls).toEqual([['open-installer']]);
   });
 
   it('lets only the panel drive the resize drag and report its session', async () => {

@@ -701,6 +701,8 @@ export class FixtureServer {
       log.acknowledge(connection, message.n);
       return;
     }
+    // A label for the version history; the fixture keeps no history.
+    if (message.t === 'hint') return;
     let snapshot: Y.Snapshot;
     try {
       snapshot = Y.decodeSnapshot(fromBase64(message.snapshot));

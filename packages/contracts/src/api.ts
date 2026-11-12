@@ -60,6 +60,14 @@ export const MetaResponse = z.object({
    * accounts are then created only from invitations. Older servers omit it (read as false).
    */
   signupEnabled: z.boolean().default(false),
+  /** Oldest desktop version the stable channel still supports (null: no minimum published). */
+  minimumSupportedClientVersion: z.string().nullable().default(null),
+  /** Version of the current stable desktop release (null: none published). */
+  recommendedClientVersion: z.string().nullable().default(null),
+  /** Same value as `schemaVersion`; named for the update flow. */
+  documentSchemaVersion: z.number().int().optional(),
+  /** Absolute URL of the desktop update check. */
+  updateUrl: z.string().nullable().default(null),
 });
 export type MetaResponse = z.infer<typeof MetaResponse>;
 
@@ -435,9 +443,9 @@ export type AuditResponse = z.infer<typeof AuditResponse>;
 
 // ── Desktop downloads ───────────────────────────────────────────────────────────────────────
 
-export const DownloadPlatform = z.enum(['windows', 'macos']);
+export const DownloadPlatform = z.enum(['windows', 'macos', 'linux']);
 export type DownloadPlatform = z.infer<typeof DownloadPlatform>;
-export const DownloadArch = z.enum(['x64', 'arm64']);
+export const DownloadArch = z.enum(['x64', 'arm64', 'universal']);
 export type DownloadArch = z.infer<typeof DownloadArch>;
 
 /** One published desktop build, described from the file the server actually holds. */

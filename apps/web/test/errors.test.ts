@@ -30,6 +30,7 @@ describe('errorScreenKind', () => {
     share_invalid: 'link_invalid',
     share_expired: 'link_expired',
     share_revoked: 'link_revoked',
+    session_closed: 'session_closed',
     invite_invalid: 'invite_invalid',
     invite_expired: 'invite_expired',
     rate_limited: 'rate_limited',
@@ -49,6 +50,9 @@ describe('errorScreenKind', () => {
     handoff_invalid: 'unexpected',
     generation_mismatch: 'unexpected',
     aborted: 'unexpected',
+    RELEASE_NOT_AVAILABLE: 'unexpected',
+    idempotency_conflict: 'unexpected',
+    idempotency_in_progress: 'unexpected',
   };
 
   it.each(Object.entries(expected) as [ClientErrorCode, ErrorScreenKind][])(
@@ -83,6 +87,7 @@ describe('errorScreenKind', () => {
     expect(isRetryableScreen('document_trashed')).toBe(false);
     expect(isRetryableScreen('forbidden')).toBe(false);
     expect(isRetryableScreen('link_revoked')).toBe(false);
+    expect(isRetryableScreen('session_closed')).toBe(false);
   });
 });
 

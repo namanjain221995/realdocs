@@ -1,0 +1,366 @@
+# Desktop release pipeline: build, package, check, checksum, optionally sign and notarise, and
+# assemble a release directory that the operator (or this workflow, when storage credentials exist)
+# puts into the server's DOWNLOAD_DIR. Releases are immutable and previous ones are never deleted.
+#
+# Status: see docs/desktop-release.md for the runs that were executed and what they showed.
+# Signing is CONFIGURED BUT REQUIRES CREDENTIAL: without the secrets named below every Windows and
+# macOS artifact is built and published as "unsigned", and the manifest says so. The signature
+# status written to release.json is measured on the built files (Get-AuthenticodeSignature,
+# codesign, stapler); it is never assumed from the presence of a secret.
+#
+# Secrets (all optional):
+#   WINDOWS_CERTIFICATE_BASE64, WINDOWS_CERTIFICATE_PASSWORD   Authenticode .pfx
+#   WINDOWS_SIGN_WITH_PARAMS                                   signtool arguments instead of a .pfx
+#                                                              (certificate store, hardware token,
+#                                                              Azure Trusted Signing dlib; placeholder)
+#   APPLE_CERTIFICATE_BASE64, APPLE_CERTIFICATE_PASSWORD       Developer ID Application .p12
+#   APPLE_SIGNING_IDENTITY                                     "Developer ID Application: Name (TEAMID)"
+#   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID       notarisation (notarytool)
+#   RELEASE_S3_BUCKET, RELEASE_S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#                                                              S3-compatible bucket for the release tree
+name: Desktop release
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Release channel
+        type: choice
+        options: [stable, beta]
+        default: stable
+      rollout_percent:
+        description: Staged rollout, percent of installs that are offered the update (1-100)
+        type: string
+        default: '100'
+      activate:
+        description: Move the channel pointer to this release (off = publish the files only)
+        type: boolean
+        default: true
+      notes:
+        description: Release notes (Markdown)
+        type: string
+        default: 'See the changelog.'
+  push:
+    tags: ['desktop-v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CHANNEL: ${{ inputs.channel || 'stable' }}
+  ROLLOUT: ${{ inputs.rollout_percent || '100' }}
+
+jobs:
+  version:
+    name: Read the version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.read.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - id: read
+        run: |
+          version="$(node -p "require('./apps/desktop/package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "desktop-v${version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match apps/desktop/package.json version ${version}" >&2
+            exit 1
+          fi
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: version
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: windows, os: windows-latest, platform: win32, arches: 'x64,arm64' }
+          - { name: macos-arm64, os: macos-14, platform: darwin, arches: 'arm64' }
+          - { name: macos-x64, os: macos-15-intel, platform: darwin, arches: 'x64' }
+          - { name: linux, os: ubuntu-latest, platform: linux, arches: 'x64,arm64' }
+    env:
+      # Which signing inputs exist. Secrets cannot be tested in `if:` directly, so they are
+      # reduced to booleans here. Nothing below prints a secret.
+      HAVE_WINDOWS_CERT: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 != '' || secrets.WINDOWS_SIGN_WITH_PARAMS != '' }}
+      HAVE_APPLE_CERT: ${{ secrets.APPLE_CERTIFICATE_BASE64 != '' && secrets.APPLE_SIGNING_IDENTITY != '' }}
+      HAVE_APPLE_NOTARY: ${{ secrets.APPLE_ID != '' && secrets.APPLE_APP_SPECIFIC_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Enable pnpm through corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Desktop unit tests
+        run: pnpm --filter @realtimedocs/desktop run test
+
+      # ── Windows signing inputs ───────────────────────────────────────────────
+      - name: Prepare the Windows certificate
+        if: matrix.platform == 'win32' && env.HAVE_WINDOWS_CERT == 'true'
+        shell: bash
+        env:
+          CERT_B64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+          SIGN_PARAMS: ${{ secrets.WINDOWS_SIGN_WITH_PARAMS }}
+          CERT_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          if [ -n "$CERT_B64" ]; then
+            echo "$CERT_B64" | base64 --decode > "$RUNNER_TEMP/windows-cert.pfx"
+            echo "WINDOWS_CERTIFICATE_FILE=$RUNNER_TEMP/windows-cert.pfx" >> "$GITHUB_ENV"
+            echo "WINDOWS_CERTIFICATE_PASSWORD=$CERT_PASSWORD" >> "$GITHUB_ENV"
+          fi
+          if [ -n "$SIGN_PARAMS" ]; then
+            echo "WINDOWS_SIGN_WITH_PARAMS=$SIGN_PARAMS" >> "$GITHUB_ENV"
+            # Used by build-installer.mjs for the installer and uninstaller.
+            echo "WINDOWS_INSTALLER_SIGN_COMMAND=signtool sign /fd SHA256 $SIGN_PARAMS" >> "$GITHUB_ENV"
+          fi
+          # Azure Trusted Signing: replace the two lines above with a signtool call that loads the
+          # Azure.CodeSigning.Dlib (placeholder; needs an Azure account and a certificate profile).
+
+      # ── macOS signing inputs ─────────────────────────────────────────────────
+      - name: Import the Developer ID certificate
+        if: matrix.platform == 'darwin' && env.HAVE_APPLE_CERT == 'true'
+        env:
+          CERT_B64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # Passed through the environment, never written into the script text.
+          APPLE_ID_VALUE: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID_VALUE: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          keychain="$RUNNER_TEMP/rd-build.keychain-db"
+          keychain_password="$(uuidgen)"
+          echo "$CERT_B64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$RUNNER_TEMP/cert.p12" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          security set-key-partition-list -S apple-tool:,apple: -k "$keychain_password" "$keychain"
+          security list-keychains -d user -s "$keychain" login.keychain-db
+          rm -f "$RUNNER_TEMP/cert.p12"
+          echo "APPLE_SIGNING_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+          if [ "$HAVE_APPLE_NOTARY" = "true" ]; then
+            echo "APPLE_ID=$APPLE_ID_VALUE" >> "$GITHUB_ENV"
+            echo "APPLE_TEAM_ID=$APPLE_TEAM_ID_VALUE" >> "$GITHUB_ENV"
+            # The password is read from the environment of the packaging step below.
+          fi
+
+      - name: Install NSIS (Windows installer)
+        if: matrix.platform == 'win32'
+        run: choco install nsis --yes --no-progress
+
+      # ── Package ──────────────────────────────────────────────────────────────
+      # package.mjs builds, packages, signs/notarises when the variables above are set, archives
+      # (.zip; .tar.gz on Linux; .dmg on macOS) and inspects the result. Without credentials the
+      # outcome is an unsigned build, which package.mjs says in its log.
+      - name: Package
+        shell: bash
+        env:
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: node apps/desktop/scripts/package.mjs --platform "${{ matrix.platform }}" --arch "${{ matrix.arches }}"
+
+      - name: Windows installers
+        if: matrix.platform == 'win32'
+        shell: bash
+        run: node apps/desktop/scripts/build-installer.mjs --arch "${{ matrix.arches }}"
+
+      # ── Native launch ────────────────────────────────────────────────────────
+      # Starts the packaged executable of the runner's own architecture on the runner's own
+      # operating system and requires that it is still running after 20 seconds. Nothing is
+      # clicked and capture exclusion is not measured (docs/windows-client.md, docs/macos-client.md
+      # hold the manual checklists). Packages of another architecture (Windows arm64, Linux arm64
+      # on an x64 runner) are inspected as files only and are never started here.
+      - name: Native launch check (Windows x64)
+        if: matrix.platform == 'win32'
+        shell: bash
+        run: node apps/desktop/scripts/launch-check.mjs --platform win32 --arch x64
+
+      - name: Native launch check (macOS)
+        if: matrix.platform == 'darwin'
+        run: node apps/desktop/scripts/launch-check.mjs --platform darwin --arch "${{ matrix.arches }}"
+
+      # The packaged-app hardening check needs the Playwright image (Docker) and runs on the
+      # Linux job for the runner's own architecture.
+      - name: Packaged-app smoke test (Linux, Xvfb)
+        if: matrix.platform == 'linux'
+        run: node apps/desktop/scripts/smoke.mjs --packaged
+
+      # ── Name and checksum the published files ────────────────────────────────
+      - name: Collect artifacts
+        shell: bash
+        run: |
+          mkdir -p staging
+          cd apps/desktop/out
+          shopt -s nullglob
+          for f in RealtimeDocs-*-windows-*.zip RealtimeDocs-*-windows-*.exe \
+                   RealtimeDocs-*-macos-*.zip RealtimeDocs-*-macos-*.dmg \
+                   RealtimeDocs-*-linux-*.tar.gz RealtimeDocs-*-linux-*.zip; do
+            cp "$f" "../../../staging/$f"
+          done
+          cd ../../../staging
+          ls -la
+          if command -v sha256sum >/dev/null; then sha256sum RealtimeDocs-* > "SHA256SUMS-${{ matrix.name }}.txt"
+          else shasum -a 256 RealtimeDocs-* > "SHA256SUMS-${{ matrix.name }}.txt"; fi
+
+      # ── Measure what was actually signed ─────────────────────────────────────
+      - name: Record the signature status (Windows)
+        if: matrix.platform == 'win32'
+        shell: pwsh
+        run: |
+          $ok = $true
+          Get-ChildItem apps/desktop/out -Recurse -Filter RealtimeDocs.exe | ForEach-Object {
+            if ((Get-AuthenticodeSignature $_.FullName).Status -ne 'Valid') { $ok = $false }
+          }
+          Get-ChildItem staging -Filter '*.exe' | ForEach-Object {
+            if ((Get-AuthenticodeSignature $_.FullName).Status -ne 'Valid') { $ok = $false }
+          }
+          $json = @{ platform = 'windows'; signed = $ok; notarized = $false } | ConvertTo-Json -Compress
+          Set-Content -Path "staging/signature-${{ matrix.name }}.json" -Value $json
+
+      - name: Record the signature status (macOS)
+        if: matrix.platform == 'darwin'
+        run: |
+          signed=false; notarized=false
+          for app in apps/desktop/out/RealtimeDocs-darwin-*/RealtimeDocs.app; do
+            if codesign --verify --deep --strict "$app" 2>/dev/null \
+               && ! codesign -dv "$app" 2>&1 | grep -q 'Signature=adhoc'; then signed=true; else signed=false; break; fi
+          done
+          if [ "$signed" = "true" ]; then
+            notarized=true
+            for app in apps/desktop/out/RealtimeDocs-darwin-*/RealtimeDocs.app; do
+              xcrun stapler validate "$app" >/dev/null 2>&1 || notarized=false
+            done
+          fi
+          printf '{"platform":"macos","signed":%s,"notarized":%s}\n' "$signed" "$notarized" > "staging/signature-${{ matrix.name }}.json"
+
+      - name: Record the signature status (Linux)
+        if: matrix.platform == 'linux'
+        run: echo '{"platform":"linux","signed":false,"notarized":false}' > "staging/signature-${{ matrix.name }}.json"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.name }}
+          path: staging/*
+          if-no-files-found: error
+          retention-days: 30
+
+  sbom:
+    name: Software bill of materials
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      # CycloneDX from the lockfile (pnpm 12 `sbom`). If a future pnpm drops it, the fallback is
+      # `pnpm licenses list --json`, which lists packages and licences but is not an SBOM.
+      - name: Generate the SBOM
+        run: pnpm sbom --sbom-format cyclonedx --lockfile-only --out sbom-${{ needs.version.outputs.version }}.cdx.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-sbom
+          path: sbom-*.cdx.json
+          if-no-files-found: error
+
+  # Final job: needs every required build, checks that the four required packages exist, and writes
+  # release.json with the MEASURED signature status of each file.
+  publish-manifest:
+    name: Assemble the release directory
+    needs: [version, build, sbom]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      HAVE_S3: ${{ secrets.RELEASE_S3_BUCKET != '' && secrets.AWS_ACCESS_KEY_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: desktop-*
+          path: downloaded
+          merge-multiple: true
+
+      - name: Check that every required package exists
+        run: |
+          ls -la downloaded
+          for name in \
+            "RealtimeDocs-${VERSION}-windows-x64.zip" \
+            "RealtimeDocs-${VERSION}-macos-arm64.zip" \
+            "RealtimeDocs-${VERSION}-macos-x64.zip" \
+            "RealtimeDocs-${VERSION}-linux-x64.zip" \
+            "RealtimeDocs-${VERSION}-linux-x64.tar.gz"; do
+            test -f "downloaded/$name" || { echo "missing required artifact: $name" >&2; exit 1; }
+          done
+
+      - name: Decide the signature flags from the measured status
+        id: flags
+        run: |
+          windows_signed=true; macos_notarized=true
+          for f in downloaded/signature-windows.json; do
+            node -e "process.exit(JSON.parse(require('fs').readFileSync('$f','utf8')).signed===true?0:1)" || windows_signed=false
+          done
+          for f in downloaded/signature-macos-arm64.json downloaded/signature-macos-x64.json; do
+            node -e "process.exit(JSON.parse(require('fs').readFileSync('$f','utf8')).notarized===true?0:1)" || macos_notarized=false
+          done
+          echo "windows_signed=$windows_signed" >> "$GITHUB_OUTPUT"
+          echo "macos_notarized=$macos_notarized" >> "$GITHUB_OUTPUT"
+          echo "Windows signed: $windows_signed; macOS notarised: $macos_notarized"
+
+      - name: Write release.json and the channel pointer
+        env:
+          NOTES: ${{ inputs.notes || 'See the changelog.' }}
+        run: |
+          mkdir -p files release-out
+          cp downloaded/RealtimeDocs-* files/
+          printf '%s\n' "$NOTES" > notes.md
+          args=(files --channel "$CHANNEL" --notes-file notes.md --target release-out --rollout "$ROLLOUT")
+          [ "${{ steps.flags.outputs.windows_signed }}" = "true" ] && args+=(--signed-windows)
+          [ "${{ steps.flags.outputs.macos_notarized }}" = "true" ] && args+=(--notarized-macos)
+          [ "${{ inputs.activate }}" = "false" ] && args+=(--no-activate)
+          node scripts/publish-release.mjs "${args[@]}"
+          cp downloaded/SHA256SUMS-*.txt downloaded/sbom-*.cdx.json "release-out/releases/$CHANNEL/$VERSION/" 2>/dev/null || true
+          find release-out -type f | sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ env.CHANNEL }}-${{ env.VERSION }}
+          path: release-out
+          if-no-files-found: error
+
+      # Uploads the new version directory first and the channel pointer last, so the pointer never
+      # names files that are not there yet. No --delete: previous releases stay.
+      - name: Upload to the S3-compatible bucket
+        if: env.HAVE_S3 == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          BUCKET: ${{ secrets.RELEASE_S3_BUCKET }}
+          ENDPOINT: ${{ secrets.RELEASE_S3_ENDPOINT }}
+        run: |
+          endpoint=()
+          [ -n "$ENDPOINT" ] && endpoint=(--endpoint-url "$ENDPOINT")
+          aws s3 cp --recursive "${endpoint[@]}" "release-out/releases/$CHANNEL/$VERSION/" "s3://$BUCKET/releases/$CHANNEL/$VERSION/"
+          if [ -f "release-out/channels/$CHANNEL.json" ]; then
+            aws s3 cp "${endpoint[@]}" "release-out/channels/$CHANNEL.json" "s3://$BUCKET/channels/$CHANNEL.json"
+          fi

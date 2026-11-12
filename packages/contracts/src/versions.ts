@@ -15,6 +15,9 @@ export const COLLAB_PROTOCOL_VERSION = 1;
 /** Name of the Y.XmlFragment that holds the ProseMirror document. */
 export const Y_FRAGMENT_FIELD = 'default';
 
+/** Name of the top-level Y.Map with the page settings (see page.ts). Absent or empty means defaults. */
+export const Y_PAGE_FIELD = 'page';
+
 /** Path of the collaboration WebSocket endpoint. No secrets ever appear in this URL. */
 export const COLLAB_WS_PATH = '/collab';
 

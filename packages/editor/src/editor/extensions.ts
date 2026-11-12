@@ -34,7 +34,7 @@ import type { UploadLimits } from '../uploads/limits';
 import type { UploadManager } from '../uploads/manager';
 import { safeColumnWidth, safeInteger } from './attrs';
 import { BlockFormatCommands } from './blockFormat';
-import { Carets, ReadOnlyGuard, RemoteChangeTracker } from './collabPlugins';
+import { CaretKeeper, Carets, ReadOnlyGuard, RemoteChangeTracker } from './collabPlugins';
 import { FindReplace } from './findReplace';
 import { createHighlightPlugin } from './highlight';
 import { AttachmentView } from './nodeViews/AttachmentView';
@@ -237,6 +237,8 @@ export interface EditorExtensionOptions {
   onRejectedFiles: (messages: string[]) => void;
   openLink: (href: string) => void;
   onLinkActivated: (anchor: HTMLAnchorElement) => void;
+  /** A paste is about to be applied. */
+  onPasteStart?: () => void;
 }
 
 export function createEditorExtensions(options: EditorExtensionOptions): AnyExtension[] {
@@ -275,6 +277,7 @@ export function createEditorExtensions(options: EditorExtensionOptions): AnyExte
       onReport: options.onPasteReport,
       openLink: options.openLink,
       onLinkActivated: options.onLinkActivated,
+      onPasteStart: options.onPasteStart ?? (() => {}),
     }),
   );
 
@@ -291,6 +294,7 @@ export function createEditorExtensions(options: EditorExtensionOptions): AnyExte
       Carets.configure({ awareness: collaboration.awareness, canPublish: options.canEdit }),
       ReadOnlyGuard.configure({ canEdit: options.canEdit }),
       RemoteChangeTracker,
+      CaretKeeper,
       Placeholder.configure({
         placeholder: 'Start writing…',
         showOnlyWhenEditable: true,

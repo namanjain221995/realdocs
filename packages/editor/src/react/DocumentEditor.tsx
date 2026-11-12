@@ -7,10 +7,16 @@
  * own node changes. Typing a character therefore re-renders no React
  * component outside the node being edited.
  */
-import type { ApiClient } from '@realtimedocs/contracts';
+import {
+  Y_FRAGMENT_FIELD,
+  normalizePageSettings,
+  type ApiClient,
+  type PageSettings,
+} from '@realtimedocs/contracts';
 import { Button, IconButton, Skeleton, cx } from '@realtimedocs/ui';
 import type { Editor } from '@tiptap/core';
 import { TextSelection } from '@tiptap/pm/state';
+import { yUndoPluginKey, ySyncPluginKey } from '@tiptap/y-tiptap';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { ArrowDownToLine, LocateFixed, Search, TriangleAlert } from 'lucide-react';
 import {
@@ -31,6 +37,16 @@ import { createEditorExtensions } from '../editor/extensions';
 import { setDiagramSourceLimit } from '../editor/mermaid';
 import { RuntimeContext, type EditorRuntime } from '../editor/runtime';
 import { createValueStore } from '../editor/store';
+import {
+  describeUnsupportedContent,
+  emptyUnsupportedContent,
+  sameUnsupportedContent,
+  scanUnsupportedContent,
+  type UnsupportedContent,
+} from '../editor/unsupported';
+import { pageStyleVars } from '../page/css';
+import { pageMap } from '../page/store';
+import { usePageSettings } from '../page/usePageSettings';
 import { sanitizeLinkHref } from '../schema';
 import { currentLimits, loadUploadLimits } from '../uploads/limits';
 import { UploadManager } from '../uploads/manager';
@@ -40,6 +56,8 @@ import { FindBar } from './FindBar';
 import { useFollowLatest, useScrollAnchor } from './followLatest';
 import { LinkPopover } from './LinkPopover';
 import { MessageNotice, PasteReportNotice } from './Notices';
+import { PageRuler } from './PageRuler';
+import { PageSetupDialog } from './PageSetupDialog';
 import { useSessionSelector } from './sessionHooks';
 
 export interface DocumentEditorProps {
@@ -58,6 +76,21 @@ export interface DocumentEditorProps {
   scrollContainer?: HTMLElement | null;
   /** Called for link clicks; return true if handled (desktop opens via the main process). */
   onOpenLink?: (href: string) => boolean;
+  /**
+   * `page`: the document is drawn as a sheet with the page size, margins and colour stored in the
+   * document, with a ruler for editors. `reading`: the per-user reading width, no page chrome.
+   * Defaults to `page`, except for `variant="panel"` which is always `reading`.
+   */
+  layout?: 'page' | 'reading';
+  /** Controls the "Page setup" dialog from the host (the toolbar button uses it as well). */
+  pageSetupOpen?: boolean;
+  onPageSetupOpenChange?: (open: boolean) => void;
+  /**
+   * How this host gets a newer version when the document holds content this
+   * build does not know (web: reload; desktop: open the update). Without it
+   * the notice asks to reload the page.
+   */
+  upgrade?: { label: string; hint: string; run: () => void };
   className?: string;
   'data-testid'?: string;
 }
@@ -96,6 +129,10 @@ function EditorSurface({
   onFollowLatestChange,
   scrollContainer,
   onOpenLink,
+  layout,
+  pageSetupOpen,
+  onPageSetupOpenChange,
+  upgrade,
   className,
   ydoc,
   awareness,
@@ -104,10 +141,27 @@ function EditorSurface({
   const documentId = session.documentId;
   const canEdit = useSessionSelector(session, selectCanEdit);
   const ready = useSessionSelector(session, selectReady);
-  const [invalidContent, setInvalidContent] = useState(false);
+  // Content this client cannot represent: named by a scan of the shared document
+  // (`unsupported`), or reported by the binding as not fitting the schema (`misfit`).
+  // Both stop editing here and both clear by themselves when the content is fine again.
+  const [unsupported, setUnsupported] = useState<UnsupportedContent>(emptyUnsupportedContent);
+  const [misfit, setMisfit] = useState(false);
+  const invalidContent = unsupported.total > 0 || misfit;
   const editable = canEdit && variant !== 'viewer' && !invalidContent;
   const editableRef = useLatest(editable);
   const onOpenLinkRef = useLatest(onOpenLink);
+
+  // Page settings are shared state in the same Y.Doc (map `page`). Writes are tagged with the
+  // sync plugin's key so the editor's own undo manager records them (see the effect below).
+  const pageControls = usePageSettings(ydoc, { origin: ySyncPluginKey, canEdit: editable });
+  const [pagePreview, setPagePreview] = useState<Partial<PageSettings> | null>(null);
+  const pageSettings = useMemo(
+    () =>
+      pagePreview
+        ? normalizePageSettings({ ...pageControls.settings, ...pagePreview })
+        : pageControls.settings,
+    [pageControls.settings, pagePreview],
+  );
 
   const [report, setReport] = useState<PasteReport | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
@@ -117,6 +171,16 @@ function EditorSurface({
     anchor: null,
   });
   const [followLocal, setFollowLocal] = useState(false);
+  const [setupLocal, setSetupLocal] = useState(false);
+  const setupOpen = pageSetupOpen ?? setupLocal;
+  const setSetupOpen = useCallback(
+    (open: boolean): void => {
+      setSetupLocal(open);
+      onPageSetupOpenChange?.(open);
+    },
+    [onPageSetupOpenChange],
+  );
+  const pageLayout = variant !== 'panel' && layout !== 'reading';
   const following = followLatest ?? followLocal;
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -153,7 +217,7 @@ function EditorSurface({
         collaboration: {
           ydoc,
           awareness,
-          onInvalidContent: () => setInvalidContent(true),
+          onInvalidContent: () => setMisfit(true),
         },
         uploads,
         canEdit: () => editableRef.current,
@@ -163,8 +227,9 @@ function EditorSurface({
           setMessages((previous) => [...previous, ...rejected].slice(-4)),
         openLink: runtime.openLink,
         onLinkActivated: (anchor) => setLink({ open: true, anchor }),
+        onPasteStart: () => session.announcePaste(),
       }),
-    [api, awareness, documentId, editableRef, runtime, uploads, ydoc],
+    [api, awareness, documentId, editableRef, runtime, session, uploads, ydoc],
   );
 
   const editor = useEditor(
@@ -186,6 +251,69 @@ function EditorSurface({
     [extensions],
   );
 
+  // Re-evaluate after every change of the shared content (at most four times a second).
+  useEffect(() => {
+    if (!editor) return undefined;
+    const fragment = ydoc.getXmlFragment(Y_FRAGMENT_FIELD);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const evaluate = (): void => {
+      timer = null;
+      if (editor.isDestroyed) return;
+      const next = scanUnsupportedContent(fragment, editor.schema);
+      setUnsupported((previous) => (sameUnsupportedContent(previous, next) ? previous : next));
+      let fits = true;
+      try {
+        editor.state.doc.check();
+      } catch {
+        fits = false;
+      }
+      // Everything this client does not know is skipped by the binding, so a
+      // document that still does not fit is damaged, not merely newer.
+      const nextMisfit = !fits && next.total === 0;
+      // Only when it changed: an unchanged value must not even schedule a render
+      // while someone is typing.
+      setMisfit((previous) => (previous === nextMisfit ? previous : nextMisfit));
+    };
+    const schedule = (): void => {
+      timer ??= setTimeout(evaluate, 250);
+    };
+    evaluate();
+    fragment.observeDeep(schedule);
+    return () => {
+      fragment.unobserveDeep(schedule);
+      if (timer) clearTimeout(timer);
+    };
+  }, [editor, ydoc]);
+
+  // Margin changes join the person's own undo history, in order with their typing.
+  const undoManager = useCallback(
+    () =>
+      editor && !editor.isDestroyed ? yUndoPluginKey.getState(editor.state)?.undoManager : null,
+    [editor],
+  );
+  useEffect(() => {
+    undoManager()?.addToScope(pageMap(ydoc));
+  }, [undoManager, ydoc]);
+  const { update: updatePage, reset: resetPage } = pageControls;
+  const updatePageSettings = useCallback(
+    (patch: Partial<PageSettings>): void => {
+      const manager = undoManager();
+      // Never merge a page change into the typing around it: one change, one undo step.
+      manager?.stopCapturing();
+      updatePage(patch);
+      manager?.stopCapturing();
+    },
+    [undoManager, updatePage],
+  );
+  const resetPageSettings = useCallback((): void => {
+    const manager = undoManager();
+    manager?.stopCapturing();
+    resetPage();
+    manager?.stopCapturing();
+  }, [undoManager, resetPage]);
+  const undoPage = useCallback(() => undoManager()?.undo(), [undoManager]);
+  const redoPage = useCallback(() => undoManager()?.redo(), [undoManager]);
+
   useEffect(() => {
     runtime.editable.set(editable);
     if (editor && editor.isEditable !== editable) editor.setEditable(editable, false);
@@ -194,7 +322,13 @@ function EditorSurface({
   // Colour scheme of the surface, for diagram previews.
   const resolved = useMemo(() => resolveDisplay(display), [display]);
   useEffect(() => {
-    const update = (): void => runtime.theme.set(effectiveTheme(rootRef.current, resolved.tone));
+    // Diagrams are drawn for the colour of the paper they sit on.
+    const update = (): void =>
+      runtime.theme.set(
+        pageLayout && pageSettings.background !== 'default'
+          ? 'light'
+          : effectiveTheme(rootRef.current, resolved.tone),
+      );
     update();
     if (resolved.tone !== 'inherit' || typeof MutationObserver !== 'function') return undefined;
     const observer = new MutationObserver(update);
@@ -202,7 +336,7 @@ function EditorSurface({
       observer.observe(node, { attributes: true, attributeFilter: ['data-theme'] });
     }
     return () => observer.disconnect();
-  }, [resolved.tone, runtime]);
+  }, [resolved.tone, runtime, pageLayout, pageSettings.background]);
 
   const getScroller = useCallback(() => scrollContainer ?? scrollRef.current, [scrollContainer]);
   const follow = useFollowLatest(editor, getScroller, following);
@@ -287,7 +421,11 @@ function EditorSurface({
       data-editable={editable ? 'true' : 'false'}
       data-ready={ready ? 'true' : 'false'}
       data-external-scroll={scrollContainer ? '' : undefined}
+      data-layout={pageLayout ? 'page' : 'reading'}
       {...attributes}
+      style={
+        pageLayout ? { ...attributes.style, ...pageStyleVars(pageSettings) } : attributes.style
+      }
       onKeyDown={onKeyDown}
     >
       {showToolbar ? (
@@ -295,6 +433,7 @@ function EditorSurface({
           editor={editor}
           onFind={openFind}
           onLink={openLinkEditor}
+          onPageSetup={pageLayout ? () => setSetupOpen(true) : undefined}
           imageAccept={imageAccept}
           attachmentAccept={attachmentAccept}
         />
@@ -308,12 +447,29 @@ function EditorSurface({
         />
       ) : null}
       {invalidContent ? (
-        <div className="rd-editor__warning" role="alert">
+        <div className="rd-editor__warning" role="alert" data-testid="rd-editor-unsupported">
           <TriangleAlert size={16} aria-hidden="true" />
           <span>
-            This document contains content that this version of the app cannot display. Editing is
-            paused here so nothing is lost; update the app to continue.
+            {unsupported.total > 0 ? (
+              <>
+                This document uses content that this version of RealtimeDocs does not know:{' '}
+                {describeUnsupportedContent(unsupported)}. It is kept in the document and is not
+                shown here. Editing is paused in this window so that nothing is lost.{' '}
+                {upgrade?.hint ?? 'Reload the page to get the current version.'}
+              </>
+            ) : (
+              <>
+                Part of this document does not have the structure RealtimeDocs expects, so it cannot
+                be edited safely here. Nothing was removed. An administrator can restore an earlier
+                version from the version history.
+              </>
+            )}
           </span>
+          {unsupported.total > 0 && upgrade ? (
+            <Button size="sm" variant="secondary" onClick={upgrade.run}>
+              {upgrade.label}
+            </Button>
+          ) : null}
         </div>
       ) : null}
       <div className="rd-editor__scroll" ref={scrollRef}>
@@ -329,7 +485,22 @@ function EditorSurface({
             />
           </div>
         ) : null}
-        <div className="rd-editor__page" onMouseDown={onPageMouseDown}>
+        {pageLayout && editable ? (
+          <PageRuler
+            settings={pageSettings}
+            canEdit
+            onPreview={setPagePreview}
+            onCommit={updatePageSettings}
+            onUndo={undoPage}
+            onRedo={redoPage}
+          />
+        ) : null}
+        <div
+          className="rd-editor__page"
+          data-page-bg={pageLayout ? pageSettings.background : undefined}
+          data-theme={pageLayout && pageSettings.background !== 'default' ? 'light' : undefined}
+          onMouseDown={onPageMouseDown}
+        >
           {!ready && empty ? (
             <div
               className="rd-editor__loading"
@@ -397,6 +568,16 @@ function EditorSurface({
           </div>
         </div>
       </div>
+      {pageLayout ? (
+        <PageSetupDialog
+          open={setupOpen}
+          onOpenChange={setSetupOpen}
+          settings={pageControls.settings}
+          canEdit={editable}
+          onChange={updatePageSettings}
+          onReset={resetPageSettings}
+        />
+      ) : null}
       {editor ? (
         <LinkPopover
           editor={editor}

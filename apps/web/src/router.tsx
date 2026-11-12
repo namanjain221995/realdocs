@@ -4,6 +4,7 @@ import { RootLayout } from './components/RootLayout';
 import { RouteErrorScreen } from './components/RouteErrorScreen';
 import { SignedInLayout } from './components/SignedInLayout';
 import { Splash } from './components/Splash';
+import { legacyGuideLoader } from './features/guides/legacy';
 import { HomeGate } from './features/landing/HomeGate';
 
 /**
@@ -64,8 +65,32 @@ export function createAppRouter() {
           Component: HomeGate,
         },
         {
-          path: 'docs/:name',
-          lazy: async () => ({ Component: (await import('./features/docs/DocsPage')).DocsPage }),
+          // Public: the distribution page and the notes of one release.
+          path: 'download',
+          lazy: async () => ({
+            Component: (await import('./features/landing/DownloadPage')).DownloadPage,
+          }),
+        },
+        {
+          path: 'releases/:version',
+          lazy: async () => ({
+            Component: (await import('./features/landing/ReleaseNotesPage')).ReleaseNotesPage,
+          }),
+        },
+        {
+          // The in-app guides (README, desktop clients, security). They used to live under /docs.
+          path: 'guides/:name',
+          lazy: async () => ({
+            Component: (await import('./features/guides/GuidesPage')).GuidesPage,
+          }),
+        },
+        {
+          // Public developer portal. Old guide links (/docs/readme …) are sent on to /guides.
+          path: 'docs/:section?',
+          loader: legacyGuideLoader,
+          lazy: async () => ({
+            Component: (await import('./features/developers/DevelopersPage')).DevelopersPage,
+          }),
         },
         {
           Component: SignedInLayout,
@@ -77,9 +102,47 @@ export function createAppRouter() {
               }),
             },
             {
+              path: 'admin/releases',
+              lazy: async () => ({
+                Component: (await import('./features/admin/AdminReleasesPage')).AdminReleasesPage,
+              }),
+            },
+            {
+              path: 'admin/api-keys',
+              lazy: async () => ({
+                Component: (await import('./features/admin/ApiKeysPage')).ApiKeysPage,
+              }),
+            },
+            {
+              path: 'admin/interview-sessions',
+              lazy: async () => ({
+                Component: (await import('./features/admin/InterviewSessionsPage'))
+                  .InterviewSessionsPage,
+              }),
+            },
+            {
+              path: 'admin/interview-sessions/:sessionId',
+              lazy: async () => ({
+                Component: (await import('./features/admin/InterviewSessionDetailPage'))
+                  .InterviewSessionDetailPage,
+              }),
+            },
+            {
+              path: 'admin/webhooks',
+              lazy: async () => ({
+                Component: (await import('./features/admin/WebhooksPage')).WebhooksPage,
+              }),
+            },
+            {
               path: 'admin/users',
               lazy: async () => ({
                 Component: (await import('./features/admin/AdminUsersPage')).AdminUsersPage,
+              }),
+            },
+            {
+              path: 'd/:documentId/history',
+              lazy: async () => ({
+                Component: (await import('./features/history/HistoryPage')).HistoryPage,
               }),
             },
           ],

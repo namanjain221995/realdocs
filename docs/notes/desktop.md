@@ -854,3 +854,48 @@ the second device showed each time. Repeat after every OS, meeting-app or app up
   administrator rights. Any future feature that needs a permission must explain it in the app
   before the operating system's dialog appears, and must be added deliberately (usage-description
   key, entitlement, tests).
+
+## 13. Distribution and updates (phase 5, 2026-11-12)
+
+Labels: IMPLEMENTED AND VERIFIED = run on this host (Linux arm64, headless); IMPLEMENTED BUT NOT
+NATIVE-TESTED = built or unit-tested here, never run on that system; CONFIGURED BUT REQUIRES CREDENTIAL.
+
+**Artifact names.** `scripts/package.mjs` and `scripts/build-installer.mjs` write
+`RealtimeDocs-<version>-<windows|macos|linux>-<x64|arm64|universal>.<ext>` (`artifactFileName` in
+`scripts/lib/app-config.mjs`; the packager's folders keep `win32`/`darwin`). Linux also gets a `.tar.gz`
+(inspected by `inspectTarGz`). No AppImage (needs `appimagetool`/FUSE). Old files with the previous names
+were removed from `apps/desktop/out/`.
+
+| Artifact (0.1.0)                                                                        | Result on this host                                                                                                      |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `-linux-arm64.tar.gz` (121.5 MB), `-linux-arm64.zip` (121.4 MB)                         | IMPLEMENTED AND VERIFIED: built, structure inspected (archive listing + executable bit); packaged check 39/39 under Xvfb |
+| `-windows-x64.zip` (153.1 MB), `-windows-arm64.zip` (151.3 MB)                          | IMPLEMENTED BUT NOT NATIVE-TESTED: cross-built, unsigned, names and structure inspected only                             |
+| `-macos-arm64.zip` (117.5 MB), `-macos-x64.zip` (121.3 MB)                              | IMPLEMENTED BUT NOT NATIVE-TESTED: cross-built, unsigned (arm64 cannot start until signed on a Mac)                      |
+| `-windows-<arch>.exe` (NSIS), `-macos-<arch>.dmg`, `-macos-universal.*`, `-linux-x64.*` | not built on this host (installer needs Docker/Windows, dmg/universal need a Mac, no x64 Electron in the cache)          |
+| Signing / notarisation                                                                  | CONFIGURED BUT REQUIRES CREDENTIAL                                                                                       |
+
+Commands run: `node scripts/package.mjs --platform linux --arch arm64`, `--platform win32 --arch x64,arm64`,
+`--platform darwin --arch x64,arm64` (every inspection "structure as expected"); `node scripts/smoke.mjs
+--packaged` (39/39 checks passed); `node scripts/smoke.mjs` (64 passed, 56.5 s); `pnpm exec vitest run
+--project desktop` (704 passed).
+
+**Update flow.** `src/main/update-service.ts` (Electron-free, injected network/files/shell),
+`src/shared/updates.ts` (state, URL allow-list, size/hash verification, channel by version),
+`src/renderer/settings/UpdatesTab.tsx`. The state is part of `AppState.updates`; the panel's copy drops
+the notes (`panelUpdateView`). Four IPC channels (`rd:updates:check|download|defer|open`), all
+settings-window only, strict schemas (`open` takes only `show-in-folder` | `open-installer`, no path);
+the panel can only take the user to Settings -> Updates (`open-settings` with tab `updates`). The check
+runs 20 s after start, every 6 h, after a server change and on request; the install id is a random UUID
+in `<userData>/update-state.json`. `ConnectionService.checkServer` also reports `update_required` when
+the app is older than the server's `minimumSupportedClientVersion` (from `GET /api/meta`). When the
+server or the update check says an update is required, the panel shows a blocking "Update required"
+state (no document open) or a banner (document open), and passes
+`upgrade = {label: 'Update RealtimeDocs', hint: 'Install the current version of the desktop app to edit this document.', run}`
+to `<DocumentEditor>`.
+
+Not done, by decision: silent self-replacement (needs signed builds; see decisions.md), a tray item "Check
+for updates" (the tray labels are the owner's pinned specification; use Settings), resume of an
+interrupted download (it restarts), a smoke test that drives the Updates tab (the existing smoke suite
+still passes with the new tab; the update logic is covered by unit tests with fake network and a real
+temporary directory: hash mismatch, wrong size, oversize body, redirects refused, URL allow-list,
+deferral, schedule).

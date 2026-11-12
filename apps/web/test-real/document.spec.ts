@@ -64,6 +64,9 @@ test('the seeded sample document renders completely, without a CSP violation or 
     await expect.poll(() => loadedImages(content, '.rd-diagram__image')).toBe(1);
     // Image: decoded by the browser.
     await expect(content.locator('.rd-image__img')).toHaveCount(1);
+    // The page sheet is long and the image is lazy: Firefox and WebKit fetch it once it is scrolled
+    // near the viewport, as a reader would.
+    await content.locator('.rd-image__img').scrollIntoViewIfNeeded();
     await expect.poll(() => loadedImages(content, '.rd-image__img')).toBe(1);
   };
 
@@ -113,7 +116,12 @@ test('display preferences change this reader’s view only', async ({ page, open
         theme: root.getAttribute('data-theme'),
       };
     });
+  const sheetWidth = (view: typeof page) =>
+    view
+      .getByTestId('rd-editor')
+      .evaluate((root) => root.querySelector('.rd-editor__page')!.getBoundingClientRect().width);
   const guestBefore = await look(guest);
+  const guestSheetBefore = await sheetWidth(guest);
   const adminBefore = await look(page);
   expect(guestBefore.theme).toBeNull();
 
@@ -129,7 +137,15 @@ test('display preferences change this reader’s view only', async ({ page, open
   await expect(guest.getByTestId('rd-editor')).toHaveAttribute('data-theme', 'light');
   const guestAfter = await look(guest);
   expect(guestAfter.fontSize).toBeCloseTo(guestBefore.fontSize * 1.3, 1);
-  expect(guestAfter.width).not.toBe(guestBefore.width);
+  // The normal editor is a page: the reading width no longer changes its sheet ...
+  expect(guestAfter.width).toBe(guestBefore.width);
+  expect(await sheetWidth(guest)).toBe(guestSheetBefore);
+  // ... and the choice is kept for this reader (it applies to reading mode and the desktop panel).
+  await guest.getByTestId('open-display-preferences').click();
+  await expect(
+    guest.getByTestId('display-preferences').getByRole('radio', { name: 'Wide' }),
+  ).toBeChecked();
+  await guest.keyboard.press('Escape');
   expect(guestAfter.background).not.toBe(guestBefore.background);
   // The app around the document keeps its own theme.
   await expect(guest.locator('html')).toHaveAttribute('data-theme', 'dark');
@@ -155,6 +171,11 @@ test('display preferences change this reader’s view only', async ({ page, open
   await expectEditorReady(guest);
   await expect(guest.getByTestId('rd-editor')).toHaveAttribute('data-theme', 'light');
   expect((await look(guest)).fontSize).toBeCloseTo(guestBefore.fontSize * 1.3, 1);
+  expect(await sheetWidth(guest)).toBe(guestSheetBefore);
+  await guest.getByTestId('open-display-preferences').click();
+  await expect(
+    guest.getByTestId('display-preferences').getByRole('radio', { name: 'Wide' }),
+  ).toBeChecked();
 });
 
 test('links in a document open in a new tab without an opener or a referrer; mail links open in place', async ({

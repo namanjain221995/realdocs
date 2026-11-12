@@ -13,9 +13,22 @@
  *   edits until the backlog has drained.
  * - Compaction runs inside the same writer, only while the queue is empty, so
  *   the stored state corresponds exactly to `upto_seq = head_seq`.
+ * - History: every update is enqueued with the actor the server authenticated
+ *   for it. A batch is committed as one merged update (as before) and, in the
+ *   same store call, as one history segment per actor, so a durable update
+ *   always has an attributed history row and the two can never disagree.
  */
 import type { SaveErrorCode } from '@realtimedocs/contracts';
 import * as Y from 'yjs';
+import {
+  classify,
+  emptySummary,
+  mergeSummaries,
+  sizeDelta,
+  type ChangeSummary,
+  type HistoryActor,
+  type OperationType,
+} from './history';
 
 /** The document moved to another generation; nothing from this log may commit any more. */
 export class GenerationMismatchError extends Error {
@@ -33,6 +46,33 @@ export class SequenceConflictError extends Error {
   }
 }
 
+/** What the server knows about one enqueued update. */
+export interface UpdateMeta {
+  actor: HistoryActor;
+  summary: ChangeSummary;
+  /** Informational, untrusted. */
+  clientOccurredAt?: Date | null;
+}
+
+/** The part of a committed batch that one actor produced. */
+export interface HistorySegment {
+  actor: HistoryActor;
+  operationType: OperationType;
+  summary: ChangeSummary;
+  contentSizeDelta: number;
+  attachmentIds: string[];
+  /** Server clock when the first update of the segment was applied. */
+  receivedAt: Date;
+  clientOccurredAt: Date | null;
+  update: Uint8Array;
+}
+
+/** A complete state stored in the history (start of a generation, then periodically). */
+export interface HistoryCheckpoint {
+  operationType: 'baseline' | 'checkpoint';
+  attachmentIds: string[];
+}
+
 export interface LogStore {
   /**
    * Commits `update` as sequence `expectedHeadSeq + 1` of the generation and
@@ -44,6 +84,8 @@ export interface LogStore {
     generation: number;
     expectedHeadSeq: number;
     update: Uint8Array;
+    /** Attributed parts of `update`; absent when history is not recorded. */
+    history?: HistorySegment[];
   }): Promise<number>;
   /**
    * Stores `state` as the compacted state covering every update with
@@ -54,6 +96,19 @@ export interface LogStore {
     generation: number;
     uptoSeq: number;
     state: Uint8Array;
+    /** Also store `state` as a history checkpoint at `uptoSeq`. */
+    checkpoint?: HistoryCheckpoint;
+  }): Promise<void>;
+  /**
+   * Stores `state` (the state at `headSeq`) as the first history checkpoint of
+   * the generation unless one exists. Optional: stores without history omit it.
+   */
+  baseline?(input: {
+    documentId: string;
+    generation: number;
+    headSeq: number;
+    state: Uint8Array;
+    attachmentIds: string[];
   }): Promise<void>;
 }
 
@@ -76,6 +131,8 @@ export interface DurableLogListeners {
   idle?: () => void;
   /** Diagnostics for logging. Never receives update bytes. */
   error?: (error: unknown, phase: 'append' | 'compact') => void;
+  /** Duration of a successful store call, for metrics. */
+  timing?: (phase: 'append' | 'compact', milliseconds: number) => void;
 }
 
 export interface DurableLogOptions {
@@ -91,11 +148,30 @@ export interface DurableLogOptions {
   listeners?: DurableLogListeners;
   /** Injectable for tests. */
   random?: () => number;
+  /**
+   * History recording. `baseline` is the complete state at `headSeq` when the
+   * generation has no checkpoint yet (written before the first batch);
+   * `checkpointEvery` is the number of history rows after which a compaction
+   * also stores a checkpoint; `assetIds` lists the assets of the current state.
+   */
+  history?: {
+    baseline: { state: Uint8Array; attachmentIds: string[] } | null;
+    rowsSinceCheckpoint: number;
+    checkpointEvery: number;
+    assetIds: () => string[];
+  };
 }
 
 interface QueueEntry {
   position: number;
   update: Uint8Array;
+  meta: UpdateMeta | null;
+  receivedAt: Date;
+}
+
+/** Actors are compared by connection: one person in two windows is two segments. */
+function actorKey(actor: HistoryActor): string {
+  return `${actor.kind}:${actor.connectionId ?? ''}:${actor.sessionId ?? ''}:${actor.userId ?? ''}:${actor.grantId ?? ''}`;
 }
 
 const DEFAULT_RETRY = { baseMs: 250, maxMs: 5_000 };
@@ -125,6 +201,10 @@ export class DurableLog {
   private fatalReasonValue: FatalReason | null = null;
   private closed = false;
 
+  private readonly history: DurableLogOptions['history'] | null;
+  private baseline: { state: Uint8Array; attachmentIds: string[] } | null;
+  private rowsSinceCheckpoint: number;
+
   private compactionState: (() => Uint8Array) | null = null;
   private retryTimer: NodeJS.Timeout | null = null;
   private retryWake: (() => void) | null = null;
@@ -140,6 +220,9 @@ export class DurableLog {
     this.retry = options.retry ?? DEFAULT_RETRY;
     this.listeners = options.listeners ?? {};
     this.random = options.random ?? Math.random;
+    this.history = options.history ?? null;
+    this.baseline = options.history?.baseline ?? null;
+    this.rowsSinceCheckpoint = options.history?.rowsSinceCheckpoint ?? 0;
   }
 
   /** Position of the most recently enqueued update (0 when nothing was enqueued). */
@@ -195,10 +278,10 @@ export class DurableLog {
    * Appends an update to the ordered queue. Synchronous on purpose: it runs
    * inside the Yjs `update` event, so queue order equals apply order.
    */
-  enqueue(update: Uint8Array): number {
+  enqueue(update: Uint8Array, meta: UpdateMeta | null = null): number {
     if (this.fatalReasonValue !== null || this.closed) return this.tailPosition;
     this.tailPosition += 1;
-    this.queue.push({ position: this.tailPosition, update });
+    this.queue.push({ position: this.tailPosition, update, meta, receivedAt: new Date() });
     this.queuedBytes += update.byteLength;
     if (this.accepting && this.queuedBytes > this.maxQueueBytes) {
       this.accepting = false;
@@ -279,6 +362,10 @@ export class DurableLog {
   private async run(): Promise<void> {
     try {
       while (!this.closed && this.fatalReasonValue === null) {
+        if (this.baseline !== null && this.queue.length > 0) {
+          // First change of a generation without history: record where it started.
+          if (!(await this.writeBaseline())) continue;
+        }
         if (this.queue.length > 0) {
           await this.writeBatch();
         } else if (this.compactionState !== null) {
@@ -311,16 +398,21 @@ export class DurableLog {
     const last = batch[batch.length - 1];
     if (!last) return;
     update ??= last.update;
+    const history = this.history ? this.segments(batch) : undefined;
+    const started = performance.now();
     try {
       const seq = await this.store.append({
         documentId: this.documentId,
         generation: this.generation,
         expectedHeadSeq: this.headSeqValue,
         update,
+        history,
       });
+      this.listeners.timing?.('append', performance.now() - started);
       if (this.fatalReasonValue !== null) return;
       this.headSeqValue = seq;
       this.rowsSinceCompactionValue += 1;
+      this.rowsSinceCheckpoint += history?.length ?? 0;
       this.queue.splice(0, batch.length);
       for (const entry of batch) this.queuedBytes -= entry.update.byteLength;
       this.committedPosition = last.position;
@@ -346,6 +438,89 @@ export class DurableLog {
     }
   }
 
+  /** One history segment per actor, in the order the actors first appear in the batch. */
+  private segments(batch: QueueEntry[]): HistorySegment[] {
+    const groups = new Map<string, QueueEntry[]>();
+    for (const entry of batch) {
+      const key = entry.meta ? actorKey(entry.meta.actor) : 'system';
+      const group = groups.get(key);
+      if (group) group.push(entry);
+      else groups.set(key, [entry]);
+    }
+    const segments: HistorySegment[] = [];
+    for (const group of groups.values()) {
+      const first = group[0];
+      if (!first) continue;
+      let update: Uint8Array;
+      try {
+        update =
+          group.length > 1 ? Y.mergeUpdates(group.map((entry) => entry.update)) : first.update;
+      } catch {
+        // `writeBatch` only reaches here with updates it could merge as a whole.
+        update = first.update;
+      }
+      const summary = emptySummary();
+      for (const entry of group) if (entry.meta) mergeSummaries(summary, entry.meta.summary);
+      if (summary.transactions === 0) summary.transactions = group.length;
+      segments.push({
+        actor: first.meta?.actor ?? {
+          kind: 'system',
+          userId: null,
+          grantId: null,
+          name: 'System',
+          participantRole: null,
+          sessionId: null,
+          connectionId: null,
+          clientId: null,
+        },
+        operationType: classify(summary),
+        summary,
+        contentSizeDelta: sizeDelta(summary),
+        attachmentIds: summary.attachmentsAdded,
+        receivedAt: first.receivedAt,
+        clientOccurredAt: first.meta?.clientOccurredAt ?? null,
+        update,
+      });
+    }
+    return segments;
+  }
+
+  /** Returns false when the write failed and was backed off (the caller loops). */
+  private async writeBaseline(): Promise<boolean> {
+    const baseline = this.baseline;
+    if (!baseline || !this.store.baseline) {
+      this.baseline = null;
+      return true;
+    }
+    try {
+      await this.store.baseline({
+        documentId: this.documentId,
+        generation: this.generation,
+        headSeq: this.headSeqValue,
+        state: baseline.state,
+        attachmentIds: baseline.attachmentIds,
+      });
+      this.baseline = null;
+      return true;
+    } catch (error) {
+      if (this.fatalReasonValue !== null || this.closed) return false;
+      if (error instanceof GenerationMismatchError) {
+        this.fail('generation_changed');
+        return false;
+      }
+      if (error instanceof SequenceConflictError) {
+        this.fail('sequence_conflict');
+        return false;
+      }
+      this.failures += 1;
+      this.listeners.error?.(error, 'append');
+      this.listeners.saveError?.({ code: 'storage_unavailable', retrying: true });
+      this.publishStatus();
+      await this.backoff();
+      return false;
+    }
+  }
+
   private async compactNow(): Promise<void> {
     const getState = this.compactionState;
     if (!getState) return;
@@ -353,15 +528,25 @@ export class DurableLog {
     // No awaits between reading the state and the head sequence: the queue is
     // empty, so the encoded state contains exactly the updates <= headSeq.
     const uptoSeq = this.headSeqValue;
+    const started = performance.now();
     try {
       const state = getState();
+      const checkpoint: HistoryCheckpoint | undefined =
+        this.history &&
+        this.baseline === null &&
+        this.rowsSinceCheckpoint >= this.history.checkpointEvery
+          ? { operationType: 'checkpoint', attachmentIds: this.history.assetIds() }
+          : undefined;
       await this.store.compact({
         documentId: this.documentId,
         generation: this.generation,
         uptoSeq,
         state,
+        checkpoint,
       });
+      this.listeners.timing?.('compact', performance.now() - started);
       this.rowsSinceCompactionValue = 0;
+      if (checkpoint) this.rowsSinceCheckpoint = 0;
     } catch (error) {
       if (this.fatalReasonValue !== null || this.closed) return;
       if (error instanceof GenerationMismatchError) {

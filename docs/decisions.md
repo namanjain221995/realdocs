@@ -177,3 +177,154 @@ Dates are 2026-11-10 unless noted.
 - The app says plainly that the floating window is visible in an entire-screen share. The reliable method on
   the web is to share a tab or a window; for entire-screen sharing the options are the desktop app's private
   mode on Windows or a second device.
+
+## Page settings live in the Yjs document, as a flat `page` map (2026-11-12)
+
+- Page size, orientation, margins, unit and colour are stored in a top-level `Y.Map` named `page` in the
+  document's own Y.Doc rather than in a database column or a Yjs-external API. That gives live sync, durability,
+  snapshot / restore / duplicate inclusion, offline merge and read-only enforcement with no new server code.
+  An empty map means defaults, so no schema version bump is needed: older clients simply ignore it.
+- Lengths are stored in millimetres only; the unit is a shared display preference. Every value is untrusted and
+  normalised on read (clamp, round to 0.1 mm, keep a 50 mm text area); backgrounds are an allow-list of names.
+- Margin changes join the writer's own Y.UndoManager (map added to its scope), one undo step per gesture,
+  never reverting a collaborator.
+- The page is one continuous sheet, not paginated, and narrow screens use a fluid sheet with proportionally
+  smaller margins instead of CSS zoom / transform, to keep ProseMirror's caret and selection geometry exact in
+  every engine.
+- First-line and hanging indent markers are not implemented: they need a per-paragraph length attribute, which
+  is a schema change and a schema version.
+
+## Desktop distribution: versioned releases, verified downloads, no silent self-update (2026-11-12)
+
+- **Files on disk, not a database.** Releases are directories under `DOWNLOAD_DIR` written by an operator
+  script; the server only reads and verifies them. The only database addition is an anonymous counter table
+  (`release_download_counts`: day, channel, version, platform, arch, format, count). Rollback is a pointer
+  change, previous releases are never deleted, and a published version is immutable (so artifact URLs can be
+  cached forever).
+- **The server never infers signing.** `signatureStatus` is what the operator states; the publish script
+  records `unsigned` unless `--signed-windows` / `--notarized-macos` is given, and the release workflow
+  measures the status on the built files (Authenticode, `codesign`, `stapler`) before choosing the flags.
+  Installers are preferred over zips only when the status justifies it (`.exe` if signed, `.dmg` if
+  notarised).
+- **Trust nothing on disk.** The manifest is zod-validated, names must equal the generated pattern, files
+  must be regular files (links refused), sizes must match and the SHA-256 is verified once; a mismatching
+  file is simply not offered. Requests resolve files only through the loaded manifest.
+- **Update URLs are paths.** `downloadUrl` is a path on the same server; the desktop app resolves it
+  against its configured origin and refuses anything else (other host, credentials, query, different
+  version or file name, redirects).
+- **No in-place self-replacement.** An updater that replaces the running app needs signed builds so that
+  the operating system can vouch for the replacement; none exist, and an unsigned auto-updater would let a
+  tampered mirror or a hostile server run code on the user's machine. The app checks, downloads on request,
+  verifies size and SHA-256 and hands the verified file to the user. No `electron-updater` or Squirrel
+  dependency was added. Revisit when Windows and macOS signing credentials exist; the hook is
+  `UpdateService.reveal('open-installer')`.
+- **Install id is a random UUID** in `update-state.json` (not in the preferences schema, which is strict
+  and versioned), used only for the staged-rollout hash; it identifies no person.
+- **Tray menu unchanged.** The tray labels are the owner's specification and are pinned by tests, so
+  "Check for updates" lives in Settings -> Updates, which the existing "Settings" entry opens.
+- **Error code.** `RELEASE_NOT_AVAILABLE` (HTTP 404) was added to the shared error enum in the spelling
+  the requirement gave, although the other codes are lower case.
+- **Linux gets `.tar.gz` and `.zip`, no AppImage**: `appimagetool` and FUSE are not part of the pipeline.
+- **CI is written, not run.** `ci.yml` and `desktop-release.yml` could not be executed here.
+
+## Enterprise upgrade: decisions of the lead (2026-11-12)
+
+Plan and audit: [enterprise-upgrade-plan.md](enterprise-upgrade-plan.md).
+
+- **Uploads wait instead of failing.** A transient failure (rate limit, network, busy server) puts the
+  file back in the queue with capped exponential backoff (1 s doubling to 60 s, 8 attempts); a rate-limit
+  answer pauses the whole queue for the time the server names. Identical files (SHA-256) are sent once
+  per editor and share the stored asset. `RATE_UPLOAD_PER_MINUTE` default raised from 60 to 240: the limit
+  exists to bound abuse, and size, type and the per-document quota already bound storage. Rejected: no
+  limit at all (one session could then occupy the upload path), resumable chunked uploads (the largest
+  file is 25 MB; a restart of one file is cheap, and a second upload protocol is not).
+- **Unsupported content pauses editing, names itself and clears.** The collaboration binding can keep
+  content it cannot render, but it cannot write around it, and an older client silently erases attributes
+  it does not know when it edits their node. So the editor scans the shared document, pauses editing in
+  that window while anything unknown is present (nodes, marks **and** attributes), says what it found and
+  how to get the current version, and resumes by itself when the content is gone. Rejected: per-node
+  placeholders with editing left on. That needs a patched binding that maps unknown elements to a
+  placeholder node and back without rewriting them; a mistake there deletes content, which is the one
+  outcome this feature exists to prevent. Recorded as a limitation.
+- **History is a second, append-only log written with the working log.** `doc_updates` stays what it was
+  (compacted, per generation). `doc_history` gets one row per actor per commit, in the same SQL statement
+  as the commit, plus complete checkpoints (first change of a generation, then every
+  `HISTORY_CHECKPOINT_EVERY` rows at a compaction). Actor and timestamps come from the server's
+  authenticated connection and clock; the client's time and its "this is a paste" label are stored as
+  untrusted information. Rejected: deriving history from `doc_updates` (deleted on compaction and
+  restore), client-reported audit events as the source of truth, and partitioning (no volume yet that
+  justifies it; the retention sweep and the primary key cover the access paths).
+- **Restoring a revision is a new generation.** A revision is turned into a named snapshot and restored
+  through the existing path. The head moves forward; earlier rows, including the abandoned ones, stay.
+- **Assets live as long as a retained revision shows them.** The asset sweep counts every asset a
+  retained history row added and every asset in a retained checkpoint as referenced.
+- **Several instances: one owner per document, sockets forwarded to it.** With `REDIS_URL`, a Redis
+  lease names the instance that holds a document; an instance that receives a socket for a document it
+  does not own pipes it to the owner over the private network. The single-writer durable log, the
+  acknowledgement protocol and presence are unchanged, which is why this was chosen over fan-out of
+  updates between instances (Hocuspocus' Redis extension): that needs every instance to write the log of
+  the same document, a compaction that no longer trusts memory, and a new answer to "is this saved" for
+  content that arrived from a peer. If two instances ever believe they own a document, the database's
+  `head_seq` check refuses the second writer and its clients reconnect; the lease only decides routing.
+  Tickets (`GETDEL`), rate-limit counters and revocation messages go through the same Redis. Without
+  `REDIS_URL` nothing changes. Cost: one extra hop for sockets that land on a non-owner, and Redis as a
+  dependency of new connections (open documents keep saving while it is away).
+- **Rate limits fail open when Redis is unreachable.** A limiter that cannot count allows the request and
+  logs it. Refusing every sign-in during a Redis restart would turn the failure of a helper into an
+  outage; the exposure is a short window without throttling.
+- **No rewrite in another language.** Measurements before this upgrade: 10 editors used 5 % of one core.
+  The load tests in [load-test-report.md](load-test-report.md) decide whether a bottleneck exists that
+  the current stack cannot remove; none was assumed.
+- **Metrics without a client library.** `GET /metrics` (Prometheus text) is a small in-process registry,
+  off unless `METRICS_TOKEN` is set, with label values from fixed sets only.
+
+## Service API and interview sessions (phase 2)
+
+- **Identifiers are bare UUIDs everywhere**, including `sessionId` and `documentId` in `/api/v1`. Existing
+  documents, routes and the web app use bare UUIDs; a prefixed form (`doc_…`) would need translation at
+  every boundary. Cost: ids are not self-describing in logs. The prefix is only used for API keys (`rdk_`),
+  webhook secrets (`whsec_`) and request ids (`req_`).
+- **A participant's link is an ordinary share grant** (`share_grants.participant_id`). Expiry, hashed secret,
+  revocation, rotation and live disconnection are reused; nothing new can bypass `resolveAccess`. Rotation
+  creates a new grant and revokes the old one (kept as history); the participant row points at the current one.
+- **Participant permissions live in `resolveAccess`.** It joins grant → participant → session and returns
+  `participant` and `capabilities`. Routes enforce them (export 403, desktop handoff 403, collab role from
+  the grant role). `candidateCanEdit`/`interviewerCanEdit` set the grant role (`editor`/`viewer`) and are
+  re-applied on PATCH. `candidateCanShare` is stored and reported but no participant can create share links
+  (that needs workspace admin), so it has no effect today. `candidateCanViewHistory` only gates future
+  history routes; the snapshot routes already require an administrator.
+- **API keys are only valid on `/api/v1/*`.** A bearer token starting `rdk_` is recognised first and never
+  looked up as a desktop session; the request ignores cookies, cannot pass `requireAccount`/`requireAdmin`,
+  and `requireService(scope)` rejects it on other paths. Hash: SHA-256 of the full key with constant-time
+  comparison (the key is 256 bits of randomness, so a slow hash adds nothing). Failures return one generic
+  `UNAUTHENTICATED` except a disallowed address (`FORBIDDEN`). Failed attempts are throttled per address and
+  audited without the secret. Rotation revokes the old key at once (no overlap period).
+- **Idempotency keeps an encrypted response for 24 h.** AES-256-GCM, key derived with HKDF from
+  `SESSION_SECRET` per purpose, so a replay returns identical links. Changing `SESSION_SECRET` makes stored
+  responses and webhook secrets undecryptable (replays fail, webhook deliveries fail until the endpoint is
+  recreated). The claim row is a unique insert; completion is written in the creating transaction, so a crash
+  leaves either nothing or the full result. Failed requests release the key. A claim older than two minutes
+  with no result is taken over.
+- **Closed sessions.** Complete/cancel revoke the candidate's links and the candidate gets `session_closed`
+  (410). Interviewers keep read-only access (role capped to viewer in `resolveAccess`) until expiry, so notes
+  can still be read. Archive revokes everyone and archives the document. Start allowed only from
+  `scheduled`; complete only from `in_progress`; cancel from either; archive from anything but `archived`.
+  A joined link can be opened while `scheduled`.
+- **Title.** Generated once, kept in `interview_sessions.generated_title`, never regenerated when the schedule
+  changes; uniqueness is checked against non-trashed documents (case-insensitive) without a database
+  constraint, so two simultaneous creations with identical inputs could collide (accepted, 1 in 1 million
+  chance of equal suffix is irrelevant; the check merely reduces confusion).
+- **Webhooks.** A table queue claimed with `FOR UPDATE SKIP LOCKED` plus a lease (`next_attempt_at` pushed out
+  while an attempt runs) so the HTTP call holds no transaction. Events are inserted in the transaction of the
+  change. `participant.joined` fires on a participant's first join only. `document.first_edited` is emitted by
+  `emitDocumentFirstEdited(ctx, documentId)` (exported from `service/sessions.ts`), idempotent through
+  `interview_sessions.first_edited_at`; the collaboration server calls it with the first applied edit of each loaded document (`onFirstEdit` in `main.ts`). Total attempts =
+  schedule length + 1. SSRF: https only (http for localhost outside production), production resolves and
+  refuses non-public addresses at registration and again at connect time (custom `lookup`), no redirects.
+- **OpenAPI from the registry.** Every `/api/v1` route is declared once with its zod schemas and examples;
+  the same declaration registers the Fastify route and the spec. Admin mirrors (`/api/admin/…`) reuse the
+  handlers and are not in the spec. Spec examples are validated against the schemas in a unit test.
+- **`/guides/:name`** replaces `/docs/:name` for the in-app markdown reader; `/docs` is the developer portal.
+  Old URLs redirect on the client.
+- Known gap: `/d/:id/print` is hidden for candidates without export, and the data it needs (`export?format=json`)
+  is refused by the server, which is the real control.

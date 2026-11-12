@@ -107,6 +107,13 @@ const api: RdDesktopApi = {
     setRecording: (active) => ipcRenderer.invoke(CH.shortcutsRecording, { active }),
   },
 
+  updates: {
+    check: () => ipcRenderer.invoke(CH.updatesCheck),
+    download: () => ipcRenderer.invoke(CH.updatesDownload),
+    defer: () => ipcRenderer.invoke(CH.updatesDefer),
+    open: (action) => ipcRenderer.invoke(CH.updatesOpen, { action }),
+  },
+
   openExternal: (url) => act(() => ipcRenderer.invoke(CH.externalOpen, { url })),
 
   diagnostics: {
