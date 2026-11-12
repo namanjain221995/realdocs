@@ -53,9 +53,11 @@ It publishes no desktop build yet: the download section of its landing page says
   sees. On macOS, Electron documents that applications using ScreenCaptureKit capture the window
   despite the request. A browser tab has no capture exclusion at all. Read
   [docs/capture-compatibility.md](docs/capture-compatibility.md) before relying on it.
-- **The desktop app has not been run on Windows or macOS.** It was built and exercised on a
-  headless Linux server only (Electron under Xvfb, a virtual display), and the Windows and macOS
-  packages and the Windows installers were built there and inspected as files. Every native
+- **The desktop app has not been operated by hand on Windows or macOS.** It was built and exercised
+  on a headless Linux server (Electron under Xvfb, a virtual display). Release 0.1.0 (unsigned, not
+  notarised) was built on GitHub's native runners, and a launch check started the packaged app on
+  Windows x64, macOS arm64 and macOS x64, where it stayed running for 20 seconds; Windows arm64 was
+  built and inspected only, and no Windows installer `.exe` was produced. Every native
   behaviour on those systems (the see-through panel, the tray and menu-bar items, shortcuts,
   omission from the taskbar and Dock, several monitors, installers, signing, notarization) is
   recorded as `NOT TESTED` until someone runs the checklists in
@@ -532,20 +534,23 @@ CREDENTIAL**, **PARTIALLY IMPLEMENTED**, **BLOCKED WITH EXACT REASON**.
 | Version history                                         | IMPLEMENTED AND VERIFIED           | Starts at the upgrade; administrators only; text diff only                                                           |
 | Page setup and ruler                                    | PARTIALLY IMPLEMENTED              | No on-screen pagination, indent markers, headers or footers; only A4 and Letter                                      |
 | Uploads that retry; unsupported-content protection      | IMPLEMENTED AND VERIFIED           | The whole window pauses on unknown content (no per-node placeholders)                                                |
-| Download manifest, OS-aware download page, update check | IMPLEMENTED AND VERIFIED           | The live site publishes no desktop build yet                                                                         |
+| Download manifest, OS-aware download page, update check | IMPLEMENTED AND VERIFIED           | The live site has published desktop release 0.1.0 (unsigned) since 2026-11-12                                        |
 | Desktop app on Linux (Xvfb smoke)                       | IMPLEMENTED AND VERIFIED           | Smoke evidence only; Linux is not a product target                                                                   |
-| Desktop app on Windows and macOS, installers            | IMPLEMENTED BUT NOT NATIVE-TESTED  | Nothing has been run on either system                                                                                |
+| Desktop app on Windows and macOS                        | IMPLEMENTED BUT NOT NATIVE-TESTED  | Launch-tested natively in CI (20 s), not manually tested; no Windows installer `.exe` was produced                   |
 | Signing and notarization                                | CONFIGURED BUT REQUIRES CREDENTIAL | No certificate or Apple Developer account exists; all builds are unsigned                                            |
 | Capture exclusion with meeting applications             | NOT TESTED                         | Every cell of the matrix reads `NOT TESTED`                                                                          |
 | Multi-instance mode                                     | IMPLEMENTED AND VERIFIED           | One host, throw-away resources; not verified across hosts, with shared network storage or with TLS between instances |
 | Metrics, health, readiness                              | PARTIALLY IMPLEMENTED              | No tracing; the refusal path of `/metrics` has no located test                                                       |
 | Backups, disaster recovery                              | PARTIALLY IMPLEMENTED              | Scripts rehearsed; nothing is automated; no point-in-time recovery                                                   |
-| CI workflows                                            | BLOCKED WITH EXACT REASON          | Written, never executed: no runner was available                                                                     |
+| CI workflows                                            | IMPLEMENTED AND VERIFIED           | Executed on GitHub on 2026-11-12: `ci.yml` passed; the desktop release workflow succeeded on four runners            |
 | Object storage (S3)                                     | PARTIALLY IMPLEMENTED              | Shared directory only; no S3 adapter                                                                                 |
 
-Known product defect: when two or three editors press Enter at the same instant at the same place in a
-document, the clients converge but the result is not what they typed
-([docs/requirements-checklist.md](docs/requirements-checklist.md), row 17.3). The full list of limitations is
+A product defect recorded on 2026-11-11 was fixed on 2026-11-12: when two or three editors pressed Enter at
+the same instant at the same place in a document, the shared document was correct but some of the characters
+typed at that moment went into another person's paragraph. The cause was in the editor binding's caret
+placement, and the `CaretKeeper` plugin now prevents it
+([docs/requirements-checklist.md](docs/requirements-checklist.md), row 17.3, and
+[docs/testing.md](docs/testing.md) section 5.1). The full list of limitations is
 [docs/known-limitations.md](docs/known-limitations.md).
 
 The first-run path of this README, with a `.env` in the repository root, was not run as written on the

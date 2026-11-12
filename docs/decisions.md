@@ -164,6 +164,17 @@ Dates are 2026-11-10 unless noted.
   by an expected-failure test that turns red as soon as it is fixed.
 - Two WebKit-only races in the editor's own browser check (`callout-toolbar`) were test problems, not product
   problems, and were fixed in the check without weakening its assertions (`docs/testing.md` §5.2).
+- **Resolution (2026-11-12): fixed.** The cause was found: after a remote change, `@tiptap/y-tiptap` 3.2.0
+  re-places a caret that sits at the start of a text block by guessing "the n-th block with this type and
+  text". When another editor had just added an identical block (an empty paragraph) before it, the caret
+  moved into the other person's paragraph and the next keystrokes landed there. The shared Yjs document
+  was always correct; no content was lost or duplicated at the CRDT level, no schema was corrupted and
+  nothing diverged. The fix is the `CaretKeeper` plugin in `packages/editor/src/editor/collabPlugins.ts`,
+  which keeps the exact Yjs relative position when the block it points into still exists, so no change
+  inside the binding package was needed. Tests: `packages/editor/test/concurrent-enter.test.ts` (4 tests)
+  and `tests/e2e/specs/convergence.spec.ts` "simultaneous Enter", which is now an ordinary test (no
+  `test.fail`, no `E2E_SHOW_KNOWN_DEFECTS`) and passed in Chromium, Firefox and WebKit. The entry above is
+  kept as the record of the decision at the time; see `docs/testing.md` §5.1.
 
 ## Browser "invisible mode": not possible; floating notes instead (2026-11-11)
 
@@ -225,7 +236,7 @@ Dates are 2026-11-10 unless noted.
 - **Error code.** `RELEASE_NOT_AVAILABLE` (HTTP 404) was added to the shared error enum in the spelling
   the requirement gave, although the other codes are lower case.
 - **Linux gets `.tar.gz` and `.zip`, no AppImage**: `appimagetool` and FUSE are not part of the pipeline.
-- **CI is written, not run.** `ci.yml` and `desktop-release.yml` could not be executed here.
+- **CI is written, not run.** `ci.yml` and `desktop-release.yml` could not be executed here. (Update, 2026-11-12: both were executed on GitHub; `ci.yml` passed and `desktop-release.yml` succeeded on four runners after three earlier runs failed and were fixed. See `docs/desktop-release.md`.)
 
 ## Enterprise upgrade: decisions of the lead (2026-11-12)
 

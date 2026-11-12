@@ -6,22 +6,26 @@ operator who publishes releases.
 
 ## Status of each part
 
-| Part                                                                                 | Status                                                                            |
-| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| Release store, manifest, latest / list / update endpoints, Range downloads, counters | IMPLEMENTED AND VERIFIED (unit tests; integration suite against PostgreSQL)       |
-| `scripts/publish-release.mjs` (publish, `--rollback`, `--rollout`)                   | IMPLEMENTED AND VERIFIED (unit tests, including real filesystem runs)             |
-| Artifact names `RealtimeDocs-<version>-<windows\|macos\|linux>-<arch>.<ext>`         | IMPLEMENTED AND VERIFIED (packaging scripts, inspection, unit tests)              |
-| Linux arm64 package: build, inspect, packaged-app check under Xvfb                   | IMPLEMENTED AND VERIFIED on Linux arm64 (smoke only: no compositor, no real tray) |
-| Windows x64/arm64 and macOS x64/arm64 zips                                           | IMPLEMENTED BUT NOT NATIVE-TESTED (cross-built on Linux, unsigned, never started) |
-| Windows installer `.exe` (NSIS), macOS `.dmg`, Linux x64 package, AppImage           | IMPLEMENTED BUT NOT NATIVE-TESTED / not built on this host (see below)            |
-| Update check, verified download, Settings -> Updates, "update required" state        | IMPLEMENTED AND VERIFIED (unit tests; Linux/Xvfb smoke suite still passes)        |
-| Windows Authenticode signing                                                         | CONFIGURED BUT REQUIRES CREDENTIAL (certificate, Windows runner)                  |
-| macOS Developer ID signing and notarisation                                          | CONFIGURED BUT REQUIRES CREDENTIAL (Apple Developer account, macOS runner)        |
-| Silent in-place self-update                                                          | NOT IMPLEMENTED, by decision (see "Updates")                                      |
-| `.github/workflows/ci.yml`, `desktop-release.yml`                                    | IMPLEMENTED BUT NOT EXECUTED (no runner was available; read, not run)             |
+| Part                                                                                 | Status                                                                                                                                   |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Release store, manifest, latest / list / update endpoints, Range downloads, counters | IMPLEMENTED AND VERIFIED (unit tests; integration suite against PostgreSQL)                                                              |
+| `scripts/publish-release.mjs` (publish, `--rollback`, `--rollout`)                   | IMPLEMENTED AND VERIFIED (unit tests, including real filesystem runs)                                                                    |
+| Artifact names `RealtimeDocs-<version>-<windows\|macos\|linux>-<arch>.<ext>`         | IMPLEMENTED AND VERIFIED (packaging scripts, inspection, unit tests)                                                                     |
+| Linux arm64 package: build, inspect, packaged-app check under Xvfb                   | IMPLEMENTED AND VERIFIED on Linux arm64 (smoke only: no compositor, no real tray); built and inspected in CI, not started on arm64 there |
+| Linux x64 package                                                                    | IMPLEMENTED AND VERIFIED (packaged-app Xvfb check passed in CI)                                                                          |
+| Windows x64, macOS arm64 and x64 zips, `.dmg` files                                  | Built on native runners in CI and launch-tested natively there (stayed running 20 s); not manually tested; unsigned                      |
+| Windows arm64 zip                                                                    | IMPLEMENTED BUT NOT NATIVE-TESTED (built and inspected, never started on Windows arm64)                                                  |
+| Windows installer `.exe` (NSIS), AppImage                                            | NOT PRODUCED in release 0.1.0 (see "Release 0.1.0")                                                                                      |
+| Update check, verified download, Settings -> Updates, "update required" state        | IMPLEMENTED AND VERIFIED (unit tests; Linux/Xvfb smoke suite still passes)                                                               |
+| Windows Authenticode signing                                                         | CONFIGURED BUT REQUIRES CREDENTIAL (certificate, Windows runner)                                                                         |
+| macOS Developer ID signing and notarisation                                          | CONFIGURED BUT REQUIRES CREDENTIAL (Apple Developer account, macOS runner)                                                               |
+| Silent in-place self-update                                                          | NOT IMPLEMENTED, by decision (see "Updates")                                                                                             |
+| `.github/workflows/ci.yml`, `desktop-release.yml`                                    | EXECUTED on GitHub (2026-11-12); `desktop-release.yml` run 43195585865 succeeded                                                         |
 
-Nothing here has been signed, notarised or run on Windows or macOS. The server and the web app never
-claim otherwise: they show the signature status the operator wrote into `release.json`.
+Nothing here has been signed or notarised, and nobody has operated the app by hand on Windows or
+macOS. The only native evidence on those systems is the launch check in CI (see "Release 0.1.0"). The
+server and the web app never claim otherwise: they show the signature status the operator wrote into
+`release.json`.
 
 ## Artifact names and the matrix
 
@@ -209,14 +213,73 @@ pass `--notarized-macos`. An ad-hoc signature (`-`) is not notarisation. Details
 
 `.github/workflows/desktop-release.yml` (manual dispatch with `channel`, `rollout_percent`,
 `activate`, `notes`; or a `desktop-v<version>` tag whose version must equal
-`apps/desktop/package.json`) builds on `windows-latest`, `macos-14` (arm64), `macos-13` (x64) and
-`ubuntu-latest`, runs the desktop unit tests and the Linux packaged-app check, imports signing
+`apps/desktop/package.json`) builds on `windows-latest`, `macos-15` (arm64), `macos-15-intel` (x64) and
+`ubuntu-latest` (the earlier labels `macos-14` and `macos-13` are no longer offered by GitHub), runs the
+desktop unit tests, the Linux packaged-app check and, on each OS, `apps/desktop/scripts/launch-check.mjs`
+(it starts the packaged executable on its own OS and requires it to stay running for 20 seconds), imports signing
 material only if the secrets listed in the file's header exist, **measures** the resulting signature
 status on the built files, creates checksums and a CycloneDX SBOM (`pnpm sbom`), and a final
 `publish-manifest` job (which `needs:` every build) runs `publish-release.mjs` with flags decided from
 the measured status and uploads the release tree as a workflow artifact, and to an S3-compatible
 bucket only if bucket credentials exist (new version first, pointer last, never `--delete`). It does
-not create GitHub releases or tags. Status: implemented, not executed.
+not create GitHub releases or tags. Status: executed on 2026-11-12; run 43195585865 succeeded on all
+four runners. The Windows installer step is `continue-on-error`, because `makensis` was not on the
+path after `choco install nsis`; a path fix was added, but in the successful run the installers were
+still not produced, so no `.exe` is published.
+
+## Release 0.1.0
+
+Release 0.1.0 (channel `stable`, 2026-11-12) is the first published desktop release. Every file is
+unsigned and none is notarised, because no signing credentials exist. The files are
+`RealtimeDocs-0.1.0-windows-x64.zip`, `-windows-arm64.zip`, `-macos-arm64.zip`, `-macos-arm64.dmg`,
+`-macos-x64.zip`, `-macos-x64.dmg`, `-linux-x64.zip`, `-linux-x64.tar.gz`, `-linux-arm64.zip` and
+`-linux-arm64.tar.gz`. There is no Windows `.exe` installer and no AppImage.
+
+How it got there. Three earlier runs of the release workflow failed, and each failure led to a fix:
+`apps/desktop/build/` (icons, installer script) was untracked because the `build/` ignore rule hid it;
+the `macos-14` and `macos-13` runner labels are no longer offered; the zip that a Mac makes with
+`ditto` has the bundle as its top entry, so the archive inspection was adjusted; `makensis` was not on
+the path after `choco install nsis`, so a path fix was added and the installer step became
+`continue-on-error`; and a desktop unit test raced its own cleanup on macOS, which was fixed. Run
+43195585865 then succeeded on `windows-latest`, `macos-15` (arm64), `macos-15-intel` (x64) and
+`ubuntu-latest`.
+
+Native evidence. The new script `apps/desktop/scripts/launch-check.mjs` started the packaged
+executable on its own OS and it stayed running for 20 seconds for Windows x64, macOS arm64 and macOS
+x64 (all in CI). Linux x64 passed the packaged-app Xvfb check in CI. Windows arm64 and Linux arm64
+were built and inspected but never started on their own architecture in CI (Linux arm64 passes the
+local Xvfb checks on this host). Nobody operated the app by hand on Windows or macOS, capture
+exclusion was not measured, and no meeting application was tested. The honest label for the Windows
+x64 and macOS zips is therefore: launch-tested natively in CI, not manually tested.
+
+Download preference for Linux is now AppImage, then `.zip`, then `.tar.gz`
+(`packages/contracts/src/releases.ts`).
+
+Publishing. The release was copied into the live server's `rd_downloads` volume with `docker cp`
+(release directory first, channel pointer last). The lead also created GitHub release v0.1.0 at
+`https://github.com/namanjain221995/realdocs/releases/tag/v0.1.0` with the ten packages, `SHA256SUMS` and
+the SBOM (12 files). The public URLs have the form
+`https://realdocs.techsarasolutions.com/download/releases/stable/0.1.0/<fileName>`.
+
+Verification of the public downloads. Every file was downloaded from its public URL: HTTP 200,
+`application/zip` for the zips, `Content-Disposition: attachment`, size and SHA-256 equal to
+`SHA256SUMS`, `unzip -t` clean, and a Range request answered 206. SHA-256 of the zips:
+
+| File                                   | SHA-256                                                            |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| `RealtimeDocs-0.1.0-windows-x64.zip`   | `21a958b70262140fbfd0c92d8c88fb572434c1f8f27a3f4eb12a317a008482eb` |
+| `RealtimeDocs-0.1.0-windows-arm64.zip` | `18e6a27ecca175eb0ba698ca326f956b12f3466e3840237d08b7228314a0b770` |
+| `RealtimeDocs-0.1.0-macos-arm64.zip`   | `862c4c7b3706c0a8da68fe9c7223a8333c234743f8b66d094a9d04921d275b4d` |
+| `RealtimeDocs-0.1.0-linux-x64.zip`     | `d6019b97c237a05dec0c293f58b5cbcae77c7fd5ae5f1d0688baeab29306036c` |
+| `RealtimeDocs-0.1.0-linux-arm64.zip`   | `776d684c410a21a67aba8a81ffc0012f0abfb05e9435217085c254d35137f550` |
+
+For the macOS x64 files and the other formats, use the `SHA256SUMS` file in the release.
+
+Browser download tests on the live landing page (Playwright with emulated user agents): Windows Chrome
+and Firefox were offered `windows-x64.zip`; macOS Safari (WebKit) was offered `macos-arm64.zip`; Linux
+Firefox was offered `linux-x64.zip`; choosing macOS manually and then the Intel build worked; an
+iPhone got the statement that no download is available for this device and no download link. All
+checksums matched.
 
 ## Rollback and incidents
 

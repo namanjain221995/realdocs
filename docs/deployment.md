@@ -728,7 +728,7 @@ The server offers the packaged desktop apps at `/download` and on the landing pa
 builds or signs them: the operator publishes them as files. The complete guide (layout, manifest,
 signing flags, rollout, rollback, CI) is [desktop-release.md](desktop-release.md); this section is the
 short operational version. **Until something is published the site says "Release not published" and
-offers no link, and that is the honest state.**
+offers no link, and that is the honest state.** The live site has served release 0.1.0 (unsigned) since 2026-11-12.
 
 **Versioned releases (current method).** Build, then publish with the operator script into a staging
 directory and copy that into the `rd_downloads` volume (`DOWNLOAD_DIR`, `/data/downloads` in the
@@ -736,7 +736,7 @@ container; `realtimedocs_rd_downloads` in the live deployment):
 
 ```sh
 node scripts/publish-release.mjs apps/desktop/out --channel stable --notes-file NOTES.md --target ./release-staging
-# Not run on this host. Copy the new version directory first, the channel pointer last:
+# Copy the new version directory first, the channel pointer last (done for release 0.1.0 on 2026-11-12):
 docker cp ./release-staging/releases/. realtimedocs-server-1:/data/downloads/releases/
 docker cp ./release-staging/channels/. realtimedocs-server-1:/data/downloads/channels/
 ```
@@ -1064,6 +1064,44 @@ revocation messages. Requirements, failure behaviour, the rolling deployment and
 `COLLAB_MAX_CONNECTIONS=1000` is a per-process safety limit. Measured capacity, if any, is in
 [load-test-report.md](load-test-report.md); no number from it is repeated here.
 
+## Smoke test of the live site
+
+`scripts/live-smoke.mjs` drives a running deployment through a real browser (Playwright) and prints one
+line per check; the exit code is 1 when any check fails. It only creates its own documents (titles
+start with "ZZ live smoke"), moves them to the trash at the end, and never opens a document it did not
+create. Run it inside the Playwright image that matches the pinned Playwright version, with the
+repository mounted at `/work`. The script resolves `@playwright/test` from `tests/e2e`, so the
+repository's dependencies must be installed.
+
+```sh
+docker run --rm -v "$PWD":/work -w /work \
+  -e RD_BASE=https://realdocs.techsarasolutions.com \
+  -e RD_EMAIL='<administrator e-mail>' -e RD_PASSWORD='<administrator password>' \
+  mcr.microsoft.com/playwright:v1.64.1-noble \
+  node scripts/live-smoke.mjs
+```
+
+`RD_BASE`, `RD_EMAIL` and `RD_PASSWORD` are required. Optional variables are `RD_INVITATION_ID` and
+`RD_INVITATION_SECRET` (accept that invitation first, to use a temporary administrator account),
+`RD_DOWNLOAD_DIR` (where the clicked desktop download is saved) and `RD_BROWSER` (`chromium` by default,
+`firefox` or `webkit`). Do not put the password in a shell history or a log; pass it from a file or a
+secret store.
+
+The checks cover: the landing page, `/docs`, `/api/openapi.json` (OpenAPI 3.1.0), health and
+readiness, login, the administrator account list, document creation, typing, bold and autosave,
+reopening, a guest through a share link, two-way sync, an image paste reaching the other person, page
+orientation reaching the other person, the history listing both people, the history page, restoring an
+earlier revision, the session API (401 without a valid key, 403 for a key without the scope, 201 and
+idempotent creation of a session), the candidate page (it works and shows no desktop download
+controls), a revoked key answering 401, the release manifest, and a click on the landing page's
+Download button whose file checksum matches.
+
+On 2026-11-12 it passed 26/26 checks against `https://realdocs.techsarasolutions.com` after the
+upgrade. That run used a temporary administrator account created through an invitation row inserted
+into the production database; the account is now disabled and its sessions are ended. Its two test
+documents are in the trash, and one interview session and two revoked API keys named "live smoke ..."
+remain as records. No existing document was opened or changed.
+
 ## What was and was not verified
 
 Results are recorded in [testing.md](testing.md) and, for the deployment in `deploy/`, in
@@ -1099,14 +1137,16 @@ Everything was done on the build host: Ubuntu 24.04 on arm64, Docker 29.6.2, Doc
   extent its guide states.
 - An `amd64` image. The host builds and runs `linux/arm64` only.
 - The backup and restore scripts on macOS or Windows.
-- A server started with `AUTO_MIGRATE=false`, an upgrade between two versions, and running
-  `cleanup` from cron.
+- A server started with `AUTO_MIGRATE=false`, and running `cleanup` from cron. (An upgrade between two
+  versions of the server was done on the live deployment on 2026-11-12; see
+  [upgrade-and-rollback.md](upgrade-and-rollback.md).)
 - The hidden password prompt of `bootstrap-admin` and `reset-password` through
   `docker compose exec`; the rehearsal pipes the password in.
 - Load or capacity measurements are reported in [load-test-report.md](load-test-report.md), not here.
 - Several instances: verified on this host as described in [scaling.md](scaling.md); not on the live deployment.
-- Copying desktop builds into the downloads volume: the commands under "Publish desktop downloads"
-  were not run, and the live site has no build published.
+- Copying desktop builds into the downloads volume: on 2026-11-12 desktop release 0.1.0 (unsigned) was
+  copied into the live `rd_downloads` volume with `docker cp` (release directory first, channel pointer
+  last) and downloaded back from the public URL; see [desktop-release.md](desktop-release.md).
 - The volume guard was checked on scratch volumes (Docker refused to delete a volume in use), not by
   trying to delete the live volumes.
 - Desktop apps on Windows or macOS against any server.

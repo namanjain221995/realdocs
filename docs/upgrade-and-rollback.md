@@ -144,6 +144,16 @@ a backup of the live database taken the same day, in throw-away containers on th
 - recovery of the version history after edits made without it: integration test
   `apps/server/test/integration/history.test.ts`, "commits made without history".
 
-**Not done:** the upgrade of the live deployment itself. That is `deploy/up.sh`, run by the owner. The
-rollback commands above were rehearsed with a throw-away database and container, not through the
-`deploy/` wrappers against the live project.
+**The live upgrade was carried out on 2026-11-12 at 10:28 UTC with `deploy/up.sh`.** Before it, a backup
+was taken (`backups/realtimedocs-20261112T102818Z`, checksums verified, the env files copied into its
+`config/` folder); the migration and rollback rehearsal was repeated on a backup taken the same day with
+`--rollback-image realtimedocs-server:previous` (existing data unchanged, rollback and roll-forward
+rehearsed); the candidate image was run against a restored copy of the database and uploads (ready,
+pages, login, documents load); and the previous image was kept as `realtimedocs-server:previous`
+(image `725f0e9a5199`). The new image is `realtimedocs-server:local` (`f9616366ef8b`). The server log shows
+migrations service_api (2), history (3) and releases (4) applied, and health and readiness answered 200
+locally and through Cloudflare. The container replacement took about nine seconds end to end. A live
+smoke test then passed 26/26 checks ([deployment.md](deployment.md)).
+
+**Not done:** the rollback through the `deploy/` wrappers against the live project was not executed. The
+rollback commands above were rehearsed only with a throw-away database and container on copies.

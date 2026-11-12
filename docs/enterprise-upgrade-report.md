@@ -3,6 +3,10 @@
 _2026-11-12. Everything below was done in the working tree of this repository on the server that also
 runs the live site. Nothing was committed and nothing was deployed: both are the owner's steps._
 
+_Update: this report describes the state at the end of the day's work. The upgrade was committed,
+pushed and deployed later the same day, and the simultaneous-Enter defect was fixed. See the
+"Addendum 2026-11-12: deployment and desktop release" at the end; earlier sections are left as written._
+
 Status labels: IMPLEMENTED AND VERIFIED (it ran here and the result was observed), IMPLEMENTED BUT NOT
 NATIVE-TESTED, CONFIGURED BUT REQUIRES CREDENTIAL, PARTIALLY IMPLEMENTED, BLOCKED WITH EXACT REASON.
 
@@ -32,18 +36,18 @@ Compose behind a Cloudflare Tunnel. This server is production: project `realtime
 
 ## 3. Confirmed defects found
 
-| Defect                                                                                                                    | Outcome                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| One unknown node or mark made the whole document read-only for good, with a message telling web users to "update the app" | Fixed: see section 5                                                      |
-| Attributes an older client does not know were erased from the shared document when that client edited the node            | Fixed: unknown attributes now pause editing too                           |
-| "Too many uploads at once": 60 uploads a minute per session, no waiting, manual retries counted against the same limit    | Fixed                                                                     |
-| The update log could not say who changed what (no actor, mixed batches, deleted on compaction and restore)                | Fixed by a separate history log                                           |
-| Desktop package names did not match the names the server serves; Linux could not be published                             | Fixed                                                                     |
-| "Open in Desktop" shown to every viewer, guests included                                                                  | Fixed for interview candidates by server permission; other guests keep it |
-| The deployed image cannot start on a database that a newer version migrated, so "start the old image" was not a rollback  | Fixed with reversible park and unpark scripts, rehearsed                  |
-| The Docker build copies only three guides; the web app now bundles a fourth. The next live deploy would have failed       | Fixed (found by building the image in a trial)                            |
-| Administrator navigation overflowed at 768 px after four entries were added                                               | Fixed                                                                     |
-| Simultaneous Enter by several editors converges on wrong content                                                          | **Not fixed, not investigated.** Still pinned by an expected-failure test |
+| Defect                                                                                                                    | Outcome                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| One unknown node or mark made the whole document read-only for good, with a message telling web users to "update the app" | Fixed: see section 5                                                                                                           |
+| Attributes an older client does not know were erased from the shared document when that client edited the node            | Fixed: unknown attributes now pause editing too                                                                                |
+| "Too many uploads at once": 60 uploads a minute per session, no waiting, manual retries counted against the same limit    | Fixed                                                                                                                          |
+| The update log could not say who changed what (no actor, mixed batches, deleted on compaction and restore)                | Fixed by a separate history log                                                                                                |
+| Desktop package names did not match the names the server serves; Linux could not be published                             | Fixed                                                                                                                          |
+| "Open in Desktop" shown to every viewer, guests included                                                                  | Fixed for interview candidates by server permission; other guests keep it                                                      |
+| The deployed image cannot start on a database that a newer version migrated, so "start the old image" was not a rollback  | Fixed with reversible park and unpark scripts, rehearsed                                                                       |
+| The Docker build copies only three guides; the web app now bundles a fourth. The next live deploy would have failed       | Fixed (found by building the image in a trial)                                                                                 |
+| Administrator navigation overflowed at 768 px after four entries were added                                               | Fixed                                                                                                                          |
+| Simultaneous Enter by several editors converges on wrong content                                                          | **Not fixed, not investigated.** Still pinned by an expected-failure test. Fixed on 2026-11-12 after the report; see status.md |
 
 ## 4. Security issues found
 
@@ -234,7 +238,7 @@ everything written since the backup.
 
 [known-limitations.md](known-limitations.md). The ones that matter most: no native verification on
 Windows or macOS; unsigned builds; capture exclusion unverified for every meeting application; the
-reconnect time after an instance restart; no one-hour soak; the simultaneous-Enter defect; no per-node
+reconnect time after an instance restart; no one-hour soak; the simultaneous-Enter defect (fixed on 2026-11-12 after this report; see status.md); no per-node
 placeholders for unknown content; no pagination; no malware scanning of uploads; no tracing; no object
 storage adapter; backups not automated; no automatic removal of participants' e-mail addresses.
 
@@ -264,3 +268,97 @@ and start the Windows and macOS packages on real machines and record the results
 Center; obtain signing credentials and run the release workflow once; run the one-hour soak and the
 missing load scenarios, including the restart scenario behind a balancer with health checks, before
 relying on more than one instance.
+
+## Addendum 2026-11-12: deployment and desktop release
+
+This addendum records what happened after the report above was written. Sections 1 to 22 are unchanged.
+The details are in [status.md](status.md), [desktop-release.md](desktop-release.md),
+[upgrade-and-rollback.md](upgrade-and-rollback.md) and [deployment.md](deployment.md).
+
+**Simultaneous Enter fixed.** The cause was in `@tiptap/y-tiptap` 3.2.0: after a remote change it
+re-places a caret that sits at the start of a text block by guessing "the n-th block with this type and
+text". When another editor had just added an identical block (an empty paragraph) before it, the caret
+moved into the other person's paragraph and the next keystrokes landed there. The shared Yjs document
+was always correct, with no lost or duplicated content at the CRDT level, no schema corruption and no
+divergence. The `CaretKeeper` plugin in `packages/editor/src/editor/collabPlugins.ts` now keeps the
+exact Yjs relative position when the block it points into still exists. Tests:
+`packages/editor/test/concurrent-enter.test.ts` (4 tests) and the "simultaneous Enter" test in
+`tests/e2e/specs/convergence.spec.ts`, which is now an ordinary test and passed in Chromium, Firefox and
+WebKit (9/9 with `--repeat-each=3`, and in the full suite).
+
+**Git.** The upgrade is committed and pushed to `https://github.com/namanjain221995/realdocs` on `main`
+(commits `f306fce`, `66b887c`, `8394888`, `c599e4e`; later commits will follow). The 117 regenerated
+editor screenshots under `packages/editor/demo/screenshots` were deliberately left uncommitted.
+`apps/desktop/build/` (icons, installer script) had been hidden by the `build/` ignore rule and is now
+tracked.
+
+**CI.** `.github/workflows/ci.yml` executed on GitHub and passed on `c599e4e` (format, lint, types, unit
+tests, builds; server integration tests). `.github/workflows/desktop-release.yml` executed: run
+43195585865 succeeded on windows-latest, macos-15 (arm64), macos-15-intel (x64) and ubuntu-latest. Three
+earlier runs failed and led to fixes: the untracked `apps/desktop/build`; the `macos-14` and `macos-13`
+runner labels, which are no longer offered; the zip that a Mac makes with `ditto`, which has the bundle
+as its top entry (the archive inspection was adjusted); and `makensis` not being on the path after
+`choco install nsis` (a path fix was added and the installer step is now `continue-on-error`; in the
+successful run the Windows installers were still not produced, so no `.exe` is published). A desktop
+unit test also raced its own cleanup on macOS and was fixed.
+
+**Desktop release 0.1.0 (stable).** All files are unsigned and not notarised, because no credentials
+exist: `RealtimeDocs-0.1.0-` with `windows-x64.zip`, `windows-arm64.zip`, `macos-arm64.zip`,
+`macos-arm64.dmg`, `macos-x64.zip`, `macos-x64.dmg`, `linux-x64.zip`, `linux-x64.tar.gz`,
+`linux-arm64.zip` and `linux-arm64.tar.gz`. The new script `apps/desktop/scripts/launch-check.mjs`
+started the packaged executable on its own OS and it stayed running for 20 seconds on Windows x64,
+macOS arm64 and macOS x64 (in CI). Linux x64 passed the packaged-app Xvfb check in CI. Windows arm64 and
+Linux arm64 were built and inspected but never started on their architecture in CI (Linux arm64 passes
+the local Xvfb checks on this host). Nobody operated the app by hand on Windows or macOS, capture
+exclusion was not measured and no meeting application was tested, so the label for the Windows x64 and
+macOS zips is: launch-tested natively in CI, not manually tested. The Linux download preference is now
+AppImage, then `.zip`, then `.tar.gz` (`packages/contracts/src/releases.ts`). The release was copied to the
+live server's `rd_downloads` volume with `docker cp` (release directory first, channel pointer last),
+and the lead created GitHub release v0.1.0 at
+`https://github.com/namanjain221995/realdocs/releases/tag/v0.1.0` (12 files: the ten packages,
+`SHA256SUMS` and the SBOM). Every file was downloaded from its public URL
+(`https://realdocs.techsarasolutions.com/download/releases/stable/0.1.0/<fileName>`): HTTP 200,
+`application/zip` for zips, `Content-Disposition: attachment`, size and SHA-256 equal to `SHA256SUMS`,
+`unzip -t` clean, and a Range request answered 206. Browser tests on the live landing page with
+emulated user agents: Windows Chrome and Firefox got `windows-x64.zip`, macOS Safari (WebKit) got
+`macos-arm64.zip`, Linux Firefox got `linux-x64.zip`, choosing macOS and then the Intel build worked,
+and an iPhone got the "not available for this device" statement and no download link; all checksums
+matched.
+
+**Live deployment.** Done on 2026-11-12 at 10:28 UTC with `deploy/up.sh`. Before it: backup
+`backups/realtimedocs-20261112T102818Z` (checksums verified, env files copied into its `config/`
+folder); the migration and rollback rehearsal on a backup taken the same day
+(`scripts/rehearse-migration.sh … --rollback-image realtimedocs-server:previous`: existing data
+unchanged, rollback and roll-forward rehearsed); the candidate image run against a restored copy of the
+database and uploads (ready, pages, login, documents load); and the previous image kept as
+`realtimedocs-server:previous` (image `725f0e9a5199`). The new image is `realtimedocs-server:local`
+(`f9616366ef8b`). The server log shows migrations service_api (2), history (3) and releases (4) applied,
+and health and ready answered 200 locally and through Cloudflare. The container replacement took about
+nine seconds end to end. The rollback through the deploy wrappers against the live project was still not
+executed; it was only rehearsed on copies.
+
+**Live smoke test.** The new script `scripts/live-smoke.mjs` (Playwright) passed 26/26 checks against
+`https://realdocs.techsarasolutions.com`: landing page, `/docs`, `/api/openapi.json` (OpenAPI 3.1.0),
+health and readiness, login, the administrator account list, document creation, typing, bold and
+autosave, reopen, a guest through a share link, two-way sync, an image paste reaching the other person,
+page orientation reaching the other person, history listing both people, the history page, restoring an
+earlier revision, the session API (401 without a valid key, 403 for a key without the scope, 201 and
+idempotent creation), the candidate page (works, no desktop download controls), a revoked key (401), the
+release manifest and a landing page Download click whose checksum matched. It used a temporary
+administrator account created through an invitation row inserted into the production database; the
+account is now disabled with its sessions ended. Its two test documents are in the trash, and one
+interview session and two revoked API keys named "live smoke ..." remain as records. No existing
+document was opened or changed.
+
+**Local gates on the deployed code.** Format, lint and typecheck clean. Unit tests: 81 files, 1,919
+passed (before two later test-only changes; desktop unit tests: 704 passed after them). Integration: 21
+files, 225 passed. Backup-restore passed. Acceptance: 42 passed and the disruptive group 12 passed. Web
+with the mocked API: 948 passed, 1 failed once and passed on rerun (the Firefox landing keyboard test),
+2 skipped. Web against the real stack: 69 passed and the outage group 18 passed. Editor browser checks:
+Chromium 47/47; Firefox 44 passed plus one flake (`scroll-stability-manual`) that passed on rerun, 2
+skipped; WebKit 45 passed, 2 skipped. Desktop Xvfb smoke 64/64 and the packaged-app check 39/39.
+
+**What is still open.** Signing credentials and signed builds; manual testing on Windows and macOS,
+including capture exclusion with real meeting applications; deleting `deploy/admin-credentials.txt`
+once the password is stored elsewhere; copying backups off the server and automating them; the load-test
+items that did not run; and the rollback through the deploy wrappers against the live project.
