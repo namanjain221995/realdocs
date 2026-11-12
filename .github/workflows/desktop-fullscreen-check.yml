@@ -1,0 +1,40 @@
+# Manual check on native runners: does the pinned panel stay in front of a full-screen browser?
+# Windows: Microsoft Edge in kiosk mode, window stacking order read from the system.
+# macOS: Safari in native full screen (only when the runner allows the keystroke; otherwise the
+# script says the result is inconclusive). See apps/desktop/scripts/fullscreen-check*.mjs.
+name: Desktop full-screen check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: windows, os: windows-latest, platform: win32, arch: x64 }
+          - { name: macos-arm64, os: macos-15, platform: darwin, arch: arm64 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Package
+        shell: bash
+        run: node apps/desktop/scripts/package.mjs --platform "${{ matrix.platform }}" --arch "${{ matrix.arch }}"
+      - name: Full-screen check (Windows)
+        if: matrix.platform == 'win32'
+        shell: bash
+        run: node apps/desktop/scripts/fullscreen-check.mjs --arch x64
+      - name: Full-screen check (macOS)
+        if: matrix.platform == 'darwin'
+        run: node apps/desktop/scripts/fullscreen-check-mac.mjs --arch "${{ matrix.arch }}"
