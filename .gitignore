@@ -2,6 +2,8 @@ node_modules/
 dist/
 out/
 build/
+# Packaging resources of the desktop app (icons, installer script) are sources, not output.
+!apps/desktop/build/
 coverage/
 .toolchain/
 .stage/
