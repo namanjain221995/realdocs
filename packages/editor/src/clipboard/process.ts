@@ -13,6 +13,11 @@
  * Nothing here touches the network: remote images become labelled links,
  * embedded `data:` images are handed to the caller for upload.
  */
+import {
+  NO_PARAGRAPH_INDENTS,
+  normalizeParagraphIndents,
+  type ParagraphIndents,
+} from '@realtimedocs/contracts';
 import DOMPurify from 'dompurify';
 import { sanitizeLinkHref } from '../schema/links';
 import { CALLOUT_VARIANTS } from '../schema/nodes';
@@ -287,9 +292,16 @@ interface BlockAttrs {
   align: 'center' | 'right' | 'justify' | null;
   indent: number;
   lineHeight: string | null;
+  /** Ruler indents in millimetres, only ever from this editor's own `data-indent-*` attributes. */
+  ruler: ParagraphIndents;
 }
 
-const NO_BLOCK_ATTRS: BlockAttrs = { align: null, indent: 0, lineHeight: null };
+const NO_BLOCK_ATTRS: BlockAttrs = {
+  align: null,
+  indent: 0,
+  lineHeight: null,
+  ruler: NO_PARAGRAPH_INDENTS,
+};
 
 interface Context {
   source: PasteSource;
@@ -687,6 +699,20 @@ function blockAttrsOf(element: HTMLElement, inherited: BlockAttrs, context: Cont
     if (margin !== null && margin >= 24) attrs.indent = Math.min(8, Math.round(margin / 48));
   }
 
+  // Ruler indents travel only as this editor's own attributes, parsed and clamped; a foreign
+  // `margin` or `text-indent` style is never copied.
+  if (
+    element.hasAttribute('data-indent-left') ||
+    element.hasAttribute('data-indent-right') ||
+    element.hasAttribute('data-indent-first-line')
+  ) {
+    attrs.ruler = normalizeParagraphIndents({
+      left: element.getAttribute('data-indent-left') ?? 0,
+      right: element.getAttribute('data-indent-right') ?? 0,
+      firstLine: element.getAttribute('data-indent-first-line') ?? 0,
+    });
+  }
+
   const dataLineHeight = element.getAttribute('data-line-height');
   if (dataLineHeight && ['1', '1.15', '1.5', '2'].includes(dataLineHeight)) {
     attrs.lineHeight = dataLineHeight;
@@ -714,6 +740,13 @@ function createTextBlock(tag: string, attrs: BlockAttrs, context: Context): HTML
   if (attrs.align) element.setAttribute('style', `text-align: ${attrs.align}`);
   if (attrs.indent > 0) element.setAttribute('data-indent', String(attrs.indent));
   if (attrs.lineHeight) element.setAttribute('data-line-height', attrs.lineHeight);
+  if (attrs.ruler.left !== 0) element.setAttribute('data-indent-left', String(attrs.ruler.left));
+  if (attrs.ruler.right !== 0) {
+    element.setAttribute('data-indent-right', String(attrs.ruler.right));
+  }
+  if (attrs.ruler.firstLine !== 0) {
+    element.setAttribute('data-indent-first-line', String(attrs.ruler.firstLine));
+  }
   return element;
 }
 

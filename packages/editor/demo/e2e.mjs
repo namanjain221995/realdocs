@@ -3090,9 +3090,14 @@ await check('page-surface', async () => {
   assert((await page.locator(rulerSel('editor')).count()) === 1, 'the editor has a ruler');
   assert((await page.locator(rulerSel('viewer')).count()) === 0, 'a viewer has no ruler');
   assertEqual(
-    await page.locator(`${paneSel('editor')} [data-testid="rd-ruler"] [role="slider"]`).count(),
+    await page.locator(`${paneSel('editor')} [data-testid="rd-ruler"] .rd-ruler__marker`).count(),
     2,
     'two margin markers',
+  );
+  assertEqual(
+    await page.locator(`${paneSel('editor')} [data-testid="rd-ruler"] .rd-ruler__indent`).count(),
+    3,
+    'three paragraph indent markers',
   );
   const left = page.locator(handleSel('editor', 'left'));
   assertEqual(
@@ -3267,6 +3272,181 @@ await check('ruler-keyboard', async () => {
   assertEqual(session.problems, [], 'console errors');
   await session.close();
   return 'arrows, shift, home, end, minimum width, mm and 1/16 in steps, right marker direction, aria values';
+});
+
+await check('paragraph-indent', async () => {
+  const session = await open({
+    panes: 'editor,editor2,viewer',
+    viewport: { width: 3000, height: 900 },
+  });
+  const { page } = session;
+  const editorOf = (name) => `[data-pane="${name}"] [data-testid="rd-editor-content"]`;
+  const indentSel = (name, key) => `${paneSel(name)} [data-testid="rd-ruler-indent-${key}"]`;
+  // Three paragraphs; the caret goes to the end of the second.
+  await page.evaluate((selector) => {
+    const { editor } = document.querySelector(selector);
+    editor.commands.setContent({
+      type: 'doc',
+      content: ['first paragraph', 'second paragraph', 'third paragraph'].map((text) => ({
+        type: 'paragraph',
+        content: [{ type: 'text', text }],
+      })),
+    });
+  }, editorOf('editor'));
+  const second = page.locator(`${editorOf('editor')} p`).nth(1);
+  await second.click();
+  await page.keyboard.press('End');
+  const lefts = (name) =>
+    page.evaluate(
+      (selector) =>
+        [...document.querySelectorAll(`${selector} p`)].map((p) =>
+          Math.round(p.getBoundingClientRect().left),
+        ),
+      editorOf(name),
+    );
+  const attrs = (name) =>
+    page.evaluate(
+      (selector) =>
+        document
+          .querySelector(selector)
+          .editor.getJSON()
+          .content.map((node) => [
+            node.attrs?.indentLeft ?? 0,
+            node.attrs?.indentRight ?? 0,
+            node.attrs?.indentFirstLine ?? 0,
+          ]),
+      editorOf(name),
+    );
+  const before = await lefts('editor');
+  const depth = await undoDepth(page, 'editor');
+  const marker = page.locator(indentSel('editor', 'left'));
+  assertEqual(await marker.getAttribute('aria-valuenow'), '0', 'the marker starts at the margin');
+  const box = await marker.boundingBox();
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 30, y, { steps: 4 });
+  await page.mouse.move(x + 76, y, { steps: 6 });
+  const tip = await page.locator(`${paneSel('editor')} [data-testid="rd-ruler-tip"]`).textContent();
+  assert(/^\d+(\.\d)? mm$/.test(tip ?? ''), `tooltip shows the measurement (${tip})`);
+  assertEqual(
+    await attrs('editor'),
+    [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ],
+    'nothing written while dragging',
+  );
+  await page.mouse.up();
+  await page.waitForFunction(
+    (selector) =>
+      (document.querySelector(selector).editor.getJSON().content[1].attrs?.indentLeft ?? 0) > 0,
+    editorOf('viewer'),
+  );
+  const stored = await attrs('editor');
+  const mm = stored[1][0];
+  near(mm, 76 / (793.7 / 210), 1.2, 'dragged indent in mm');
+  assert(Number.isInteger(mm), `snapped to a whole millimetre (${mm})`);
+  assertEqual(
+    stored,
+    [
+      [0, 0, 0],
+      [mm, 0, 0],
+      [0, 0, 0],
+    ],
+    'only the paragraph of the caret changed',
+  );
+  assertEqual(await undoDepth(page, 'editor'), depth + 1, 'one drag is one undo step');
+  const after = await lefts('editor');
+  assertEqual([after[0], after[2]], [before[0], before[2]], 'the other paragraphs did not move');
+  near(after[1] - before[1], (mm * 96) / 25.4, 1.5, 'the paragraph moved by the indent');
+  // The other clients show the same indent.
+  assertEqual(await attrs('editor2'), stored, 'the second editor has the same indents');
+  const viewerLefts = await lefts('viewer');
+  near(viewerLefts[1] - viewerLefts[0], (mm * 96) / 25.4, 1.5, 'the viewer renders the indent');
+  // The drag did not take the caret: typing continues in the same paragraph.
+  await page.keyboard.type(' typed');
+  const texts = () =>
+    page.evaluate(
+      (selector) => [...document.querySelectorAll(`${selector} p`)].map((p) => p.textContent),
+      editorOf('editor'),
+    );
+  assertEqual(
+    await texts(),
+    ['first paragraph', 'second paragraph typed', 'third paragraph'],
+    'typing after the drag went into the indented paragraph',
+  );
+  // Enter: the new paragraph inherits the indent.
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('new');
+  assertEqual((await attrs('editor'))[2], [mm, 0, 0], 'the new paragraph inherited the indent');
+  assertEqual((await texts())[2], 'new', 'and holds the typed text');
+  // First-line and right markers, by keyboard, on the new paragraph only.
+  const first = page.locator(indentSel('editor', 'first'));
+  await first.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Shift+ArrowRight');
+  assertEqual(await first.getAttribute('aria-valuenow'), '11', 'first-line indent by keyboard');
+  const right = page.locator(indentSel('editor', 'right'));
+  await right.focus();
+  await page.keyboard.press('Shift+ArrowLeft');
+  assertEqual(await right.getAttribute('aria-valuenow'), '10', 'right indent grows to the left');
+  assertEqual((await attrs('editor'))[2], [mm, 10, 11], 'all three on the new paragraph');
+  assertEqual((await attrs('editor'))[1], [mm, 0, 0], 'the paragraph before kept its own');
+  const hanging = await page.evaluate(
+    (selector) => getComputedStyle(document.querySelectorAll(`${selector} p`)[2]).textIndent,
+    editorOf('editor'),
+  );
+  // A share of the text column (159.2 mm on this page): the computed value stays a percentage.
+  assert(hanging.endsWith('%'), `first-line indent is a share of the text column (${hanging})`);
+  near(parseFloat(hanging), (11 / 159.2) * 100, 0.05, 'the first line is indented by 11 mm');
+  // The caret in another paragraph: the markers show that paragraph's values.
+  await page
+    .locator(`${editorOf('editor')} p`)
+    .nth(0)
+    .click();
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector).getAttribute('aria-valuenow') === '0',
+    indentSel('editor', 'left'),
+  );
+  assertEqual(
+    await right.getAttribute('aria-valuenow'),
+    '0',
+    'right marker of the first paragraph',
+  );
+  await page
+    .locator(`${editorOf('editor')} p`)
+    .nth(2)
+    .click();
+  await page.waitForFunction(
+    ({ selector, value }) =>
+      document.querySelector(selector).getAttribute('aria-valuenow') === value,
+    { selector: indentSel('editor', 'left'), value: String(mm) },
+  );
+  // A remote change of the paragraph under the caret moves the marker.
+  await page.evaluate((selector) => {
+    const { editor } = document.querySelector(selector);
+    let pos = 0;
+    for (let i = 0; i < 2; i += 1) pos += editor.state.doc.child(i).nodeSize;
+    editor.commands.setTextSelection(pos + 1);
+    editor.commands.setParagraphIndents({ left: 5 });
+  }, editorOf('editor2'));
+  await page.waitForFunction(
+    (selector) => document.querySelector(selector).getAttribute('aria-valuenow') === '5',
+    indentSel('editor', 'left'),
+  );
+  // No markers for a reader.
+  assertEqual(
+    await page.locator(indentSel('viewer', 'left')).count(),
+    0,
+    'a viewer has no indent markers',
+  );
+  await shot(page, 'paragraph-indent');
+  assertEqual(session.problems, [], 'console errors');
+  await session.close();
+  return `left indent dragged to ${mm} mm on one paragraph: other paragraphs unmoved, caret kept, Enter inherits, first-line and right by keyboard, markers follow the caret and remote changes`;
 });
 
 await check('page-undo', async () => {

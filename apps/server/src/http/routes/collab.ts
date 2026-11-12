@@ -44,6 +44,9 @@ export function registerCollabRoutes(app: FastifyInstance, { ctx, limits }: Rout
             WHERE id = $2 AND workspace_id = $3`,
           [editorSchema, document.id, workspace.id],
         );
+        // Clients of an older schema that are connected right now are sent away before this
+        // editor can write anything they would not understand.
+        await ctx.collab.reevaluateDocument(document.id);
       }
 
       // Every principal the request presented is recorded: independent

@@ -27,9 +27,12 @@ interface YXmlText {
 }
 interface YXmlElement {
   insert(index: number, content: unknown[]): void;
+  getAttribute?(name: string): unknown;
+  setAttribute?(name: string, value: unknown): void;
 }
 interface YXmlFragment {
   readonly length: number;
+  get(index: number): YXmlElement | undefined;
   push(content: unknown[]): void;
   insert(index: number, content: unknown[]): void;
   delete(index: number, length: number): void;
@@ -166,6 +169,16 @@ export class RemoteClient {
   /** Writes one shared page setting, as another editor would. */
   setPageSetting(key: string, value: number): void {
     this.doc.getMap('page').set(key, value);
+  }
+
+  /** One attribute of the top-level block at `index`, as stored (undefined when absent). */
+  blockAttribute(index: number, name: string): unknown {
+    return this.fragment.get(index)?.getAttribute?.(name);
+  }
+
+  /** Writes one attribute of the top-level block at `index`, as another editor would. */
+  setBlockAttribute(index: number, name: string, value: number): void {
+    this.edit(() => this.fragment.get(index)?.setAttribute?.(name, value));
   }
 
   /** Number of top-level blocks. */

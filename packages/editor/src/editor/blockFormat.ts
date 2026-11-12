@@ -5,10 +5,21 @@
  * the lead defined them) with commands and the Tab / Shift-Tab bindings used
  * outside lists, tables and code.
  */
-import type { GlobalAttributes, RawCommands } from '@tiptap/core';
+import { Extension, type GlobalAttributes, type RawCommands } from '@tiptap/core';
 import type { Node as PMNode } from '@tiptap/pm/model';
 import type { EditorState, Transaction } from '@tiptap/pm/state';
-import { BlockFormat, LINE_HEIGHTS, MAX_INDENT, type LineHeight } from '../schema';
+import {
+  normalizeParagraphIndents,
+  sameParagraphIndents,
+  type ParagraphIndents,
+} from '@realtimedocs/contracts';
+import {
+  BlockFormat,
+  LINE_HEIGHTS,
+  MAX_INDENT,
+  paragraphIndentMarkup,
+  type LineHeight,
+} from '../schema';
 import { safeIndent, safeLineHeight } from './attrs';
 
 declare module '@tiptap/core' {
@@ -19,6 +30,17 @@ declare module '@tiptap/core' {
       outdent: () => ReturnType;
       /** Sets the line spacing of the selected blocks; null restores the default. */
       setLineHeight: (value: LineHeight | null) => ReturnType;
+      /**
+       * Sets ruler indents (millimetres) of every selected paragraph and heading. Values not
+       * named keep each block's own. With `contentWidthMm`, the text area of the page in use,
+       * the result always leaves room for text.
+       */
+      setParagraphIndents: (
+        patch: Partial<ParagraphIndents>,
+        contentWidthMm?: number,
+      ) => ReturnType;
+      /** Removes the ruler indents of the selected paragraphs and headings. */
+      clearParagraphIndents: () => ReturnType;
     };
   }
 }
@@ -45,6 +67,54 @@ function selectedBlocks(state: EditorState): { node: PMNode; pos: number }[] {
     return true;
   });
   return blocks;
+}
+
+/** The ruler indents a block holds, read safely. */
+export function paragraphIndentsOf(node: PMNode): ParagraphIndents {
+  return normalizeParagraphIndents({
+    left: node.attrs.indentLeft,
+    right: node.attrs.indentRight,
+    firstLine: node.attrs.indentFirstLine,
+  });
+}
+
+/**
+ * The ruler indents of the selection: those of its first paragraph or heading (what a ruler shows
+ * for a selection of several different blocks), or null when it holds no such block.
+ */
+export function selectionParagraphIndents(state: EditorState): ParagraphIndents | null {
+  const first = selectedBlocks(state)[0];
+  return first ? paragraphIndentsOf(first.node) : null;
+}
+
+const stored = (mm: number): number | null => (mm === 0 ? null : mm);
+
+function writeIndents(
+  state: EditorState,
+  tr: Transaction,
+  next: (current: ParagraphIndents) => ParagraphIndents,
+): boolean {
+  let changed = false;
+  for (const { node, pos } of selectedBlocks(state)) {
+    const current = paragraphIndentsOf(node);
+    const target = next(current);
+    if (
+      sameParagraphIndents(current, target) &&
+      node.attrs.indentLeft === stored(target.left) &&
+      node.attrs.indentRight === stored(target.right) &&
+      node.attrs.indentFirstLine === stored(target.firstLine)
+    ) {
+      continue;
+    }
+    tr.setNodeMarkup(pos, undefined, {
+      ...node.attrs,
+      indentLeft: stored(target.left),
+      indentRight: stored(target.right),
+      indentFirstLine: stored(target.firstLine),
+    });
+    changed = true;
+  }
+  return changed;
 }
 
 function changeIndent(state: EditorState, tr: Transaction, delta: number): boolean {
@@ -85,10 +155,13 @@ export const BlockFormatCommands = BlockFormat.extend({
           ...entry.attributes.indent,
           renderHTML: (attributes: Record<string, unknown>) => {
             const indent = safeIndent(attributes.indent);
-            return indent > 0
-              ? { 'data-indent': String(indent), style: `margin-left: ${indent * 2}em` }
-              : {};
+            return indent > 0 ? { 'data-indent': String(indent) } : {};
           },
+        },
+        // The left margin, the right margin and the first-line indent: one clamped `style`.
+        indentLeft: {
+          ...entry.attributes.indentLeft,
+          renderHTML: (attributes: Record<string, unknown>) => paragraphIndentMarkup(attributes),
         },
         lineHeight: {
           ...entry.attributes.lineHeight,
@@ -116,6 +189,22 @@ export const BlockFormatCommands = BlockFormat.extend({
         () =>
         ({ state, tr, dispatch }) => {
           const changed = changeIndent(state, tr, -1);
+          if (changed && dispatch) dispatch(tr);
+          return changed;
+        },
+      setParagraphIndents:
+        (patch, contentWidthMm) =>
+        ({ state, tr, dispatch }) => {
+          const changed = writeIndents(state, tr, (current) =>
+            normalizeParagraphIndents({ ...current, ...patch }, contentWidthMm),
+          );
+          if (changed && dispatch) dispatch(tr);
+          return changed;
+        },
+      clearParagraphIndents:
+        () =>
+        ({ state, tr, dispatch }) => {
+          const changed = writeIndents(state, tr, () => ({ left: 0, right: 0, firstLine: 0 }));
           if (changed && dispatch) dispatch(tr);
           return changed;
         },
@@ -151,6 +240,31 @@ export const BlockFormatCommands = BlockFormat.extend({
       },
       'Mod-]': () => this.editor.commands.indent(),
       'Mod-[': () => this.editor.commands.outdent(),
+    };
+  },
+});
+
+/**
+ * Backspace in an empty, ruler-indented paragraph takes the indents away first (as a word
+ * processor does) instead of joining it to the block before. Its own extension because it has to
+ * run before the default Backspace, while Tab above has to run after lists and tables.
+ */
+export const ParagraphIndentKeys = Extension.create({
+  name: 'paragraphIndentKeys',
+  priority: 200,
+
+  addKeyboardShortcuts() {
+    return {
+      Backspace: () => {
+        const { state } = this.editor;
+        const { selection } = state;
+        if (!this.editor.isEditable || !selection.empty) return false;
+        const block = selection.$from.parent;
+        if (!FORMATTABLE.has(block.type.name) || block.content.size > 0) return false;
+        const indents = paragraphIndentsOf(block);
+        if (indents.left === 0 && indents.right === 0 && indents.firstLine === 0) return false;
+        return this.editor.commands.clearParagraphIndents();
+      },
     };
   },
 });

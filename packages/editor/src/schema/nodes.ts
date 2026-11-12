@@ -12,6 +12,11 @@
  * still being uploaded by some client; it is replaced by `assetId` once the
  * upload succeeds.
  */
+import {
+  PARAGRAPH_INDENT_MAX_MM,
+  normalizeParagraphIndents,
+  paragraphIndentMm,
+} from '@realtimedocs/contracts';
 import { Extension, Node, mergeAttributes } from '@tiptap/core';
 
 export const NODE_IMAGE = 'image';
@@ -85,6 +90,54 @@ function choiceAttr<T extends string>(value: unknown, choices: readonly T[], fal
   return typeof value === 'string' && (choices as readonly string[]).includes(value)
     ? (value as T)
     : fallback;
+}
+
+/** A stored ruler indent in millimetres, or null for "none" (also for anything invalid). */
+function indentAttr(value: unknown, min: number): number | null {
+  const mm = paragraphIndentMm(value, min, PARAGRAPH_INDENT_MAX_MM);
+  return mm === 0 ? null : mm;
+}
+
+/**
+ * Markup of a paragraph's or heading's horizontal position: the Tab level (`indent`, 2em each)
+ * plus the ruler indents. Every number is clamped here, at render time, because a collaborator's
+ * client can store anything in these attributes.
+ *
+ * Lengths use `--rd-mm`, the size of one millimetre on the surface that shows the document (the
+ * editor defines it so that indents shrink with a narrow page exactly like the page margins);
+ * outside the editor, for example in copied HTML, the fallback is a true millimetre. The `min()`
+ * keeps a text column whatever the numbers and the page are.
+ */
+export function paragraphIndentMarkup(attrs: Record<string, unknown>): Record<string, string> {
+  const level = intAttr(attrs.indent, 0, MAX_INDENT) ?? 0;
+  const { left, right, firstLine } = normalizeParagraphIndents({
+    left: attrs.indentLeft,
+    right: attrs.indentRight,
+    firstLine: attrs.indentFirstLine,
+  });
+  const out: Record<string, string> = {};
+  const style: string[] = [];
+  const mm = (value: number): string => `calc(var(--rd-mm, 3.7795px) * ${value})`;
+  if (left !== 0) {
+    out['data-indent-left'] = String(left);
+    style.push(
+      level > 0
+        ? `margin-left: calc(${level * 2}em + min(${mm(left)}, 40%))`
+        : `margin-left: min(${mm(left)}, 40%)`,
+    );
+  } else if (level > 0) {
+    style.push(`margin-left: ${level * 2}em`);
+  }
+  if (right !== 0) {
+    out['data-indent-right'] = String(right);
+    style.push(`margin-right: min(${mm(right)}, 40%)`);
+  }
+  if (firstLine !== 0) {
+    out['data-indent-first-line'] = String(firstLine);
+    style.push(`text-indent: ${mm(firstLine)}`);
+  }
+  if (style.length > 0) out.style = style.join('; ');
+  return out;
 }
 
 function lineHeightAttr(value: unknown): LineHeight | null {
@@ -344,12 +397,29 @@ export const BlockFormat = Extension.create({
             default: 0,
             parseHTML: (el) => intAttr(el.getAttribute('data-indent'), 0, MAX_INDENT) ?? 0,
             renderHTML: (attrs) => {
-              // Clamped integer: this number is written into a `style` attribute.
+              // The left margin itself is written by `indentLeft` (level and ruler indent add up).
               const indent = intAttr(attrs.indent, 0, MAX_INDENT) ?? 0;
-              return indent > 0
-                ? { 'data-indent': String(indent), style: `margin-left: ${indent * 2}em` }
-                : {};
+              return indent > 0 ? { 'data-indent': String(indent) } : {};
             },
+          },
+          // Ruler indents in millimetres (schema version 3). `null` means none, so a paragraph
+          // without indents is stored exactly as before. The three are rendered together by
+          // `indentLeft`: one `style` for the element, built from clamped numbers only.
+          indentLeft: {
+            default: null,
+            parseHTML: (el) => indentAttr(el.getAttribute('data-indent-left'), 0),
+            renderHTML: (attrs) => paragraphIndentMarkup(attrs),
+          },
+          indentRight: {
+            default: null,
+            parseHTML: (el) => indentAttr(el.getAttribute('data-indent-right'), 0),
+            renderHTML: () => ({}),
+          },
+          indentFirstLine: {
+            default: null,
+            parseHTML: (el) =>
+              indentAttr(el.getAttribute('data-indent-first-line'), -PARAGRAPH_INDENT_MAX_MM),
+            renderHTML: () => ({}),
           },
           lineHeight: {
             default: null,

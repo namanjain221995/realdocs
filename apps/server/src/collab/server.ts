@@ -133,6 +133,8 @@ interface ConnState {
   documentId: string;
   generation: number;
   documentName: string;
+  /** Document schema version the client understands (from its ticket). */
+  schemaVersion: number;
   /** Principals the ticket was issued for. Access is always re-resolved from these. */
   sessionIds: string[];
   grantingSessionIds: Set<string>;
@@ -852,6 +854,7 @@ export class CollabServer {
       documentId: ticket.documentId,
       generation: name.generation,
       documentName,
+      schemaVersion: ticket.schemaVersion,
       sessionIds: ticket.sessionIds,
       grantingSessionIds: new Set(access.grantingSessionIds),
       userId: access.accountId,
@@ -1427,6 +1430,16 @@ export class CollabServer {
         reason: 'snapshot_restored',
       });
       this.closeConn(state, COLLAB_CLOSE.generationChanged);
+      return;
+    }
+
+    // A newer editor opened the document since this client connected: an older client could
+    // erase what it does not know from the blocks it edits, so it has to leave now.
+    if (
+      state.schemaVersion <
+      Math.max(access.document.schemaVersion, this.config.minClientSchemaVersion)
+    ) {
+      this.closeConn(state, COLLAB_CLOSE.updateRequired);
       return;
     }
 

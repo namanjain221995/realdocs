@@ -1,4 +1,9 @@
-import { mmToPx, pageDimensionsMm, type PageSettings } from '@realtimedocs/contracts';
+import {
+  contentWidthMm,
+  mmToPx,
+  pageDimensionsMm,
+  type PageSettings,
+} from '@realtimedocs/contracts';
 import type { CSSProperties } from 'react';
 
 const px = (mm: number): string => `${mmToPx(mm).toFixed(2)}px`;
@@ -13,6 +18,9 @@ export function pageStyleVars(settings: PageSettings): CSSProperties {
   return {
     '--rd-page-width': px(width),
     '--rd-page-ratio': `${width} / ${height}`,
+    // Width of the text area in millimetres, a plain number: paragraph indents are sized as a
+    // share of the text column with it (styles.css, `--rd-mm`).
+    '--rd-page-content-mm': String(contentWidthMm(settings)),
     '--rd-page-mt': px(settings.marginTop),
     '--rd-page-mr': px(settings.marginRight),
     '--rd-page-mb': px(settings.marginBottom),

@@ -57,6 +57,18 @@
 }
 
 /* ------------------------------------------------------ 2. Frame and layout */
+/*
+ * One millimetre of the document, as a share of the text column: paragraph indents (ruler) are
+ * written as `calc(var(--rd-mm) * <mm>)` on the paragraph, where a percentage refers to the width
+ * of the text column. On a full-size page that is a true millimetre; on a narrower surface the
+ * indents shrink with the page margins, in the same proportion. `--rd-page-content-mm` is the
+ * width of the text area (page/css.ts); without page settings an A4 page with default margins is
+ * assumed.
+ */
+.rd-editor {
+  --rd-mm: calc(100% / var(--rd-page-content-mm, 159.2));
+}
+
 .rd-editor {
   position: relative;
   display: flex;
@@ -1674,6 +1686,58 @@
   margin: 0;
   font: var(--rd-text-sm) / var(--rd-leading-normal) var(--rd-font-ui);
   color: var(--rd-text-faint);
+}
+
+/*
+ * Paragraph indent markers (the paragraphs of the selection): first-line indent at the top, left
+ * and right indent at the bottom. The middle of the ruler's height stays free for the page-margin
+ * handles underneath them.
+ */
+.rd-ruler__indent {
+  position: absolute;
+  z-index: 2;
+  width: 14px;
+  height: 10px;
+  margin-left: -7px;
+  cursor: ew-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.rd-ruler__indent--first {
+  top: -2px;
+}
+
+.rd-ruler__indent--left,
+.rd-ruler__indent--right {
+  bottom: -2px;
+}
+
+.rd-ruler__indent::before {
+  content: '';
+  position: absolute;
+  inset: 1px 2px;
+  background: var(--rd-text);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.rd-ruler__indent--left::before,
+.rd-ruler__indent--right::before {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.rd-ruler__indent:hover::before,
+.rd-ruler__indent[data-dragging]::before {
+  background: var(--rd-accent-hover);
+}
+
+.rd-ruler__indent:focus-visible {
+  outline: 2px solid var(--rd-focus-ring);
+  outline-offset: 1px;
+}
+
+.rd-ruler__indent .rd-ruler__tip {
+  bottom: calc(100% + 6px);
 }
 
 /*

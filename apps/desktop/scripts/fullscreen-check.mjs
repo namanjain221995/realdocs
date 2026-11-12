@@ -133,7 +133,7 @@ function stopAll() {
   }
 }
 
-let ok = false;
+let ok;
 try {
   console.log(`Starting ${executable}`);
   children.push(spawn(executable, [`--user-data-dir=${appData}`], { stdio: 'ignore' }));

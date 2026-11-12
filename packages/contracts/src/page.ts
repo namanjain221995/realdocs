@@ -251,6 +251,81 @@ export function maxMarginMm(settings: PageSettings, key: PageMarginKey): number 
   return Math.max(PAGE_MARGIN_MIN_MM, Math.min(PAGE_MARGIN_MAX_MM, floor1(room)));
 }
 
+// ── Paragraph indents (ruler) ───────────────────────────────────────────────
+
+/**
+ * Indents of one paragraph or heading, in millimetres from the text area's edges. They are node
+ * attributes of the document schema (`indentLeft`, `indentRight`, `indentFirstLine`), written by
+ * any client and therefore untrusted: read them through `normalizeParagraphIndents`.
+ *
+ * `firstLine` is relative to `left`; a negative value is a hanging indent. The first line never
+ * starts left of the text area (`firstLine >= -left`).
+ */
+export interface ParagraphIndents {
+  left: number;
+  right: number;
+  firstLine: number;
+}
+
+/** Largest stored indent, whatever the page. The page in use limits it further. */
+export const PARAGRAPH_INDENT_MAX_MM = 200;
+/** A paragraph keeps at least this much width for its text. */
+export const PARAGRAPH_MIN_TEXT_MM = 25;
+
+export const NO_PARAGRAPH_INDENTS: Readonly<ParagraphIndents> = Object.freeze({
+  left: 0,
+  right: 0,
+  firstLine: 0,
+});
+
+/** A stored indent as a number of millimetres (0.1 mm steps) within `[min, max]`; else 0. */
+export function paragraphIndentMm(value: unknown, min: number, max: number): number {
+  const parsed =
+    typeof value === 'number'
+      ? value
+      : typeof value === 'string' && /^-?\d{1,4}(\.\d{1,3})?$/.test(value)
+        ? Number(value)
+        : Number.NaN;
+  if (!Number.isFinite(parsed)) return 0;
+  const clamped = round1(Math.min(max, Math.max(min, parsed)));
+  // Never "-0": the value is written into markup.
+  return clamped === 0 ? 0 : clamped;
+}
+
+/**
+ * Valid indents from whatever a node holds. With `contentWidthMm` (the text area of the page in
+ * use) the three values are also limited so that `PARAGRAPH_MIN_TEXT_MM` of text width remains:
+ * the right indent gives way first, then the first-line indent, then the left indent.
+ */
+export function normalizeParagraphIndents(
+  raw: { left?: unknown; right?: unknown; firstLine?: unknown },
+  contentWidthMm?: number,
+): ParagraphIndents {
+  let left = paragraphIndentMm(raw.left, 0, PARAGRAPH_INDENT_MAX_MM);
+  let right = paragraphIndentMm(raw.right, 0, PARAGRAPH_INDENT_MAX_MM);
+  let firstLine = paragraphIndentMm(
+    raw.firstLine,
+    -PARAGRAPH_INDENT_MAX_MM,
+    PARAGRAPH_INDENT_MAX_MM,
+  );
+  if (contentWidthMm !== undefined && Number.isFinite(contentWidthMm)) {
+    const room = Math.max(0, floor1(contentWidthMm - PARAGRAPH_MIN_TEXT_MM));
+    left = Math.min(left, room);
+    firstLine = Math.min(firstLine, floor1(room - left));
+    right = Math.min(right, Math.max(0, floor1(room - left - Math.max(0, firstLine))));
+  }
+  if (firstLine < -left) firstLine = -left;
+  return {
+    left: left === 0 ? 0 : left,
+    right: right === 0 ? 0 : right,
+    firstLine: firstLine === 0 ? 0 : firstLine,
+  };
+}
+
+export function sameParagraphIndents(a: ParagraphIndents, b: ParagraphIndents): boolean {
+  return a.left === b.left && a.right === b.right && a.firstLine === b.firstLine;
+}
+
 /** CSS `@page` size keyword for the settings, e.g. `A4 landscape`. */
 export function cssPageSize(settings: Pick<PageSettings, 'size' | 'orientation'>): string {
   return `${settings.size === 'a4' ? 'A4' : 'letter'} ${settings.orientation}`;

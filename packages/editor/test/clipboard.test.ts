@@ -647,3 +647,31 @@ describe('malicious clipboard content', () => {
     expect(find(result.json, 'attachment')).toEqual([]);
   });
 });
+
+describe('ruler indents', () => {
+  it('keeps this editor’s own indents and never turns a foreign style into one', () => {
+    const { json } = paste(
+      `<meta charset="utf-8"><div data-rd-doc="${DOCUMENT_ID}">` +
+        '<p data-indent-left="12.5" data-indent-right="4" data-indent-first-line="-6" ' +
+        'style="margin-left: calc(var(--rd-mm, 3.7795px) * 12.5)">indented</p>' +
+        '<p data-indent-left="12; position: fixed" data-indent-first-line="-50">hostile</p>' +
+        '<p style="margin-right: 80px; text-indent: 40px">foreign</p></div>',
+    );
+    const blocks = json.content!.filter((node) => node.type === 'paragraph');
+    expect(blocks[0]!.attrs).toMatchObject({
+      indentLeft: 12.5,
+      indentRight: 4,
+      indentFirstLine: -6,
+    });
+    expect(blocks[1]!.attrs).toMatchObject({
+      indentLeft: null,
+      indentRight: null,
+      indentFirstLine: null,
+    });
+    expect(blocks[2]!.attrs).toMatchObject({
+      indentLeft: null,
+      indentRight: null,
+      indentFirstLine: null,
+    });
+  });
+});

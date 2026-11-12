@@ -6,8 +6,9 @@
  * answers `update_required` and the client shows a safe update-required state
  * instead of instantiating an editor that could drop unknown content.
  */
-export const DOCUMENT_SCHEMA_VERSION = 2;
-// History: 1 = initial schema; 2 = `callout` block node (2026-11-11).
+export const DOCUMENT_SCHEMA_VERSION = 3;
+// History: 1 = initial schema; 2 = `callout` block node (2026-11-11); 3 = paragraph and heading
+// attributes `indentLeft`, `indentRight`, `indentFirstLine` (ruler indents, 2026-11-13).
 
 /** Version of the stateless collaboration side-channel protocol (see collab.ts). */
 export const COLLAB_PROTOCOL_VERSION = 1;

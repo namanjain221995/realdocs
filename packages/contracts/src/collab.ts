@@ -188,6 +188,12 @@ export const COLLAB_CLOSE = {
   rateLimited: { code: 4429, reason: 'rate_limited' },
   serverShutdown: { code: 4503, reason: 'server_shutdown' },
   badOrigin: { code: 4400, reason: 'bad_origin' },
+  /**
+   * The document was opened by a newer editor while this client was connected: its schema is now
+   * newer than this client's. The client reconnects, asks for a ticket and learns
+   * `update_required` there.
+   */
+  updateRequired: { code: 4426, reason: 'update_required' },
 } as const;
 
 // ── Presence (awareness) ────────────────────────────────────────────────────

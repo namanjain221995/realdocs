@@ -8,6 +8,9 @@
  * component outside the node being edited.
  */
 import {
+  contentWidthMm,
+  sameParagraphIndents,
+  type ParagraphIndents,
   Y_FRAGMENT_FIELD,
   normalizePageSettings,
   type ApiClient,
@@ -33,6 +36,7 @@ import type * as Y from 'yjs';
 import type { PasteReport } from '../clipboard/report';
 import type { CollabSession } from '../collab/session';
 import type { SessionStatus } from '../collab/status';
+import { selectionParagraphIndents } from '../editor/blockFormat';
 import { createEditorExtensions } from '../editor/extensions';
 import { setDiagramSourceLimit } from '../editor/mermaid';
 import { RuntimeContext, type EditorRuntime } from '../editor/runtime';
@@ -322,6 +326,37 @@ function EditorSurface({
     resetPage();
     manager?.stopCapturing();
   }, [undoManager, resetPage]);
+  // Ruler indents of the paragraphs under the selection. Read after every transaction, local or
+  // remote: the caret moved to another paragraph, or someone changed this one.
+  const [paragraphIndents, setParagraphIndents] = useState<ParagraphIndents | null>(null);
+  useEffect(() => {
+    if (!editor) return undefined;
+    const read = (): void => {
+      const next = editor.isDestroyed ? null : selectionParagraphIndents(editor.state);
+      setParagraphIndents((previous) =>
+        previous === next || (previous && next && sameParagraphIndents(previous, next))
+          ? previous
+          : next,
+      );
+    };
+    read();
+    editor.on('transaction', read);
+    return () => {
+      editor.off('transaction', read);
+    };
+  }, [editor]);
+  const settingsForIndents = useLatest(pageControls.settings);
+  const commitParagraphIndents = useCallback(
+    (patch: Partial<ParagraphIndents>): void => {
+      if (!editor || editor.isDestroyed) return;
+      const manager = undoManager();
+      // One drag, one undo step, never merged into the typing around it.
+      manager?.stopCapturing();
+      editor.commands.setParagraphIndents(patch, contentWidthMm(settingsForIndents.current));
+      manager?.stopCapturing();
+    },
+    [editor, undoManager, settingsForIndents],
+  );
   const undoPage = useCallback(() => undoManager()?.undo(), [undoManager]);
   const redoPage = useCallback(() => undoManager()?.redo(), [undoManager]);
 
@@ -503,6 +538,8 @@ function EditorSurface({
             onCommit={updatePageSettings}
             onUndo={undoPage}
             onRedo={redoPage}
+            indents={paragraphIndents}
+            onIndentCommit={commitParagraphIndents}
           />
         ) : null}
         <div

@@ -33,7 +33,7 @@ import { Uploads } from '../uploads/extension';
 import type { UploadLimits } from '../uploads/limits';
 import type { UploadManager } from '../uploads/manager';
 import { safeColumnWidth, safeInteger } from './attrs';
-import { BlockFormatCommands } from './blockFormat';
+import { BlockFormatCommands, ParagraphIndentKeys } from './blockFormat';
 import { CaretKeeper, Carets, ReadOnlyGuard, RemoteChangeTracker } from './collabPlugins';
 import { FindReplace } from './findReplace';
 import { createHighlightPlugin } from './highlight';
@@ -262,6 +262,7 @@ export function createEditorExtensions(options: EditorExtensionOptions): AnyExte
   });
 
   extensions.push(
+    ParagraphIndentKeys,
     FindReplace,
     Uploads.configure({
       manager: options.uploads,

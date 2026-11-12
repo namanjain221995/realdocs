@@ -32,6 +32,7 @@ export {
   NODE_CALLOUT,
   NODE_DIAGRAM,
   NODE_IMAGE,
+  paragraphIndentMarkup,
 } from './nodes';
 export type {
   AttachmentAttrs,

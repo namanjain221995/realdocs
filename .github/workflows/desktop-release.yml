@@ -200,6 +200,18 @@ jobs:
         if: matrix.platform == 'darwin'
         run: node apps/desktop/scripts/launch-check.mjs --platform darwin --arch "${{ matrix.arches }}"
 
+      # The pinned panel against a full-screen browser: Edge in kiosk mode on Windows (stacking
+      # order read from the system), Safari in native full screen on macOS (inconclusive, not a
+      # failure, when the runner does not allow the keystroke).
+      - name: Full-screen check (Windows x64)
+        if: matrix.platform == 'win32'
+        shell: bash
+        run: node apps/desktop/scripts/fullscreen-check.mjs --arch x64
+
+      - name: Full-screen check (macOS)
+        if: matrix.platform == 'darwin'
+        run: node apps/desktop/scripts/fullscreen-check-mac.mjs --arch "${{ matrix.arches }}"
+
       # The packaged-app hardening check needs the Playwright image (Docker) and runs on the
       # Linux job for the runner's own architecture.
       - name: Packaged-app smoke test (Linux, Xvfb)

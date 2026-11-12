@@ -523,3 +523,66 @@ test('document margins: the panel shows the ruler, a margin moved here reaches t
     await running.close();
   }
 });
+
+test('paragraph indents: one set by the other client shows in the panel, and one set on the panel ruler reaches the other client', async () => {
+  const documentId = await createDocument('Indent check', [
+    'First paragraph.',
+    'Second paragraph.',
+  ]);
+  const share = await createShare(documentId, 'editor');
+  const remote = await remoteEditor(documentId);
+  const running = await launchConnected();
+  try {
+    const { panel } = running;
+    await openShare(running, share);
+    await expect(panel.locator('[data-testid="rd-editor"]')).toHaveAttribute(
+      'data-editable',
+      'true',
+    );
+    const content = panel.locator('[data-testid="rd-editor-content"]');
+    const firstParagraph = content.locator('p', { hasText: 'First paragraph.' });
+    const secondParagraph = content.locator('p', { hasText: 'Second paragraph.' });
+    await expect(secondParagraph).toBeVisible();
+    // Where the two paragraphs are among the document's top-level blocks.
+    const blocks = remote.text().split('\n');
+    const firstIndex = blocks.indexOf('First paragraph.');
+    const secondIndex = blocks.indexOf('Second paragraph.');
+    expect([firstIndex >= 0, secondIndex > firstIndex]).toEqual([true, true]);
+    const leftOf = (paragraph: typeof firstParagraph) =>
+      paragraph.evaluate((node) => node.getBoundingClientRect().left);
+    const lefts = async () => [await leftOf(firstParagraph), await leftOf(secondParagraph)];
+    const before = await lefts();
+
+    // There -> here: the other client indents the second paragraph only.
+    remote.setBlockAttribute(secondIndex, 'indentLeft', 30);
+    await expect
+      .poll(async () => {
+        const now = await lefts();
+        return [now[0]! - before[0]!, now[1]! - before[1]! > 8];
+      })
+      .toEqual([0, true]);
+    // The caret in that paragraph: the ruler shows its indent; in the other one, none.
+    await secondParagraph.click();
+    const marker = panel.locator('[data-testid="rd-ruler-indent-left"]');
+    await expect(marker).toHaveAttribute('aria-valuenow', '30');
+    await firstParagraph.click();
+    await expect(marker).toHaveAttribute('aria-valuenow', '0');
+
+    // Here -> there: the keyboard moves the first paragraph's markers.
+    await marker.focus();
+    for (let i = 0; i < 2; i += 1) await panel.keyboard.press('Shift+ArrowRight');
+    await expect(marker).toHaveAttribute('aria-valuenow', '20');
+    await expect.poll(() => remote.blockAttribute(firstIndex, 'indentLeft')).toBe(20);
+    const right = panel.locator('[data-testid="rd-ruler-indent-right"]');
+    await right.focus();
+    await panel.keyboard.press('Shift+ArrowLeft');
+    await expect.poll(() => remote.blockAttribute(firstIndex, 'indentRight')).toBe(10);
+    // The second paragraph kept what the other client gave it.
+    expect(remote.blockAttribute(secondIndex, 'indentLeft')).toBe(30);
+    expect(remote.blockAttribute(secondIndex, 'indentRight')).toBeUndefined();
+    await shot(panel, 'panel-paragraph-indents');
+  } finally {
+    remote.destroy();
+    await running.close();
+  }
+});

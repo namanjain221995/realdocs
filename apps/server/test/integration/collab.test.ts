@@ -615,6 +615,34 @@ describe('tickets, origins and versions', () => {
     },
   );
 
+  it.runIf(DOCUMENT_SCHEMA_VERSION > 1)(
+    'an older client that is connected is sent away when a newer editor opens the document',
+    async () => {
+      const documentId = await documentWithEditors('Schema upgrade, connected');
+      const older = DOCUMENT_SCHEMA_VERSION - 1;
+      await fx.server.sql('UPDATE documents SET schema_version = $2 WHERE id = $1', [
+        documentId,
+        older,
+      ]);
+      const old = await requestTicket(editorA, documentId, 41, { schemaVersion: older });
+      expect(old.status).toBe(200);
+      const connected = await RawCollab.open(fx.server);
+      connected.auth(old.body.documentName, old.body.ticket);
+      expect(
+        await connected.waitFor<Extract<RawMessage, { kind: 'auth' }>>((m) => m.kind === 'auth'),
+      ).toMatchObject({ status: 'authenticated' });
+      // The current editor asks for its ticket: before it can connect, the older client is gone.
+      const newest = await requestTicket(editorB, documentId, 42);
+      expect(newest.status).toBe(200);
+      expect(await connected.closed(5_000)).toMatchObject({
+        code: 4426,
+        reason: 'update_required',
+      });
+      const again = await requestTicket(editorA, documentId, 43, { schemaVersion: older });
+      expect([again.status, again.code]).toEqual([426, 'update_required']);
+    },
+  );
+
   it('re-resolves access when the ticket is used, not when it was issued', async () => {
     const documentId = await documentWithEditors('Late revocation');
     const ticket = await requestTicket(editorB, documentId, 21);

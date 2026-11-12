@@ -9,12 +9,20 @@
  * margin, Shift makes the step ten times larger, Home and End jump to the
  * smallest and largest margin. Escape while dragging cancels.
  *
- * First-line and hanging indent markers are not offered: they need a paragraph
- * attribute in the document schema (a schema version).
+ * Three more markers belong to the paragraphs of the selection, as in a word
+ * processor: first-line indent (top), left indent (bottom left; the first line
+ * moves with it, because it is stored relative to it) and right indent (bottom
+ * right). They are sliders with the same keyboard model. A pointer drag never
+ * takes the focus or the selection away from the text, so typing continues in
+ * the paragraph that was just indented; while dragging only the marker moves,
+ * and the paragraphs change once, on release.
  */
 import {
+  contentWidthMm,
   formatMeasurement,
   maxMarginMm,
+  normalizeParagraphIndents,
+  PARAGRAPH_MIN_TEXT_MM,
   pageDimensionsMm,
   PAGE_MARGIN_MIN_MM,
   snapMm,
@@ -22,6 +30,7 @@ import {
   type PageMarginKey,
   type PageSettings,
   type PageUnit,
+  type ParagraphIndents,
 } from '@realtimedocs/contracts';
 import {
   useEffect,
@@ -43,9 +52,64 @@ export interface PageRulerProps {
   onCommit: (patch: Partial<PageSettings>) => void;
   onUndo?: () => void;
   onRedo?: () => void;
+  /**
+   * Ruler indents of the selection's paragraphs (those of the first one); `null` or absent when
+   * the selection holds no paragraph or heading, which hides the indent markers.
+   */
+  indents?: ParagraphIndents | null;
+  /** One change of the indents of every selected paragraph and heading. */
+  onIndentCommit?: (patch: Partial<ParagraphIndents>) => void;
 }
 
 const HEIGHT = 24;
+
+export type IndentKey = keyof ParagraphIndents;
+
+const INDENT_LABELS: Record<IndentKey, string> = {
+  firstLine: 'First line indent',
+  left: 'Left indent',
+  right: 'Right indent',
+};
+
+/** Smallest and largest value of one indent, given the other two and the text area. */
+export function indentRange(
+  key: IndentKey,
+  indents: ParagraphIndents,
+  contentMm: number,
+): { min: number; max: number } {
+  const room = Math.max(0, Math.floor((contentMm - PARAGRAPH_MIN_TEXT_MM) * 10) / 10);
+  const round = (value: number): number => Math.max(0, Math.round(value * 10) / 10);
+  if (key === 'left') {
+    return { min: 0, max: round(room - Math.max(0, indents.firstLine) - indents.right) };
+  }
+  if (key === 'right') {
+    return { min: 0, max: round(room - indents.left - Math.max(0, indents.firstLine)) };
+  }
+  return { min: -indents.left, max: round(room - indents.left - indents.right) };
+}
+
+/** Distance of an indent marker from the left edge of the paper, in millimetres. */
+export function indentMarkerMm(
+  key: IndentKey,
+  indents: ParagraphIndents,
+  settings: PageSettings,
+): number {
+  if (key === 'right') {
+    return pageDimensionsMm(settings).width - settings.marginRight - indents.right;
+  }
+  return settings.marginLeft + indents.left + (key === 'firstLine' ? indents.firstLine : 0);
+}
+
+interface IndentDrag {
+  key: IndentKey;
+  pointerId: number;
+  startX: number;
+  startMm: number;
+  pxPerMm: number;
+  min: number;
+  max: number;
+  mm: number;
+}
 
 interface Drag {
   key: PageMarginKey;
@@ -106,6 +170,8 @@ export function PageRuler({
   onCommit,
   onUndo,
   onRedo,
+  indents,
+  onIndentCommit,
 }: PageRulerProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const widthMm = pageDimensionsMm(settings).width;
@@ -241,6 +307,164 @@ export function PageRuler({
     if (snapped !== current) onCommit({ [key]: snapped });
   };
 
+  // ── Paragraph indents ──────────────────────────────────────────────────────
+  const [indentDrag, setIndentDrag] = useState<IndentDrag | null>(null);
+  const indentDragRef = useRef<IndentDrag | null>(null);
+  const indentsRef = useRef(indents ?? null);
+  indentsRef.current = indents ?? null;
+  const contentMm = contentWidthMm(settings);
+
+  const finishIndent = (commit: boolean): void => {
+    const current = indentDragRef.current;
+    indentDragRef.current = null;
+    setIndentDrag(null);
+    if (commit && current && current.mm !== current.startMm) {
+      onIndentCommit?.({ [current.key]: current.mm });
+    }
+  };
+
+  const onIndentPointerDown = (event: ReactPointerEvent<HTMLDivElement>, key: IndentKey): void => {
+    const current = indentsRef.current;
+    if (!canEdit || !current || event.button !== 0 || pxPerMm <= 0) return;
+    // Cancelling the pointer event also cancels the mouse events that would move the focus:
+    // the text keeps its selection and its caret.
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const range = indentRange(key, current, contentWidthMm(settingsRef.current));
+    const next: IndentDrag = {
+      key,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startMm: current[key],
+      pxPerMm,
+      min: range.min,
+      max: range.max,
+      mm: current[key],
+    };
+    indentDragRef.current = next;
+    setIndentDrag(next);
+  };
+
+  const onIndentPointerMove = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    const current = indentDragRef.current;
+    if (!current || event.pointerId !== current.pointerId) return;
+    const direction = current.key === 'right' ? -1 : 1;
+    const raw = current.startMm + (direction * (event.clientX - current.startX)) / current.pxPerMm;
+    const mm = Math.min(current.max, Math.max(current.min, snapMm(raw, settingsRef.current.unit)));
+    if (mm === current.mm) return;
+    const updated = { ...current, mm };
+    indentDragRef.current = updated;
+    setIndentDrag(updated);
+  };
+
+  const onIndentPointerEnd = (event: ReactPointerEvent<HTMLDivElement>, commit: boolean): void => {
+    const current = indentDragRef.current;
+    if (!current || event.pointerId !== current.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    finishIndent(commit);
+  };
+
+  const onIndentKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>, key: IndentKey): void => {
+    const mod = event.metaKey || event.ctrlKey;
+    if (mod && !event.altKey && event.key.toLowerCase() === 'z') {
+      event.preventDefault();
+      if (event.shiftKey) onRedo?.();
+      else onUndo?.();
+      return;
+    }
+    if (mod && !event.altKey && event.key.toLowerCase() === 'y') {
+      event.preventDefault();
+      onRedo?.();
+      return;
+    }
+    if (event.key === 'Escape' && indentDragRef.current) {
+      event.preventDefault();
+      finishIndent(false);
+      return;
+    }
+    const values = indentsRef.current;
+    if (!canEdit || !values || event.altKey || mod) return;
+    const current = values[key];
+    const { min, max } = indentRange(key, values, contentWidthMm(settingsRef.current));
+    const step = snapStepMm(settingsRef.current.unit) * (event.shiftKey ? 10 : 1);
+    // On screen the right indent grows towards the left.
+    const screen = key === 'right' ? -1 : 1;
+    let next: number;
+    switch (event.key) {
+      case 'ArrowRight':
+        next = current + screen * step;
+        break;
+      case 'ArrowLeft':
+        next = current - screen * step;
+        break;
+      case 'ArrowUp':
+        next = current + step;
+        break;
+      case 'ArrowDown':
+        next = current - step;
+        break;
+      case 'Home':
+        next = min;
+        break;
+      case 'End':
+        next = max;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    const snapped =
+      event.key === 'Home' || event.key === 'End'
+        ? next
+        : Math.min(max, Math.max(min, snapMm(next, settingsRef.current.unit)));
+    if (snapped !== current) onIndentCommit?.({ [key]: snapped });
+  };
+
+  const indentMarker = (key: IndentKey) => {
+    if (!indents) return null;
+    const dragging = indentDrag?.key === key;
+    // While dragging, the marker (and the first-line marker with the left one) follows the pointer.
+    const shown = indentDrag
+      ? normalizeParagraphIndents({ ...indents, [indentDrag.key]: indentDrag.mm })
+      : indents;
+    const value = shown[key];
+    const range = indentRange(key, indents, contentMm);
+    const text = formatMeasurement(value, settings.unit);
+    return (
+      <div
+        key={key}
+        className={`rd-ruler__indent rd-ruler__indent--${key === 'firstLine' ? 'first' : key}`}
+        style={{ left: `${(indentMarkerMm(key, shown, settings) / widthMm) * 100}%` }}
+        role="slider"
+        tabIndex={0}
+        aria-label={INDENT_LABELS[key]}
+        aria-orientation="horizontal"
+        aria-valuemin={range.min}
+        aria-valuemax={range.max}
+        aria-valuenow={value}
+        aria-valuetext={text}
+        data-testid={`rd-ruler-indent-${key === 'firstLine' ? 'first' : key}`}
+        data-value={value}
+        data-dragging={dragging ? 'true' : undefined}
+        onPointerDown={(event) => onIndentPointerDown(event, key)}
+        onPointerMove={onIndentPointerMove}
+        onPointerUp={(event) => onIndentPointerEnd(event, true)}
+        onPointerCancel={(event) => onIndentPointerEnd(event, false)}
+        // Belt and braces for engines that still send the mouse event: never take the focus.
+        onMouseDown={(event) => event.preventDefault()}
+        onKeyDown={(event) => onIndentKeyDown(event, key)}
+      >
+        {dragging ? (
+          <span className="rd-ruler__tip" data-testid="rd-ruler-tip">
+            {text}
+          </span>
+        ) : null}
+      </div>
+    );
+  };
+
   const marker = (key: 'marginLeft' | 'marginRight') => {
     const value = settings[key];
     const left = key === 'marginLeft' ? (value / widthMm) * 100 : 100 - (value / widthMm) * 100;
@@ -317,6 +541,9 @@ export function PageRuler({
         />
         {canEdit ? marker('marginLeft') : null}
         {canEdit ? marker('marginRight') : null}
+        {canEdit && onIndentCommit ? indentMarker('firstLine') : null}
+        {canEdit && onIndentCommit ? indentMarker('left') : null}
+        {canEdit && onIndentCommit ? indentMarker('right') : null}
       </div>
     </div>
   );
