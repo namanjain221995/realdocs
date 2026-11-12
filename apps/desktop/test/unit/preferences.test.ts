@@ -223,10 +223,45 @@ describe('preference sanitiser', () => {
 
   it('requires all-workspaces for fullscreen visibility', () => {
     const { preferences } = sanitizePreferences(
-      { window: { visibleOnAllWorkspaces: false, visibleOnFullScreen: true } },
+      {
+        version: PREFERENCES_VERSION,
+        window: { visibleOnAllWorkspaces: false, visibleOnFullScreen: true },
+      },
       'darwin',
     );
     expect(preferences.window.visibleOnFullScreen).toBe(false);
+  });
+
+  it('pins in front of full-screen applications by default', () => {
+    for (const platform of ['win32', 'darwin', 'linux'] as const) {
+      const { window } = sanitizePreferences({}, platform).preferences;
+      expect(window).toMatchObject({
+        pinned: true,
+        pinLevel: 'screen-saver',
+        visibleOnAllWorkspaces: true,
+        visibleOnFullScreen: true,
+      });
+    }
+  });
+
+  it('gives a file from before version 3 the new stacking defaults once, and keeps later choices', () => {
+    const old = {
+      window: { pinLevel: 'floating', visibleOnAllWorkspaces: false, visibleOnFullScreen: false },
+    };
+    const migrated = sanitizePreferences({ version: 2, ...old }, 'darwin');
+    expect(migrated.migratedFrom).toBe(2);
+    expect(migrated.preferences.window).toMatchObject({
+      pinLevel: 'screen-saver',
+      visibleOnAllWorkspaces: true,
+      visibleOnFullScreen: true,
+    });
+    // The same values in a current file are the person's choice.
+    const chosen = sanitizePreferences({ version: PREFERENCES_VERSION, ...old }, 'darwin');
+    expect(chosen.preferences.window).toMatchObject({
+      pinLevel: 'floating',
+      visibleOnAllWorkspaces: false,
+      visibleOnFullScreen: false,
+    });
   });
 
   it('strips control characters and bounds free text', () => {

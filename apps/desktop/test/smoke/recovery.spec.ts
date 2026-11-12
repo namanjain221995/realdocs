@@ -302,7 +302,8 @@ test.describe('damaged preference files', () => {
         'Control+Alt+Shift+T',
       ]);
       expect(state.shortcuts.items.every((item) => item.registered)).toBe(true);
-      expect(state.panel.pinLevel).toBe('floating');
+      // A file from before version 3 takes the current stacking default.
+      expect(state.panel.pinLevel).toBe('screen-saver');
       expect(state.preferencesRepaired).toBe(true);
       // The policy the panel was served with contains nothing from the file.
       const policy = await running.app.evaluate(async ({ session }) => {

@@ -20,6 +20,7 @@ export const APP_USER_MODEL_ID = 'com.realtimedocs.desktop';
 export const win32Adapter: PlatformAdapter = {
   id: 'win32',
   hasDock: false,
+  reassertsPin: true,
   supportsMouseForwarding: true,
   trayClickShowsPanel: true,
 
@@ -39,8 +40,15 @@ export const win32Adapter: PlatformAdapter = {
   },
 
   applyPin(window, pinned, level) {
-    if (pinned) window.setAlwaysOnTop(true, level);
-    else window.setAlwaysOnTop(false);
+    if (pinned) {
+      window.setAlwaysOnTop(true, level);
+      // Among topmost windows the most recently raised one wins: a full-screen browser or
+      // meeting window that became topmost after the panel would otherwise cover it.
+      // `moveTop` changes the stacking order only; it does not activate the window.
+      if (window.isVisible()) window.moveTop();
+    } else {
+      window.setAlwaysOnTop(false);
+    }
   },
 
   applyWorkspaceVisibility() {

@@ -72,6 +72,9 @@ import {
 const APP_ORIGIN = 'app://realtimedocs';
 const RESIZE_THROTTLE_MS = 8;
 const RESIZE_IDLE_TIMEOUT_MS = 15_000;
+/** How often a pinned, visible panel is raised in front again (see `keepInFront`). */
+const KEEP_IN_FRONT_INTERVAL_MS = 1500;
+
 /** Focus events right after entering click-through are echoes of our own blur, not a user activation. */
 const CLICK_THROUGH_FOCUS_GRACE_MS = 600;
 /** After the preload's two animation frames: a little more, so one full composition has surely passed. */
@@ -363,7 +366,12 @@ export class WindowManager {
       this.compositionHidden('panel');
       this.options.onChange();
     });
-    window.on('blur', () => this.options.onChange());
+    window.on('blur', () => {
+      // Another window was activated, possibly a full-screen one: stay in front of it.
+      this.keepInFront();
+      this.options.onChange();
+    });
+    this.startKeepInFront(window);
     window.on('focus', () => {
       // The user activated the panel (taskbar, Alt+Tab, Dock): that is a request to interact.
       if (this.clickThrough && Date.now() - this.clickThroughSince > CLICK_THROUGH_FOCUS_GRACE_MS) {
@@ -877,6 +885,32 @@ export class WindowManager {
     const prefs = this.options.getPreferences().window;
     // The ordinary window is never on top.
     this.options.platform.applyPin(window, this.isPinnedOnTop(), prefs.pinLevel);
+  }
+
+  /**
+   * Re-asserts the pinned panel's place in front. An application that goes full screen (a browser
+   * with F11, a presentation, a meeting window) can take the top of the stack without the panel
+   * losing focus or receiving any event, so a pinned, visible panel is raised again at a short
+   * interval. Nothing happens while the panel is not pinned, hidden, minimised or being dragged.
+   */
+  private keepInFront(): void {
+    const panel = this.getPanel();
+    if (!panel || !this.options.platform.reassertsPin || !this.isPinnedOnTop()) return;
+    if (!panel.isVisible() || panel.isMinimized()) return;
+    this.applyPinTo(panel);
+  }
+
+  private startKeepInFront(window: BrowserWindow): void {
+    const timer = setInterval(() => {
+      if (window.isDestroyed()) {
+        clearInterval(timer);
+        return;
+      }
+      this.keepInFront();
+    }, KEEP_IN_FRONT_INTERVAL_MS);
+    // Never keeps the process alive on its own.
+    timer.unref?.();
+    window.once('closed', () => clearInterval(timer));
   }
 
   reapplyPin(): void {

@@ -38,6 +38,7 @@ interface YXmlFragment {
 interface YDoc {
   readonly clientID: number;
   getXmlFragment(name: string): YXmlFragment;
+  getMap(name: string): { get(key: string): unknown; set(key: string, value: unknown): void };
   transact(change: () => void): void;
   destroy(): void;
 }
@@ -155,6 +156,16 @@ export class RemoteClient {
 
   private get fragment(): YXmlFragment {
     return this.doc.getXmlFragment(Y_FRAGMENT_FIELD);
+  }
+
+  /** One value of the shared page settings (Y.Map `page`), as stored. */
+  pageSetting(key: string): unknown {
+    return this.doc.getMap('page').get(key);
+  }
+
+  /** Writes one shared page setting, as another editor would. */
+  setPageSetting(key: string, value: number): void {
+    this.doc.getMap('page').set(key, value);
   }
 
   /** Number of top-level blocks. */

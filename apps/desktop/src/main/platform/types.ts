@@ -38,6 +38,13 @@ export interface PlatformAdapter {
   readonly hasDock: boolean;
 
   /**
+   * The system lets another topmost or full-screen window cover a pinned panel without any event
+   * reaching the panel, so the pin has to be applied again at intervals (Windows). Elsewhere the
+   * window level and the full-screen visibility setting already keep the panel in front.
+   */
+  readonly reassertsPin: boolean;
+
+  /**
    * Whether `setIgnoreMouseEvents(true, { forward: true })` is supported, which
    * the in-panel "hover to return" recovery needs (Electron: macOS and Windows).
    */

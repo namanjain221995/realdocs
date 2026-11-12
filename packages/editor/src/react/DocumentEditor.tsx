@@ -56,6 +56,7 @@ import { FindBar } from './FindBar';
 import { useFollowLatest, useScrollAnchor } from './followLatest';
 import { LinkPopover } from './LinkPopover';
 import { MessageNotice, PasteReportNotice } from './Notices';
+import { resolvePageMode } from '../page/mode';
 import { PageRuler } from './PageRuler';
 import { PageSetupDialog } from './PageSetupDialog';
 import { useSessionSelector } from './sessionHooks';
@@ -82,6 +83,12 @@ export interface DocumentEditorProps {
    * Defaults to `page`, except for `variant="panel"` which is always `reading`.
    */
   layout?: 'page' | 'reading';
+  /**
+   * `variant="panel"` only: apply the document's left and right margins to the text column and
+   * show the ruler to editors, without the sheet, its colour or its height. The panel keeps its
+   * own background and appearance. Narrow panels shrink the margins in proportion.
+   */
+  pageMargins?: boolean;
   /** Controls the "Page setup" dialog from the host (the toolbar button uses it as well). */
   pageSetupOpen?: boolean;
   onPageSetupOpenChange?: (open: boolean) => void;
@@ -130,6 +137,7 @@ function EditorSurface({
   scrollContainer,
   onOpenLink,
   layout,
+  pageMargins,
   pageSetupOpen,
   onPageSetupOpenChange,
   upgrade,
@@ -180,7 +188,10 @@ function EditorSurface({
     },
     [onPageSetupOpenChange],
   );
-  const pageLayout = variant !== 'panel' && layout !== 'reading';
+  const pageMode = resolvePageMode({ variant, layout, pageMargins });
+  const pageLayout = pageMode === 'page';
+  // The ruler, the margins and the setup dialog; `pageLayout` adds the sheet itself.
+  const pageAware = pageMode !== 'none';
   const following = followLatest ?? followLocal;
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -422,10 +433,9 @@ function EditorSurface({
       data-ready={ready ? 'true' : 'false'}
       data-external-scroll={scrollContainer ? '' : undefined}
       data-layout={pageLayout ? 'page' : 'reading'}
+      data-margins={pageMode === 'margins' ? 'page' : undefined}
       {...attributes}
-      style={
-        pageLayout ? { ...attributes.style, ...pageStyleVars(pageSettings) } : attributes.style
-      }
+      style={pageAware ? { ...attributes.style, ...pageStyleVars(pageSettings) } : attributes.style}
       onKeyDown={onKeyDown}
     >
       {showToolbar ? (
@@ -433,7 +443,7 @@ function EditorSurface({
           editor={editor}
           onFind={openFind}
           onLink={openLinkEditor}
-          onPageSetup={pageLayout ? () => setSetupOpen(true) : undefined}
+          onPageSetup={pageAware ? () => setSetupOpen(true) : undefined}
           imageAccept={imageAccept}
           attachmentAccept={attachmentAccept}
         />
@@ -485,7 +495,7 @@ function EditorSurface({
             />
           </div>
         ) : null}
-        {pageLayout && editable ? (
+        {pageAware && editable ? (
           <PageRuler
             settings={pageSettings}
             canEdit
@@ -568,7 +578,7 @@ function EditorSurface({
           </div>
         </div>
       </div>
-      {pageLayout ? (
+      {pageAware ? (
         <PageSetupDialog
           open={setupOpen}
           onOpenChange={setSetupOpen}

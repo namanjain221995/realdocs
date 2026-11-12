@@ -14,7 +14,6 @@ import {
   useToast,
 } from '@realtimedocs/ui';
 import {
-  ArrowDownToLine,
   ChevronDown,
   ChevronUp,
   EllipsisVertical,
@@ -253,7 +252,7 @@ function shortcutCaps(state: AppState, action: AppState['shortcuts']['items'][nu
 export function PanelHeader({ state, live }: { state: AppState; live: LiveDocument | null }) {
   const run = useAction();
   const toast = useToast();
-  const { panel, behaviour, connection } = state;
+  const { panel, connection } = state;
   const presenter = panel.mode === 'presenter';
   const reported = connection.report?.connection;
   const canRetry = live !== null && (reported === 'reconnecting' || reported === 'offline');
@@ -344,21 +343,7 @@ export function PanelHeader({ state, live }: { state: AppState; live: LiveDocume
             <RotateCw />
           </IconButton>
         )}
-        <IconButton
-          label={
-            behaviour.followLatest ? 'Follow latest changes: on' : 'Follow latest changes: off'
-          }
-          size="sm"
-          pressed={behaviour.followLatest}
-          data-testid="rd-follow-toggle"
-          onClick={() =>
-            run(
-              desktop?.preferences.update({ behaviour: { followLatest: !behaviour.followLatest } }),
-            )
-          }
-        >
-          <ArrowDownToLine />
-        </IconButton>
+        {/* "Follow latest changes" lives in Settings → Behaviour: its arrow icon read as a download button here. */}
         <AppearancePopover state={state} />
         {presenter && (
           <IconButton

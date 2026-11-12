@@ -256,6 +256,8 @@ function LivePanelDocument({ state, live }: { state: AppState; live: LiveDocumen
           session={live.session}
           api={live.api}
           variant="panel"
+          // The document's shared left and right margins, with the ruler for editors.
+          pageMargins
           display={display}
           followLatest={behaviour.followLatest}
           onFollowLatestChange={onFollowLatestChange}

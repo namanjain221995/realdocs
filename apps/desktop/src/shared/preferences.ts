@@ -20,8 +20,15 @@ import { sanitizeShortcutMap, type DesktopPlatform, type ShortcutMap } from './s
  * flag were added; the manual-check records of version 1 were retired (the
  * Privacy Test Center keeps its own records). A version 1 file is read like
  * any other: fields it does not have get their defaults, retired ones go.
+ *
+ * Version 3: a pinned panel is meant to stay in front of full-screen applications. The defaults
+ * became pin level `screen-saver`, visible on all workspaces and on full-screen applications, and
+ * a file written by an older version takes these three once (the earlier defaults left the panel
+ * behind a full-screen browser or meeting window). They remain ordinary settings afterwards.
  */
-export const PREFERENCES_VERSION = 2;
+export const PREFERENCES_VERSION = 3;
+/** Files written before this version take the new stacking defaults once. */
+const STACKING_DEFAULTS_VERSION = 3;
 
 export const ALPHA_RANGE = { min: 0.1, max: 1, step: 0.01, default: 0.86 } as const;
 export const FONT_SCALE_RANGE = { min: 0.8, max: 1.8, step: 0.05, default: 1 } as const;
@@ -172,9 +179,9 @@ export function defaultPreferences(platform: DesktopPlatform): Preferences {
       expandedHeight: PANEL.defaultHeight,
       collapsed: false,
       pinned: true,
-      pinLevel: 'floating',
-      visibleOnAllWorkspaces: false,
-      visibleOnFullScreen: false,
+      pinLevel: 'screen-saver',
+      visibleOnAllWorkspaces: true,
+      visibleOnFullScreen: true,
       showInTaskbar: false,
     },
     documentWindow: { bounds: null, displayId: null },
@@ -286,10 +293,11 @@ export function sanitizePreferences(input: unknown, platform: DesktopPlatform): 
     connection.acceptedLinkOrigin !== serverOrigin
       ? connection.acceptedLinkOrigin
       : null;
-  const visibleOnAllWorkspaces = bool(
-    windowPrefs.visibleOnAllWorkspaces,
-    defaults.window.visibleOnAllWorkspaces,
-  );
+  // A file from before version 3 holds the old stacking defaults, not a choice.
+  const stackingFromDefaults = writtenBy !== null && writtenBy < STACKING_DEFAULTS_VERSION;
+  const visibleOnAllWorkspaces = stackingFromDefaults
+    ? defaults.window.visibleOnAllWorkspaces
+    : bool(windowPrefs.visibleOnAllWorkspaces, defaults.window.visibleOnAllWorkspaces);
 
   const preferences: Preferences = {
     version: PREFERENCES_VERSION,
@@ -336,11 +344,15 @@ export function sanitizePreferences(input: unknown, platform: DesktopPlatform): 
       ),
       collapsed: bool(windowPrefs.collapsed, defaults.window.collapsed),
       pinned: bool(windowPrefs.pinned, defaults.window.pinned),
-      pinLevel: oneOf(windowPrefs.pinLevel, PIN_LEVELS, defaults.window.pinLevel),
+      pinLevel: stackingFromDefaults
+        ? defaults.window.pinLevel
+        : oneOf(windowPrefs.pinLevel, PIN_LEVELS, defaults.window.pinLevel),
       visibleOnAllWorkspaces,
       visibleOnFullScreen:
         visibleOnAllWorkspaces &&
-        bool(windowPrefs.visibleOnFullScreen, defaults.window.visibleOnFullScreen),
+        (stackingFromDefaults
+          ? defaults.window.visibleOnFullScreen
+          : bool(windowPrefs.visibleOnFullScreen, defaults.window.visibleOnFullScreen)),
       showInTaskbar: bool(windowPrefs.showInTaskbar, defaults.window.showInTaskbar),
     },
     documentWindow: {

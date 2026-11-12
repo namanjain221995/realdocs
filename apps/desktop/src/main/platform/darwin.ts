@@ -26,6 +26,7 @@ import type { PlatformAdapter } from './types';
 export const darwinAdapter: PlatformAdapter = {
   id: 'darwin',
   hasDock: true,
+  reassertsPin: false,
   supportsMouseForwarding: true,
   trayClickShowsPanel: false,
 

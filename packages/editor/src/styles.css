@@ -1676,6 +1676,34 @@
   color: var(--rd-text-faint);
 }
 
+/*
+ * Margins only (`data-margins='page'`, the desktop panel): the text column takes the document's
+ * left and right margins and the ruler lines up with it. No sheet: the host's background, colours
+ * and theme stay as they are, and there is no paper height. As in the page layout, a container
+ * narrower than the paper turns each margin into its share of the paper width, so the margins
+ * shrink in proportion and the text column never collapses.
+ */
+.rd-editor[data-margins='page'] .rd-editor__page {
+  width: min(100%, var(--rd-page-width, 794px));
+  max-width: none;
+  padding-left: min(var(--rd-page-ml, 96px), var(--rd-page-ml-pct, 12%));
+  padding-right: min(var(--rd-page-mr, 96px), var(--rd-page-mr-pct, 12%));
+}
+
+/* The ruler stays at the top while scrolling; what is scrolled into view must not end up under it. */
+.rd-editor[data-margins='page'] .rd-editor__scroll {
+  scroll-padding-top: 40px;
+}
+
+.rd-editor[data-margins='page'] .rd-editor__ruler {
+  padding-top: var(--rd-space-1);
+  background: transparent;
+}
+
+.rd-editor[data-margins='page'] .rd-ruler {
+  background: color-mix(in srgb, var(--rd-surface-1) 78%, transparent);
+}
+
 @media print {
   .rd-editor[data-layout='page'] .rd-editor__scroll {
     padding: 0;

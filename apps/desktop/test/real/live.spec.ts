@@ -379,8 +379,10 @@ test('Follow Latest: off by default, follows when on, pauses on scroll and selec
     await panel.waitForTimeout(600);
     expect(await scrollTop()).toBe(0);
 
-    // On, from the panel's header control: the next change is brought into view.
-    await panel.click('[data-testid="rd-follow-toggle"]');
+    // On (the setting of Settings → Behaviour): the next change is brought into view.
+    await panel.evaluate(() =>
+      window.rdDesktop?.preferences.update({ behaviour: { followLatest: true } }),
+    );
     await waitForState(panel, (state) => state.behaviour.followLatest, 'follow latest on');
     await expect(follow).toHaveAttribute('data-state', 'on');
     remote.appendParagraph('Latest change A.');
@@ -434,7 +436,9 @@ test('Follow Latest: off by default, follows when on, pauses on scroll and selec
     expect(Math.abs((await scrollTop()) - selecting)).toBeLessThanOrEqual(2);
 
     // Changes above the viewport never move the reader, with following off…
-    await panel.click('[data-testid="rd-follow-toggle"]');
+    await panel.evaluate(() =>
+      window.rdDesktop?.preferences.update({ behaviour: { followLatest: false } }),
+    );
     await waitForState(panel, (state) => !state.behaviour.followLatest, 'follow latest off');
     await content.locator('p', { hasText: 'Paragraph 35:' }).scrollIntoViewIfNeeded();
     await panel.waitForTimeout(400);
@@ -449,6 +453,71 @@ test('Follow Latest: off by default, follows when on, pauses on scroll and selec
     const moved = await place('Paragraph 35:');
     expect(Math.abs((moved?.top ?? 9999) - (anchor?.top ?? 0))).toBeLessThanOrEqual(2);
     await shot(panel, 'edits-above-did-not-move-reader');
+  } finally {
+    remote.destroy();
+    await running.close();
+  }
+});
+
+test('document margins: the panel shows the ruler, a margin moved here reaches the other client, and one moved there moves the text here', async () => {
+  const documentId = await createDocument('Margins check', ['A paragraph for the margins.']);
+  const share = await createShare(documentId, 'editor');
+  const remote = await remoteEditor(documentId);
+  const running = await launchConnected();
+  try {
+    const { panel } = running;
+    await openShare(running, share);
+    await expect(panel.locator('[data-testid="rd-editor"]')).toHaveAttribute(
+      'data-editable',
+      'true',
+    );
+    // Margins only: no sheet, the panel keeps its own background.
+    await expect(panel.locator('[data-testid="rd-editor"]')).toHaveAttribute(
+      'data-margins',
+      'page',
+    );
+    await expect(panel.locator('[data-testid="rd-editor"]')).toHaveAttribute(
+      'data-layout',
+      'reading',
+    );
+    const left = panel.locator('[data-testid="rd-ruler-left"]');
+    await expect(left).toBeVisible();
+    await expect(panel.locator('[data-testid="rd-ruler-right"]')).toBeVisible();
+
+    const paddingLeft = () =>
+      panel
+        .locator('.rd-editor__page')
+        .evaluate((element) => Number.parseFloat(getComputedStyle(element).paddingLeft));
+    const before = Number(await left.getAttribute('aria-valuenow'));
+    const paddingBefore = await paddingLeft();
+
+    // Here -> there: the keyboard moves the marker; the shared setting changes for the other client.
+    await left.focus();
+    for (let i = 0; i < 3; i += 1) await panel.keyboard.press('Shift+ArrowUp');
+    const moved = Number(await left.getAttribute('aria-valuenow'));
+    expect(moved).toBeGreaterThan(before);
+    await expect.poll(() => remote.pageSetting('marginLeft')).toBe(moved);
+    expect(await paddingLeft()).toBeGreaterThan(paddingBefore);
+
+    await shot(panel, 'panel-margins-ruler');
+
+    // There -> here: the other client sets a margin; the marker and the text column follow.
+    remote.setPageSetting('marginLeft', 10);
+    await expect(left).toHaveAttribute('aria-valuenow', '10');
+    await expect.poll(paddingLeft).toBeLessThan(paddingBefore + 0.5);
+
+    // The text column never collapses, however narrow the panel is.
+    const widths = await panel.locator('.rd-editor__page').evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        outer: element.clientWidth,
+        inner:
+          element.clientWidth -
+          Number.parseFloat(style.paddingLeft) -
+          Number.parseFloat(style.paddingRight),
+      };
+    });
+    expect(widths.inner).toBeGreaterThan(widths.outer * 0.4);
   } finally {
     remote.destroy();
     await running.close();

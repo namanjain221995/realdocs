@@ -16,6 +16,7 @@ import type { PlatformAdapter } from './types';
 export const linuxAdapter: PlatformAdapter = {
   id: 'linux',
   hasDock: false,
+  reassertsPin: false,
   supportsMouseForwarding: false,
   trayClickShowsPanel: true,
 
