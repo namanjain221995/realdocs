@@ -576,17 +576,22 @@ export function inspectArchive(zipPath, platform, arch) {
     .map((match) => ({ mode: match[1], name: match[2] }));
   context.check(entries.length > 0, 'archive listing readable', `${entries.length} entries`);
   const names = new Set(entries.map((entry) => entry.name));
-  const folder = `${APP_NAME}-${platform}-${arch}`;
+  // A Mac archives the bundle itself (`ditto --keepParent RealtimeDocs.app`), so the bundle is the
+  // top entry; the zip made on Linux or Windows holds the packager's folder around it.
+  const packagerFolder = `${APP_NAME}-${platform}-${arch}`;
+  const folder =
+    platform === 'darwin' && names.has(`${APP_NAME}.app/Contents/Info.plist`) ? '' : packagerFolder;
+  const root = folder === '' ? '' : `${folder}/`;
   const required =
     platform === 'win32'
-      ? [`${folder}/${APP_NAME}.exe`, `${folder}/resources/app.asar`]
+      ? [`${root}${APP_NAME}.exe`, `${root}resources/app.asar`]
       : platform === 'darwin'
         ? [
-            `${folder}/${APP_NAME}.app/Contents/Info.plist`,
-            `${folder}/${APP_NAME}.app/Contents/MacOS/${APP_NAME}`,
-            `${folder}/${APP_NAME}.app/Contents/Resources/app.asar`,
+            `${root}${APP_NAME}.app/Contents/Info.plist`,
+            `${root}${APP_NAME}.app/Contents/MacOS/${APP_NAME}`,
+            `${root}${APP_NAME}.app/Contents/Resources/app.asar`,
           ]
-        : [`${folder}/${LINUX_EXECUTABLE}`, `${folder}/resources/app.asar`];
+        : [`${root}${LINUX_EXECUTABLE}`, `${root}resources/app.asar`];
   for (const name of required) context.check(names.has(name), `archive contains ${name}`);
   if (platform === 'darwin') {
     const links = entries.filter((entry) => entry.mode.startsWith('l'));
@@ -596,7 +601,7 @@ export function inspectArchive(zipPath, platform, arch) {
       `${links.length} links`,
     );
     const main = entries.find(
-      (entry) => entry.name === `${folder}/${APP_NAME}.app/Contents/MacOS/${APP_NAME}`,
+      (entry) => entry.name === `${root}${APP_NAME}.app/Contents/MacOS/${APP_NAME}`,
     );
     context.check(
       Boolean(main) && main.mode.includes('x'),
