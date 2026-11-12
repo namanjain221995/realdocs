@@ -261,7 +261,7 @@ describe('preference file handling', () => {
   });
 
   afterEach(async () => {
-    await fs.rm(directory, { recursive: true, force: true });
+    await fs.rm(directory, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   });
 
   const store = () => new PreferencesStore({ filePath, platform: 'win32', debounceMs: 5 });
@@ -378,5 +378,7 @@ describe('preference file handling', () => {
     );
     expect(next.appearance.backgroundAlpha).toBe(1);
     expect(next.connection.serverOrigin).toBeNull();
+    // The update schedules a write; finish it before the directory is removed.
+    await preferences.flush();
   });
 });
