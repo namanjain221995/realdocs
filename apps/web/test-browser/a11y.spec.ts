@@ -171,9 +171,11 @@ test.describe('keyboard', () => {
     await page.keyboard.press('Enter');
     await expect(first).not.toHaveAttribute('open', '');
 
-    // The matrix scrolls from the keyboard: its scroll areas are tab stops.
-    await expect(
-      page.getByRole('region', { name: 'Windows compatibility results' }),
-    ).toHaveAttribute('tabindex', '0');
+    // The per-app grid appears with the first recorded test (its scroll areas are then tab
+    // stops; unit-tested in test/landing.test.tsx). Without records it is not on the page.
+    await expect(page.getByRole('region', { name: 'Windows compatibility results' })).toHaveCount(
+      0,
+    );
+    await expect(page.getByTestId('platform-status').first()).toContainText('Tested by our team');
   });
 });

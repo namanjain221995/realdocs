@@ -1351,7 +1351,8 @@ html:has(.land) {
   align-items: center;
   gap: 6px;
   font-weight: 600;
-  color: #2fbf71;
+  /* The theme's success colour: readable on both the dark and the light page. */
+  color: var(--rd-success);
 }
 .lp-tested svg {
   width: 18px;
