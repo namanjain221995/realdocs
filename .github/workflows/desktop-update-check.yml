@@ -30,6 +30,11 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
 
+      - name: Helper script in the foreground (diagnostic)
+        if: matrix.platform != 'linux'
+        shell: bash
+        run: node apps/desktop/scripts/helper-probe.mjs
+
       - name: Unit tests of the installer and the update service
         run: pnpm --filter @realtimedocs/desktop exec vitest run test/unit/update-install.test.ts test/unit/updates.test.ts
 

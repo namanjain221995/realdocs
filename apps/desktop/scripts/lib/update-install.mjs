@@ -764,6 +764,10 @@ export async function startSwapHelper({
   child.on('error', (error) => {
     failure = error;
   });
+  let exited = null;
+  child.on('exit', (code, signal) => {
+    exited = { code, signal };
+  });
   child.unref();
 
   const deadline = Date.now() + readyTimeoutMs;
@@ -783,6 +787,7 @@ export async function startSwapHelper({
       // Nothing was written.
     }
     if (failure !== null) said = `${String(failure.message ?? failure)} ${said}`.trim();
+    said = `${exited ? `script host ended with ${JSON.stringify(exited)}` : 'script host still running'}${said ? `; ${said}` : ''}`;
     fs.rmSync(scriptDir, { recursive: true, force: true });
     throw new UpdateInstallError(
       'helper',
