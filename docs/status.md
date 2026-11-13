@@ -5,6 +5,8 @@ runs the upgraded server image (deployed 2026-11-12 10:28 UTC) and serves deskto
 
 _Desktop 0.1.3 is the current release (2026-11-13): update and restart from inside the app (exercised on native Windows, macOS and Linux runners), paragraph indents on the ruler (document schema 3), panel in front of full-screen browsers; see [desktop-release.md](desktop-release.md). The live server runs the same code. The landing page states "Tested by our team" for Windows and macOS on the owner's word; no per-app test records are filed in `verified-configurations.json`._
 
+_Since 2026-11-13 the site is sign-in first: anonymous visitors see only the sign-in page (share links and invitations excepted); an administrator lands on People (`/admin/users`), a member on the product page; the documents list is at `/documents`; `/api/openapi.json` needs a session or an API key. Checked on the live site with `scripts/live-smoke.mjs` (all checks passed)._
+
 _Web, 2026-11-13 (in the working tree, not deployed when this was written): a visitor sees only the sign-in page; the product page, downloads, guides and the developer portal need an account; `GET /api/openapi.json` needs an account session or an API key; administrators start at `/admin/users`, members on the product page, documents are at `/documents`; new animated sign-in page. See [security.md](security.md), "What a visitor without an account can reach"._
 
 ## How to resume
