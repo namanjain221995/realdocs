@@ -701,7 +701,7 @@ export async function startSwapHelper({
   resultFile,
   relaunchArgs = [],
   env = process.env,
-  readyTimeoutMs = 15_000,
+  readyTimeoutMs = 30_000,
 }) {
   const backupDir = path.join(
     path.dirname(root),
@@ -750,13 +750,17 @@ export async function startSwapHelper({
     args = [scriptFile];
   }
   let failure = null;
+  // What the script host itself says (a blocked or unparsable script) is kept for the message.
+  const logFile = path.join(scriptDir, 'helper.log');
+  const logFd = fs.openSync(logFile, 'w');
   const child = spawn(command, args, {
     // Not inside the installation: a working directory there would keep the folder in use.
     cwd: scriptDir,
     detached: true,
-    stdio: 'ignore',
+    stdio: ['ignore', logFd, logFd],
     windowsHide: true,
   });
+  fs.closeSync(logFd);
   child.on('error', (error) => {
     failure = error;
   });
@@ -772,12 +776,20 @@ export async function startSwapHelper({
     } catch {
       // It never ran.
     }
+    let said = '';
+    try {
+      said = fs.readFileSync(logFile, 'utf8').replace(/\s+/g, ' ').trim().slice(0, 400);
+    } catch {
+      // Nothing was written.
+    }
+    if (failure !== null) said = `${String(failure.message ?? failure)} ${said}`.trim();
     fs.rmSync(scriptDir, { recursive: true, force: true });
     throw new UpdateInstallError(
       'helper',
-      platform === 'win32'
+      (platform === 'win32'
         ? 'Windows did not run the small script that swaps the versions (PowerShell may be blocked on this computer).'
-        : 'The small script that swaps the versions could not be started.',
+        : 'The small script that swaps the versions could not be started.') +
+        (said ? ` The system said: ${said}` : ''),
     );
   }
   return { backupDir, scriptDir, scriptFile };
