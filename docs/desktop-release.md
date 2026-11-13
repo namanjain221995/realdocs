@@ -377,3 +377,30 @@ stack (69 + 18), editor browser checks in three engines, desktop smoke (64) and 
 of an indent marker inside the desktop panel (keyboard there; pointer in the web checks), Windows arm64.
 **Open:** the editor check `follow-latest-manual` failed once in 30 isolated Chromium runs on this code
 and passed 10 of 10 on the previous commit; too few runs to tell a rare flake from a regression.
+
+## Release 0.1.3 (2026-11-13)
+
+Built by workflow run 43362140590 from commit `c747319`, unsigned and not notarised; published with
+`--minimum-supported 0.1.2`.
+
+Changes: "Update and restart" (Settings, Updates): the app downloads the release, verifies size and
+SHA-256, checks and unpacks the archive next to the installation, and a helper swaps the folders and
+starts the new version; the stages are shown with real download progress, and a failed swap puts the
+previous version back. Version 0.1.2 and earlier do not have this code: going from them to 0.1.3 is one
+last manual installation.
+
+Checked on native runners (`.github/workflows/desktop-update-check.yml`,
+`apps/desktop/scripts/update-check.mjs`): on Windows x64, macOS arm64 and Linux x64 an installed 0.1.2
+updated itself to a locally built 0.1.3 and restarted, with the update service, the installer and the
+helper script exercised; the click itself and the app's own quit were not (a packaged build cannot be
+driven from outside, so the script ended the old process). The first Windows runs failed: Windows
+PowerShell started as a detached process exits at once without running the script; the helper is no
+longer detached on Windows. Launch and full-screen checks passed on the release build as for 0.1.2.
+
+**Not checked:** the button pressed by a person on Windows or macOS, an update on macOS Intel and on
+Windows arm64, an installation in a folder the user cannot write to (the app then falls back to the
+manual download), and App Translocation on macOS (same fallback).
+
+Trust: the builds are unsigned, so an update is trusted because it comes from the configured server over
+HTTPS with the SHA-256 that server announces. Whoever controls the server's release directory can ship
+code to every desktop on which "Update and restart" is pressed.

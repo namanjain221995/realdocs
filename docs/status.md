@@ -3,7 +3,7 @@
 _Last updated: 2026-11-12, after the enterprise upgrade was committed, pushed and deployed. The public site
 runs the upgraded server image (deployed 2026-11-12 10:28 UTC) and serves desktop release 0.1.0 (unsigned)._
 
-_Desktop 0.1.2 is the current release (2026-11-13): paragraph indents on the ruler (document schema 3), panel in front of full-screen browsers (checked on native Windows and macOS runners), margins in the panel; see [desktop-release.md](desktop-release.md). The live server runs the same code._
+_Desktop 0.1.3 is the current release (2026-11-13): update and restart from inside the app (exercised on native Windows, macOS and Linux runners), paragraph indents on the ruler (document schema 3), panel in front of full-screen browsers; see [desktop-release.md](desktop-release.md). The live server runs the same code. The landing page states "Tested by our team" for Windows and macOS on the owner's word; no per-app test records are filed in `verified-configurations.json`._
 
 ## How to resume
 
