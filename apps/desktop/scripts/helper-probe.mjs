@@ -1,55 +1,101 @@
 #!/usr/bin/env node
-// Diagnostic for the native runners: writes the update helper script for this platform with
-// throw-away paths and runs it in the foreground, so that whatever the script host says is
-// visible. The script is expected to report "ready", find no installation to swap, and end with
-// a non-zero status after writing its result file. Nothing real is touched.
-import { spawnSync } from 'node:child_process';
+// Diagnostic for the Windows runner: which way of starting the update helper in the background
+// actually runs it? Each variant gets its own throw-away script; a variant passes when the script
+// reports "ready". Nothing real is touched. Exits 1 on purpose so the job ends and its log is
+// readable at once.
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { buildHelperScript } from './lib/update-install.mjs';
 
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rd-helper-probe-'));
-const readyFile = path.join(dir, 'ready');
-const resultFile = path.join(dir, 'result.json');
-const script = buildHelperScript({
-  platform: process.platform,
-  pid: 999999,
-  root: path.join(dir, 'install dir', 'RealtimeDocs'),
-  stagedRoot: path.join(dir, 'staging', 'RealtimeDocs'),
-  stagingDir: path.join(dir, 'staging'),
-  backupDir: path.join(dir, 'backup'),
-  executable: path.join(dir, 'install dir', 'RealtimeDocs', 'RealtimeDocs.exe'),
-  readyFile,
-  resultFile,
-  relaunchArgs: [`--user-data-dir=${path.join(dir, 'profile dir')}`],
-});
-const file = path.join(dir, `swap${script.extension}`);
-fs.writeFileSync(file, script.content);
-console.log(`script: ${file} (${script.content.length} characters)`);
-const started = Date.now();
-const result =
-  process.platform === 'win32'
-    ? spawnSync(
-        path.join(
-          process.env.SystemRoot ?? 'C:\\Windows',
-          'System32',
-          'WindowsPowerShell',
-          'v1.0',
-          'powershell.exe',
-        ),
-        ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', file],
-        { encoding: 'utf8', timeout: 150_000, cwd: dir },
-      )
-    : spawnSync('/bin/sh', [file], { encoding: 'utf8', timeout: 150_000, cwd: dir });
-console.log(
-  `ended after ${Date.now() - started} ms: status ${result.status}, signal ${result.signal}, error ${result.error?.message ?? 'none'}`,
+if (process.platform !== 'win32') {
+  console.log('helper-probe: Windows only.');
+  process.exit(0);
+}
+const powershell = path.join(
+  process.env.SystemRoot ?? 'C:\\Windows',
+  'System32',
+  'WindowsPowerShell',
+  'v1.0',
+  'powershell.exe',
 );
-console.log(`stdout: ${(result.stdout ?? '').slice(0, 2000)}`);
-console.log(`stderr: ${(result.stderr ?? '').slice(0, 4000)}`);
-console.log(`ready file written: ${fs.existsSync(readyFile)}`);
-console.log(
-  `result file: ${fs.existsSync(resultFile) ? fs.readFileSync(resultFile, 'utf8') : 'none'}`,
-);
-fs.rmSync(dir, { recursive: true, force: true });
-process.exit(fs.existsSync(readyFile) || result.status !== null ? 0 : 1);
+const base = ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass'];
+const variants = {
+  'A current (detached, stdin ignore, -WindowStyle Hidden, -File)': (file, log) => ({
+    args: [...base, '-WindowStyle', 'Hidden', '-File', file],
+    options: { detached: true, stdio: ['ignore', log, log], windowsHide: true },
+  }),
+  'B no -WindowStyle': (file, log) => ({
+    args: [...base, '-File', file],
+    options: { detached: true, stdio: ['ignore', log, log], windowsHide: true },
+  }),
+  'C stdin pipe': (file, log) => ({
+    args: [...base, '-WindowStyle', 'Hidden', '-File', file],
+    options: { detached: true, stdio: ['pipe', log, log], windowsHide: true },
+  }),
+  'D not detached': (file, log) => ({
+    args: [...base, '-WindowStyle', 'Hidden', '-File', file],
+    options: { detached: false, stdio: ['ignore', log, log], windowsHide: true },
+  }),
+  'E -Command': (file, log) => ({
+    args: [...base, '-WindowStyle', 'Hidden', '-Command', `& '${file.replace(/'/g, "''")}'`],
+    options: { detached: true, stdio: ['ignore', log, log], windowsHide: true },
+  }),
+  'F detached, no windowsHide, no -WindowStyle': (file, log) => ({
+    args: [...base, '-File', file],
+    options: { detached: true, stdio: ['ignore', log, log] },
+  }),
+  'G all stdio ignore, no -WindowStyle': (file) => ({
+    args: [...base, '-File', file],
+    options: { detached: true, stdio: 'ignore', windowsHide: true },
+  }),
+};
+
+for (const [name, make] of Object.entries(variants)) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rd-helper-probe-'));
+  const readyFile = path.join(dir, 'ready');
+  const script = buildHelperScript({
+    platform: 'win32',
+    pid: 999999,
+    root: path.join(dir, 'install dir', 'RealtimeDocs'),
+    stagedRoot: path.join(dir, 'staging', 'RealtimeDocs'),
+    stagingDir: path.join(dir, 'staging'),
+    backupDir: path.join(dir, 'backup'),
+    executable: path.join(dir, 'install dir', 'RealtimeDocs', 'RealtimeDocs.exe'),
+    readyFile,
+    resultFile: path.join(dir, 'result.json'),
+    relaunchArgs: [],
+  });
+  const file = path.join(dir, 'swap.ps1');
+  fs.writeFileSync(file, script.content);
+  const logFile = path.join(dir, 'log.txt');
+  const log = fs.openSync(logFile, 'w');
+  const { args, options } = make(file, log);
+  const started = Date.now();
+  let exited = null;
+  let failure = null;
+  const child = spawn(powershell, args, { cwd: dir, ...options });
+  child.on('exit', (code, signal) => {
+    exited = { code, signal, afterMs: Date.now() - started };
+  });
+  child.on('error', (error) => {
+    failure = error.message;
+  });
+  child.stdin?.end();
+  fs.closeSync(log);
+  while (Date.now() - started < 20_000 && !fs.existsSync(readyFile)) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  const ready = fs.existsSync(readyFile);
+  const said = fs.readFileSync(logFile, 'utf8').replace(/\s+/g, ' ').trim().slice(0, 300);
+  console.log(
+    `${ready ? 'RUNS ' : 'SILENT'} ${name}: ready after ${ready ? Date.now() - started : '-'} ms; exit ${JSON.stringify(exited)}; error ${failure}; said: ${said}`,
+  );
+  try {
+    child.kill();
+  } catch {
+    // already gone
+  }
+}
+process.exit(1);
