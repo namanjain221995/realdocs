@@ -1,6 +1,8 @@
 node_modules/
 dist/
 out/
+# Second build made by apps/desktop/scripts/update-check.mjs.
+out-update/
 build/
 # Packaging resources of the desktop app (icons, installer script) are sources, not output.
 !apps/desktop/build/

@@ -1,16 +1,19 @@
 /**
- * Update checks and verified downloads. Electron-free: the network, the file locations and the
- * "show / open" actions are injected, so the unit tests drive it with fakes.
+ * Update checks, verified downloads and the user-started "Update and restart". Electron-free: the
+ * network, the file locations, the "show / open" actions and the installer are injected, so the
+ * unit tests drive it with fakes.
  *
- * What it does, and what it deliberately does not (docs/desktop-release.md):
+ * What it does (docs/desktop-release.md):
  * - It asks `GET /api/v1/desktop/update` on the CONFIGURED server (and nowhere else) at start, every
  *   6 hours and on request, with platform, architecture, channel, current version and a random
  *   install id (for staged rollouts; it identifies no person and is never sent anywhere else).
  * - It downloads only when the user asks, only from the configured origin, never follows a redirect,
  *   writes to `<name>.part`, and renames to the final name only after size and SHA-256 match.
- * - It never installs, replaces or restarts the app. "Open installer" hands the verified file to the
- *   operating system after an explicit click; the user decides what happens next and unsaved work is
- *   never touched (recovery drafts already persist).
+ * - `install()` ("Update and restart", only ever after a click) downloads if needed, has the
+ *   installer unpack and check the build next to the installation, records what is about to happen,
+ *   and hands over to the installer, which starts the swap helper and quits the app. Nothing is
+ *   installed without that click, and never a version that is not newer than the running one.
+ * - The manual path stays: "Open download" hands the verified file to the operating system.
  */
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
@@ -25,9 +28,12 @@ import {
   artifactKind,
   channelFor,
   initialUpdateSnapshot,
+  installFailureMessage,
   isSafeArtifactName,
   resolveDownloadUrl,
   verifyDownload,
+  type UpdateNotice,
+  type UpdateOffer,
   type UpdateSnapshot,
 } from '../shared/updates';
 import { silentLogger, type Logger } from './logger';
@@ -48,7 +54,41 @@ const MAX_CHECK_BYTES = 256 * 1024;
 const MAX_DOWNLOAD_BYTES = 1024 * 1024 * 1024;
 const DOWNLOAD_STALL_MS = 60_000;
 
+/** A build unpacked next to the installation, checked and ready to be swapped in. */
+export interface StagedUpdate {
+  stagingDir: string;
+  stagedRoot: string;
+}
+
+/** The part that touches the installation. The real one is `update-installer.ts`. */
+export interface UpdateInstaller {
+  /** Why this installation cannot replace itself, or null. */
+  blocker(): string | null;
+  /** Unpacks and checks the verified archive. Rejects with a displayable message. */
+  stage(
+    file: string,
+    offer: UpdateOffer,
+    onPhase: (phase: 'unpacking' | 'checking') => void,
+  ): Promise<StagedUpdate>;
+  /** Removes a staged build that will not be used. */
+  discard(staged: StagedUpdate): void;
+  /**
+   * Starts the helper that swaps the versions once this process is gone, then asks the app to
+   * quit. Rejects (and starts nothing) when the helper cannot run.
+   */
+  handOver(staged: StagedUpdate, resultFile: string): Promise<void>;
+  /** Removes staging and backup folders an interrupted update left behind. */
+  cleanup(): void;
+}
+
+const NO_INSTALLER =
+  'This copy of the app cannot replace itself. Download the new version and replace the app yourself.';
+const INSTALLER_PACKAGE =
+  'For this computer the server publishes an installer. Download it and run it; it replaces this version.';
+
 export interface UpdateServiceOptions {
+  /** Absent in development and in tests of the other paths: only the manual download is offered. */
+  installer?: UpdateInstaller;
   fetch: (url: string, init: RequestInit) => Promise<Response>;
   getServerOrigin: () => string | null;
   appVersion: string;
@@ -66,6 +106,13 @@ export interface UpdateServiceOptions {
   now?: () => Date;
 }
 
+/** `<userData>/update-pending.json`: written just before the app quits into an update. */
+interface PendingInstall {
+  version: string;
+  previousVersion: string;
+  at: string;
+}
+
 interface PersistedState {
   installId: string;
   deferredVersion: string | null;
@@ -81,6 +128,9 @@ export class UpdateService {
   private first: NodeJS.Timeout | null = null;
   private checking: Promise<void> | null = null;
   private downloading: Promise<void> | null = null;
+  private installing: Promise<void> | null = null;
+  /** True from the click on "Update and restart" until that attempt ends. */
+  private installActive = false;
   private readonly logger: Logger;
   private readonly now: () => Date;
 
@@ -168,7 +218,7 @@ export class UpdateService {
   }
 
   private async runCheck(): Promise<void> {
-    if (this.snap.status === 'downloading') return;
+    if (this.snap.status === 'downloading' || this.installActive) return;
     const origin = this.options.getServerOrigin();
     if (!origin) {
       this.set({
@@ -269,6 +319,7 @@ export class UpdateService {
     const sameOffer = this.snap.offer?.version === version;
     this.offerUrl = response.downloadUrl;
     this.set({
+      installBlocker: this.blockerFor(artifactKind(fileName)),
       status: sameOffer && this.snap.status === 'downloaded' ? 'downloaded' : 'available',
       required: response.required,
       offer: {
@@ -313,7 +364,14 @@ export class UpdateService {
     const finalPath = path.join(directory, offer.fileName);
     const partPath = `${finalPath}.part`;
     this.downloadedPath = null;
-    this.set({ status: 'downloading', progress: 0, message: null, downloadedFile: null });
+    this.set({
+      status: 'downloading',
+      progress: 0,
+      receivedBytes: 0,
+      message: null,
+      downloadedFile: null,
+      ...(this.installActive ? { stage: 'downloading' as const } : {}),
+    });
     let handle: fs.FileHandle | null = null;
     try {
       await fs.mkdir(directory, { recursive: true });
@@ -345,13 +403,14 @@ export class UpdateService {
           if (bytes > offer.sizeBytes) throw new SizeMismatch();
           hash.update(value);
           await handle.write(value);
-          this.set({ progress: bytes / offer.sizeBytes });
+          this.set({ progress: bytes / offer.sizeBytes, receivedBytes: bytes });
         }
       } finally {
         clearTimeout(stall);
       }
       await handle.close();
       handle = null;
+      if (this.installActive) this.set({ stage: 'verifying' });
       const verdict = verifyDownload({ bytes, sha256: hash.digest('hex') }, offer);
       if (!verdict.ok) {
         await fs.rm(partPath, { force: true });
@@ -364,7 +423,12 @@ export class UpdateService {
       }
       await fs.rename(partPath, finalPath);
       this.downloadedPath = finalPath;
-      this.set({ status: 'downloaded', progress: 1, downloadedFile: offer.fileName });
+      this.set({
+        status: 'downloaded',
+        progress: 1,
+        receivedBytes: bytes,
+        downloadedFile: offer.fileName,
+      });
       this.logger.info('updates.downloaded', { version: offer.version });
     } catch (error) {
       await handle?.close().catch(() => undefined);
@@ -379,7 +443,196 @@ export class UpdateService {
   }
 
   private fail(message: string): void {
-    this.set({ status: 'failed', progress: null, message, downloadedFile: null });
+    this.set({
+      status: 'failed',
+      progress: null,
+      receivedBytes: null,
+      stage: null,
+      message,
+      downloadedFile: null,
+    });
+  }
+
+  // ── Update and restart ────────────────────────────────────────────────────
+
+  private get outcomeDir(): string {
+    return path.dirname(this.options.stateFile);
+  }
+  private get pendingFile(): string {
+    return path.join(this.outcomeDir, 'update-pending.json');
+  }
+  private get resultFile(): string {
+    return path.join(this.outcomeDir, 'update-result.json');
+  }
+
+  private blockerFor(kind: 'installer' | 'archive'): string | null {
+    if (!this.options.installer) return NO_INSTALLER;
+    if (kind !== 'archive') return INSTALLER_PACKAGE;
+    try {
+      return this.options.installer.blocker();
+    } catch {
+      return NO_INSTALLER;
+    }
+  }
+
+  /**
+   * "Update and restart". Resolves when the app has been asked to quit into the new version, or
+   * when the attempt ended earlier; the snapshot says which. Nothing is changed on failure.
+   */
+  install(): Promise<void> {
+    if (this.installing) return this.installing;
+    this.installActive = true;
+    this.installing = this.runInstall().finally(() => {
+      this.installing = null;
+      this.installActive = false;
+    });
+    return this.installing;
+  }
+
+  private async runInstall(): Promise<void> {
+    const offer = this.snap.offer;
+    const installer = this.options.installer;
+    if (!offer) return;
+    // Whatever the server says: only ever a later version than the one that runs.
+    if (!isNewer(offer.version, this.options.appVersion)) {
+      this.set({ message: 'That version is not newer than the one you have.' });
+      return;
+    }
+    const blocker = this.blockerFor(offer.kind);
+    if (!installer || blocker) {
+      this.set({ installBlocker: blocker ?? NO_INSTALLER });
+      return;
+    }
+    this.set({ notice: null, message: null });
+
+    let file = this.downloadedPath;
+    if (this.snap.status === 'downloaded' && file) {
+      try {
+        await fs.access(file);
+      } catch {
+        file = null;
+      }
+    } else {
+      file = null;
+    }
+    if (!file) {
+      await this.download();
+      file = this.downloadedPath;
+      // The download says why it failed; nothing more to do here.
+      if (this.snap.status !== 'downloaded' || !file) {
+        this.set({ stage: null });
+        return;
+      }
+    }
+
+    const keep = (message: string): void => {
+      this.set({ status: 'downloaded', stage: null, message });
+    };
+    this.set({ status: 'installing', stage: 'unpacking', progress: null });
+    let staged: StagedUpdate;
+    try {
+      staged = await installer.stage(file, offer, (phase) => {
+        this.set({ stage: phase === 'unpacking' ? 'unpacking' : 'installing' });
+      });
+    } catch (error) {
+      this.logger.warn('updates.stage_failed', { reason: errorName(error) });
+      keep(
+        `${displayable(error, 'The update could not be prepared.')} The version you have was kept and nothing was changed.`,
+      );
+      return;
+    }
+    this.set({ stage: 'installing' });
+    try {
+      const pending: PendingInstall = {
+        version: offer.version,
+        previousVersion: this.options.appVersion,
+        at: this.now().toISOString(),
+      };
+      await fs.mkdir(this.outcomeDir, { recursive: true });
+      await fs.writeFile(this.pendingFile, JSON.stringify(pending), { mode: 0o600 });
+      this.set({ stage: 'restarting' });
+      await installer.handOver(staged, this.resultFile);
+      this.logger.info('updates.handed_over', { version: offer.version });
+    } catch (error) {
+      this.logger.warn('updates.hand_over_failed', { reason: errorName(error) });
+      installer.discard(staged);
+      await fs.rm(this.pendingFile, { force: true }).catch(() => undefined);
+      keep(
+        `${displayable(error, 'The update could not be started.')} The version you have was kept and nothing was changed.`,
+      );
+    }
+  }
+
+  /**
+   * Called once at start: what did an update started by the previous run come to? The answer is
+   * this process's own version, not a file's claim: the update worked exactly when the version
+   * that runs now is the one that was to be installed.
+   */
+  async loadOutcome(): Promise<UpdateNotice | null> {
+    let pending: PendingInstall | null = null;
+    try {
+      const raw: unknown = JSON.parse(await fs.readFile(this.pendingFile, 'utf8'));
+      if (raw && typeof raw === 'object') {
+        const { version, previousVersion, at } = raw as Record<string, unknown>;
+        if (typeof version === 'string' && version.length <= 64) {
+          pending = {
+            version,
+            previousVersion: typeof previousVersion === 'string' ? previousVersion : '',
+            at: typeof at === 'string' ? at : '',
+          };
+        }
+      }
+    } catch {
+      // No update was under way.
+    }
+    try {
+      this.options.installer?.cleanup();
+    } catch {
+      // Leftovers are removed on a later start.
+    }
+    if (!pending) return null;
+    let step: string | null = null;
+    try {
+      const raw: unknown = JSON.parse(await fs.readFile(this.resultFile, 'utf8'));
+      const value = (raw as { step?: unknown } | null)?.step;
+      if (typeof value === 'string' && /^[a-z]{1,16}$/.test(value)) step = value;
+    } catch {
+      // The helper writes a result only when it had to put the previous version back.
+    }
+    await fs.rm(this.pendingFile, { force: true }).catch(() => undefined);
+    await fs.rm(this.resultFile, { force: true }).catch(() => undefined);
+    const ok = pending.version === this.options.appVersion;
+    const notice: UpdateNotice = ok
+      ? { kind: 'updated', version: pending.version }
+      : {
+          kind: 'failed',
+          version: pending.version,
+          message: `${installFailureMessage(step)} The version you had (${this.options.appVersion}) was kept and is running.`,
+        };
+    try {
+      await fs.writeFile(
+        path.join(this.outcomeDir, 'update-history.json'),
+        JSON.stringify({
+          ok,
+          version: pending.version,
+          previousVersion: pending.previousVersion,
+          runningVersion: this.options.appVersion,
+          step,
+          at: this.now().toISOString(),
+        }),
+        { mode: 0o600 },
+      );
+    } catch {
+      // The record is a convenience.
+    }
+    this.logger.info('updates.outcome', { ok, step: step ?? 'none' });
+    this.set({ notice });
+    return notice;
+  }
+
+  /** The person closed the "Updated to…" or "Update failed" notice. */
+  dismissNotice(): void {
+    if (this.snap.notice) this.set({ notice: null });
   }
 
   // ── After the download ────────────────────────────────────────────────────
@@ -424,6 +677,14 @@ export class UpdateService {
 }
 
 class SizeMismatch extends Error {}
+
+/** The installer's errors carry sentences written for the person; anything else gets the fallback. */
+function displayable(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.name === 'UpdateInstallError' && error.message) {
+    return error.message;
+  }
+  return fallback;
+}
 
 async function readLimited(response: Response, limit: number): Promise<string> {
   const declared = Number(response.headers.get('content-length') ?? '0');

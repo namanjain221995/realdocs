@@ -439,6 +439,8 @@ describe('declared actions', () => {
         CH.connectionDisconnect,
         CH.connectionRevalidate,
         CH.connectionDismissNotice,
+        // Closing the "Updated to…" notice the panel shows; it starts nothing.
+        CH.updatesDismissNotice,
         CH.sessionReport,
         CH.externalOpen,
         CH.policyViolation,
@@ -560,6 +562,7 @@ describe('declared actions', () => {
     for (const [channel, arg] of [
       [CH.updatesCheck, []],
       [CH.updatesDownload, []],
+      [CH.updatesInstall, []],
       [CH.updatesDefer, []],
       [CH.updatesOpen, [{ action: 'open-installer' }]],
     ] as const) {

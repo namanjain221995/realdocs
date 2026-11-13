@@ -1344,3 +1344,23 @@ html:has(.land) {
 .land .dl-hint a {
   color: var(--rd-accent);
 }
+
+/* "Tested by our team" in the platform table: a statement of the owner's tests. */
+.lp-tested {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #2fbf71;
+}
+.lp-tested svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.lp-tested__detail {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.875em;
+  opacity: 0.8;
+}

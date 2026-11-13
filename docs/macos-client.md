@@ -78,8 +78,10 @@ installer: there is nothing to run with administrator rights, and the app asks f
 
 The published file names are `RealtimeDocs-<version>-macos-<arm64|x64|universal>.<zip|dmg>`
 ([desktop-release.md](desktop-release.md)); the unpacked folder keeps the Electron name
-`RealtimeDocs-darwin-<arch>`. Updates: the app checks your server, and on request downloads and
-verifies (SHA-256) the new file, but never installs by itself. A browser cannot tell Apple Silicon
+`RealtimeDocs-darwin-<arch>`. Updates: the app checks your server and installs nothing by itself.
+"Update and restart" in Settings -> Updates downloads the new zip, verifies its SHA-256, replaces the
+app bundle and reopens it; it needs the app to be in a folder you can change (move it to Applications
+first: an app opened straight from the downloaded folder runs from a read-only copy). A browser cannot tell Apple Silicon
 from Intel, so the download page shows the Apple Silicon build by default and always offers "Choose
 another platform"; Apple menu -> About This Mac names your chip. A `.dmg` is suggested only when the
 operator states it is notarised.

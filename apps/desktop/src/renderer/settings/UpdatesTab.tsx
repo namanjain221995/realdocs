@@ -1,24 +1,25 @@
 import { Badge, Banner, Button, Card } from '@realtimedocs/ui';
-import { Download, FolderOpen, RefreshCw } from 'lucide-react';
+import { Check, Download, FolderOpen, RefreshCw, RotateCw } from 'lucide-react';
 import { SIGNATURE_WORDS } from '../../shared/updates';
 import { desktop } from '../shared/desktop';
 import { formatDateTime } from '../shared/labels';
+import { UpdateProgress, formatBytes } from '../shared/UpdateProgress';
 import type { TabProps } from './SettingsApp';
 
-function formatBytes(bytes: number): string {
-  if (bytes < 1_000_000) return `${Math.max(1, Math.round(bytes / 1000))} KB`;
-  if (bytes < 1_000_000_000) return `${(bytes / 1_000_000).toFixed(1)} MB`;
-  return `${(bytes / 1_000_000_000).toFixed(2)} GB`;
-}
-
 /**
- * Settings → Updates. The app checks, downloads on request and verifies the file; it never
- * installs or restarts itself. The user decides when to open the installer.
+ * Settings → Updates. The app checks by itself. "Update and restart" downloads, verifies, unpacks,
+ * checks and restarts into the new version; nothing is installed without that click. Where the
+ * installation cannot replace itself, the verified download is offered instead.
  */
 export function UpdatesTab({ state, run }: TabProps) {
   const { updates, connection } = state;
   const { offer } = updates;
-  const busy = updates.status === 'checking' || updates.status === 'downloading';
+  const installing = updates.stage !== null;
+  const busy =
+    updates.status === 'checking' ||
+    updates.status === 'downloading' ||
+    updates.status === 'installing' ||
+    installing;
   const noServer = !connection.server.origin;
 
   return (
@@ -27,15 +28,37 @@ export function UpdatesTab({ state, run }: TabProps) {
         <h2 className="rds-h2">Updates</h2>
         <p className="rds-lead">
           You have RealtimeDocs Desktop {updates.currentVersion} ({updates.channel} channel). The
-          app asks your server about new versions when it starts and every 6 hours. It never
-          installs or restarts by itself: you download an update, and open it when you choose.
-          Unsaved work stays on this computer either way.
+          app asks your server about new versions when it starts and every 6 hours. Nothing is
+          installed until you choose "Update and restart"; the app then downloads the new version,
+          checks it, and restarts into it. Unsaved work stays on this computer either way.
         </p>
+
+        {updates.notice?.kind === 'updated' && (
+          <Banner
+            tone="success"
+            data-testid="rd-update-done"
+            onDismiss={() => void run(desktop?.updates.dismissNotice())}
+          >
+            <span className="rdu-updated">
+              <Check aria-hidden="true" />
+              Updated to {updates.notice.version}.
+            </span>
+          </Banner>
+        )}
+        {updates.notice?.kind === 'failed' && (
+          <Banner
+            tone="warning"
+            data-testid="rd-update-not-installed"
+            onDismiss={() => void run(desktop?.updates.dismissNotice())}
+          >
+            The update to {updates.notice.version} was not installed. {updates.notice.message}
+          </Banner>
+        )}
 
         {updates.required && (
           <Banner tone="danger" data-testid="rd-update-required">
-            Update required. This version is too old for your server. Download the current version
-            and install it to keep editing documents.
+            Update required. This version is too old for your server. Update to the current version
+            to keep editing documents.
           </Banner>
         )}
 
@@ -97,21 +120,47 @@ export function UpdatesTab({ state, run }: TabProps) {
               </pre>
             </details>
           )}
-          {updates.status === 'downloading' && (
-            <p role="status">Downloading… {Math.round((updates.progress ?? 0) * 100)}%</p>
+          {installing ? (
+            <UpdateProgress updates={updates} />
+          ) : (
+            updates.status === 'downloading' && (
+              <p role="status">
+                Downloading… {Math.round((updates.progress ?? 0) * 100)}% (
+                {formatBytes(updates.receivedBytes ?? 0)} of {formatBytes(offer.sizeBytes)})
+              </p>
+            )
           )}
-          {updates.status === 'downloaded' && (
+          {updates.status === 'downloaded' && !installing && (
             <p role="status" data-testid="rd-update-verified">
               Downloaded to your Downloads folder and verified (size and SHA-256 match). Nothing has
               been installed yet.
             </p>
           )}
+          {updates.installBlocker && (
+            <p className="rds-hint" data-testid="rd-update-manual-reason">
+              This copy cannot replace itself: {updates.installBlocker} You can still download the
+              new version here and replace the app yourself.
+            </p>
+          )}
           <div className="rds-actions">
+            {!updates.installBlocker && (
+              <Button
+                variant="primary"
+                iconLeft={<RotateCw />}
+                loading={installing}
+                disabled={busy}
+                onClick={() => void run(desktop?.updates.install())}
+                data-testid="rd-update-install"
+              >
+                Update and restart
+              </Button>
+            )}
             {updates.status === 'downloaded' ? (
               <>
                 <Button
-                  variant="primary"
+                  variant={updates.installBlocker ? 'primary' : 'secondary'}
                   iconLeft={<FolderOpen />}
+                  disabled={installing}
                   onClick={() => void run(desktop?.updates.open('show-in-folder'))}
                   data-testid="rd-update-show"
                 >
@@ -119,6 +168,7 @@ export function UpdatesTab({ state, run }: TabProps) {
                 </Button>
                 <Button
                   variant="secondary"
+                  disabled={installing}
                   onClick={() => void run(desktop?.updates.open('open-installer'))}
                   data-testid="rd-update-open"
                 >
@@ -127,14 +177,14 @@ export function UpdatesTab({ state, run }: TabProps) {
               </>
             ) : (
               <Button
-                variant="primary"
+                variant={updates.installBlocker ? 'primary' : 'secondary'}
                 iconLeft={<Download />}
-                loading={updates.status === 'downloading'}
+                loading={updates.status === 'downloading' && !installing}
                 disabled={busy}
                 onClick={() => void run(desktop?.updates.download())}
                 data-testid="rd-update-download"
               >
-                Download update
+                Download only
               </Button>
             )}
             {!updates.required && !updates.deferred && (
@@ -169,6 +219,8 @@ function statusLabel(status: string, noServer: boolean): string {
       return 'Downloading';
     case 'downloaded':
       return 'Downloaded and verified';
+    case 'installing':
+      return 'Updating';
     case 'failed':
       return 'Problem';
     case 'unavailable':

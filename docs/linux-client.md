@@ -43,11 +43,14 @@ fix, and it is your decision, not something the app does for you.
 ## Updates
 
 The app asks your server about new versions at start and every 6 hours, and from Settings ->
-Updates. It never installs or replaces itself. "Download update" saves the new archive to your
-Downloads folder, checks its size and SHA-256 against what the server announced and only then
-offers "Show in folder". You extract it yourself. If the server marks an update as required (your
-version is below its minimum), the panel says so and points to Settings -> Updates; unsaved work
-stays on your computer.
+Updates. Nothing is installed until you choose "Update and restart" there: the app then downloads the
+new archive, checks its size and SHA-256 against what the server announced, unpacks it next to the
+installed folder, checks the new version, and restarts into it. The previous version is kept until
+the new one has started, and comes back if it does not. Your profile is not touched. The app needs
+`unzip`, `bsdtar` or a `.tar.gz` package for this, and a folder your account may change; otherwise it
+says so and offers "Download only", after which you extract the archive yourself. If the server marks
+an update as required (your version is below its minimum), the panel says so and points to Settings ->
+Updates; unsaved work stays on your computer.
 
 ## Capture exclusion on Linux
 
@@ -64,6 +67,7 @@ process list or from any monitoring system, and it must not be used to bypass a 
   sandbox error means the user-namespace point above.
 - No tray icon: many GNOME setups need an AppIndicator extension. The panel still works; the
   keyboard shortcuts are the way back from click-through mode.
-- "Update required": open Settings -> Updates, download, verify, extract, start the new version.
+- "Update required": open Settings -> Updates and choose "Update and restart" (or "Download only" and
+  extract the new version yourself).
 
 For the operator: publishing, rollback and CI are described in [desktop-release.md](desktop-release.md).

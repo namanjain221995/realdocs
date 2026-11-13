@@ -127,6 +127,8 @@ export interface MainApi {
   openExternal(url: string, source: 'panel' | 'settings'): Promise<void>;
   checkForUpdates(): Promise<void>;
   downloadUpdate(): Promise<void>;
+  installUpdate(): Promise<void>;
+  dismissUpdateNotice(): void;
   deferUpdate(): Promise<void>;
   openUpdate(action: 'show-in-folder' | 'open-installer'): Promise<void>;
   getDiagnostics(): Promise<Diagnostics>;
@@ -387,6 +389,19 @@ export function buildInvokeHandlers(api: MainApi): HandlerSpec[] {
       schema: NoInput,
       allowed: SETTINGS,
       handle: () => api.downloadUpdate(),
+    }),
+    defineHandler({
+      channel: CH.updatesInstall,
+      schema: NoInput,
+      allowed: SETTINGS,
+      handle: () => api.installUpdate(),
+    }),
+    defineHandler({
+      channel: CH.updatesDismissNotice,
+      schema: NoInput,
+      // The panel shows the notice too; closing it reveals nothing and changes nothing else.
+      allowed: PANEL_AND_SETTINGS,
+      handle: () => api.dismissUpdateNotice(),
     }),
     defineHandler({
       channel: CH.updatesDefer,

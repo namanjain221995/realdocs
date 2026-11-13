@@ -19,7 +19,7 @@ operator who publishes releases.
 | Update check, verified download, Settings -> Updates, "update required" state        | IMPLEMENTED AND VERIFIED (unit tests; Linux/Xvfb smoke suite still passes)                                                               |
 | Windows Authenticode signing                                                         | CONFIGURED BUT REQUIRES CREDENTIAL (certificate, Windows runner)                                                                         |
 | macOS Developer ID signing and notarisation                                          | CONFIGURED BUT REQUIRES CREDENTIAL (Apple Developer account, macOS runner)                                                               |
-| Silent in-place self-update                                                          | NOT IMPLEMENTED, by decision (see "Updates")                                                                                             |
+| In-place update on request ("Update and restart")                                    | IMPLEMENTED; verified end to end on Linux; Windows and macOS not yet run (see "Updates")                                                 |
 | `.github/workflows/ci.yml`, `desktop-release.yml`                                    | EXECUTED on GitHub (2026-11-12); `desktop-release.yml` run 43195585865 succeeded                                                         |
 
 Nothing here has been signed or notarised, and nobody has operated the app by hand on Windows or
@@ -162,21 +162,63 @@ schema and protocol versions, and a random install id (a UUID in `update-state.j
 the rollout hash). Settings -> Updates shows the version, the notes (as plain text), size, SHA-256 and
 the signature status in plain words.
 
-"Download update" is the only thing that downloads, and only from the configured server origin:
-no redirect is followed, the URL must be the release path announced for that version and file name,
-the file name must match the strict pattern, and the size is capped at what was announced. The file is
-written as `<name>.part` in the Downloads folder and renamed only after size and SHA-256 match;
-otherwise it is deleted. Then "Show in folder" and "Open installer" (or "Open download" for
-archives) appear; they act only on that verified file, after a click.
+Nothing is downloaded or installed until the person asks. Every download comes only from the
+configured server origin: no redirect is followed, the URL must be the release path announced for that
+version and file name, the file name must match the strict pattern, and the size is capped at what was
+announced. The file is written as `<name>.part` in the Downloads folder and renamed only after size and
+SHA-256 match; otherwise it is deleted.
 
-**Decision: no silent self-replacement.** Replacing the running app without the user would require
-code-signed builds (Windows Authenticode, Apple notarisation) so that the replacement can be verified
-by the operating system, plus an installer flow that survives unsaved work. Neither exists yet, and an
-unsigned auto-updater is exactly the mechanism a hostile server or a tampered mirror would want. So the
-app never quits, installs or restarts by itself; unsaved changes are not touched (recovery drafts
-already persist). When signed builds exist, the hook is this: the release manifest already carries
-`signatureStatus` per file, and `UpdateService.reveal('open-installer')` is the one place that would
-hand the verified file to an installer.
+### Update and restart
+
+"Update and restart" (Settings -> Updates; the tray menu shows "Update to version …" while one is on
+offer and leads there) is one click that does the rest. It replaced the earlier rule that the app never
+installs anything; see [decisions.md](decisions.md), "In-place update on request". The steps, each shown
+by name while it runs (the download with a real percentage and byte count, the others with a moving
+indicator that stands still when the system asks for reduced motion):
+
+1. **Downloading** and **Verifying**: as above; size and SHA-256 must match the manifest.
+2. **Unpacking**: the archive's listing is checked first (one top-level folder with the expected name,
+   the application in it, no absolute path, no `..`, no link in a Windows archive), then it is unpacked
+   into a new folder with a random name next to the installation: `%SystemRoot%\System32\tar.exe` on
+   Windows, `/usr/bin/ditto` on macOS, `unzip`, `bsdtar` or `tar` on Linux.
+3. **Installing**: the unpacked tree is walked (only files, folders and links that stay inside it), the
+   executable must exist and be built for this processor, and the version inside `app.asar` must be the
+   announced one. On Windows and Linux the installed folder must hold nothing but the app, because the
+   whole folder is replaced. Then a small helper script is written to a private temporary folder and
+   started detached: PowerShell on Windows (never elevated), `/bin/sh` on macOS and Linux. It contains
+   only quoted absolute paths that the app computed from its own location, and the process id.
+4. **Restarting**: only after the helper has reported that it runs does the app quit, the ordinary way
+   (preferences are saved; recovery drafts are already on disk). The helper waits for the process to end,
+   renames the installation aside, renames the new version into place, starts it, waits six seconds,
+   and only then deletes the previous version. If a rename fails or the new version does not stay up,
+   it moves the previous version back, starts it and records the step that failed.
+
+After the restart the app compares its own version with the one it was to become: "Updated to
+<version>" is shown once in the panel and in Settings, or "The update was not installed" with the
+reason and the statement that the previous version was kept. The profile folder is never touched.
+
+**When the app does not replace itself** it says why and offers the manual way ("Download only", then
+"Show in folder" / "Open download"): a copy started from the source tree; macOS App Translocation (the
+app was opened straight from the downloaded folder; move it to Applications); a folder the account
+cannot change (a read-only volume, a system location); a copy installed by the Windows installer; an
+AppImage; a server that offers an installer rather than an archive; an installed folder that also holds
+other files; a Linux computer without `unzip`, `bsdtar` or a `.tar.gz` package. It never asks for
+administrator rights.
+
+**What an update is trusted on.** The builds are not code-signed, so the operating system does not
+vouch for a new version. The app trusts the server it is configured for, over that server's HTTPS
+connection, and the SHA-256 that server announces; it also refuses a version that is not newer than
+the running one and a build for another platform. Whoever controls that server (or its release
+directory) can therefore ship code to every desktop that clicks "Update and restart". Because the app
+fetches the file itself, macOS does not apply its first-open check to the new version. Signed and
+notarised builds would add a second, independent check; the place for it is the "Installing" step.
+
+**How it was checked.** `apps/desktop/scripts/update-check.mjs` installs a packaged build into a scratch
+folder, starts it, serves a newer build from a local HTTP server and runs the app's own update service,
+installer and helper against it; it passes on Linux (tar.gz, under Xvfb). The workflow
+`.github/workflows/desktop-update-check.yml` runs the same script on Windows, macOS and Linux runners.
+The script ends the old process itself: a packaged build cannot be driven from outside, so the click,
+the IPC call and the app's own quit are covered by unit tests and an Xvfb smoke test instead.
 
 "Remind me later" is allowed unless the update is required. When it is required, the panel shows an
 "Update required" state with the way to Settings -> Updates, and the editor's unsupported-content

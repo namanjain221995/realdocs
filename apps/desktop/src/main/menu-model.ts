@@ -21,6 +21,7 @@ export type MenuActionId =
   | 'reconnect'
   | 'open-privacy-test-center'
   | 'open-settings'
+  | 'open-updates'
   | 'open-share-guide'
   | 'toggle-pin'
   | 'toggle-collapse'
@@ -163,6 +164,18 @@ export function buildTrayMenuModel(state: AppState): MenuEntry[] {
     SEPARATOR,
     { type: 'item', label: 'Privacy Test Center', action: 'open-privacy-test-center' },
     { type: 'item', label: 'Settings', action: 'open-settings' },
+    // Only while a newer version is on offer: takes the person to Settings → Updates.
+    ...(state.updates.offer
+      ? [
+          {
+            type: 'item' as const,
+            label: state.updates.required
+              ? `Update required: version ${state.updates.offer.version}…`
+              : `Update to version ${state.updates.offer.version}…`,
+            action: 'open-updates' as const,
+          },
+        ]
+      : []),
     SEPARATOR,
     { type: 'item', label: 'Quit', action: 'quit' },
   ];

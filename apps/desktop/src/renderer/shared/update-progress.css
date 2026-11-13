@@ -1,0 +1,152 @@
+/* Progress of "Update and restart" (Settings → Updates and the strip in the panel). */
+.rdu-progress {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.rdu-progress--compact {
+  gap: 6px;
+  margin: 0;
+  padding: 8px 12px;
+}
+
+.rdu-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.rdu-stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.55;
+}
+
+.rdu-stage[data-state='current'] {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.rdu-stage[data-state='done'] {
+  opacity: 0.85;
+}
+
+.rdu-stage__mark {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+}
+
+.rdu-stage__mark svg {
+  width: 14px;
+  height: 14px;
+}
+
+.rdu-bar {
+  width: 100%;
+  height: 8px;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 18%, transparent);
+  accent-color: var(--rd-color-accent, #2dd4bf);
+}
+
+.rdu-bar::-webkit-progress-bar {
+  background: transparent;
+}
+
+.rdu-bar::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--rd-color-accent, #2dd4bf);
+  transition: width 200ms linear;
+}
+
+.rdu-bar--busy {
+  position: relative;
+}
+
+.rdu-bar--busy span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 35%;
+  border-radius: 999px;
+  background: var(--rd-color-accent, #2dd4bf);
+  animation: rdu-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes rdu-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(290%);
+  }
+}
+
+.rdu-sentence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+}
+
+/* "Updated to …" after the restart: fades in, with a drawn check mark. */
+.rdu-updated {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: rdu-fade 400ms ease-out both;
+}
+
+.rdu-updated svg {
+  width: 18px;
+  height: 18px;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: rdu-draw 500ms 200ms ease-out forwards;
+}
+
+@keyframes rdu-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rdu-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No motion: the stage is still named in text. */
+  .rdu-bar--busy span {
+    animation: none;
+    width: 100%;
+    opacity: 0.45;
+  }
+
+  .rdu-bar::-webkit-progress-value {
+    transition: none;
+  }
+
+  .rdu-updated,
+  .rdu-updated svg {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

@@ -102,6 +102,7 @@ import {
   safeFileName,
 } from './asset-download';
 import { RateLimiter } from './rate-limit';
+import { createAppInstaller } from './update-installer';
 import { UpdateService } from './update-service';
 import { createSafeStorageAdapter } from './safe-storage-adapter';
 import { decideExternalOpen } from './navigation-policy';
@@ -140,6 +141,9 @@ const RECORDING_TIMEOUT_MS = 15_000;
 const DISPLAY_SETTLE_MS = 250;
 /** Links the panel hands to the operating system: a person never clicks faster than this. */
 const PANEL_LINK_LIMIT = { minIntervalMs: 700, max: 12, windowMs: 60_000 };
+
+/** How long "Updated to <version>" stays in the panel after the restart. */
+const UPDATED_NOTICE_MS = 8_000;
 
 export class AppController implements MainApi {
   private readonly platform: PlatformAdapter;
@@ -195,6 +199,16 @@ export class AppController implements MainApi {
       logger: this.logger,
     });
     this.updates = new UpdateService({
+      installer: createAppInstaller({
+        platform: process.platform,
+        arch: process.arch,
+        execPath: process.execPath,
+        packaged: app.isPackaged,
+        pid: process.pid,
+        argv: process.argv.slice(1),
+        env: process.env,
+        quit: () => this.quit(),
+      }),
       fetch: (url, init) => this.mainFetch(url, init),
       getServerOrigin: () => this.connection.serverOrigin,
       appVersion: app.getVersion(),
@@ -353,7 +367,15 @@ export class AppController implements MainApi {
     void this.connection.start().catch(() => {
       this.logger.error('connection.start_failed', {});
     });
-    // First check shortly after start, then every 6 hours; never installs anything by itself.
+    // Did the previous run restart into an update? The answer goes into the state the panel and
+    // Settings render; a success notice goes away by itself, a failure stays until closed.
+    void this.updates.loadOutcome().then((notice) => {
+      if (notice?.kind !== 'updated') return;
+      const timer = setTimeout(() => this.updates.dismissNotice(), UPDATED_NOTICE_MS);
+      timer.unref?.();
+    });
+    // First check shortly after start, then every 6 hours. Nothing is installed without a click
+    // on "Update and restart".
     this.updates.start();
   }
 
@@ -791,6 +813,9 @@ export class AppController implements MainApi {
         break;
       case 'open-settings':
         this.openSettingsFromMenu();
+        break;
+      case 'open-updates':
+        this.openSettingsFromMenu('updates');
         break;
       case 'open-share-guide':
         this.openShareGuide();
@@ -1243,6 +1268,15 @@ export class AppController implements MainApi {
 
   async downloadUpdate(): Promise<void> {
     await this.updates.download();
+  }
+
+  /** "Update and restart": download, verify, unpack, check, then quit into the new version. */
+  async installUpdate(): Promise<void> {
+    await this.updates.install();
+  }
+
+  dismissUpdateNotice(): void {
+    this.updates.dismissNotice();
   }
 
   async deferUpdate(): Promise<void> {

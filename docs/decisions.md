@@ -231,6 +231,7 @@ Dates are 2026-11-10 unless noted.
   verifies size and SHA-256 and hands the verified file to the user. No `electron-updater` or Squirrel
   dependency was added. Revisit when Windows and macOS signing credentials exist; the hook is
   `UpdateService.reveal('open-installer')`.
+  **Superseded on 2026-11-13** by "In-place update on request" below.
 - **Install id is a random UUID** in `update-state.json` (not in the preferences schema, which is strict
   and versioned), used only for the staged-rollout hash; it identifies no person.
 - **Tray menu unchanged.** The tray labels are the owner's specification and are pinned by tests, so
@@ -341,3 +342,27 @@ Plan and audit: [enterprise-upgrade-plan.md](enterprise-upgrade-plan.md).
   Old URLs redirect on the client.
 - Known gap: `/d/:id/print` is hidden for candidates without export, and the data it needs (`export?format=json`)
   is refused by the server, which is the real control.
+
+## In-place update on request (2026-11-13)
+
+- **The owner asked for it.** After using 0.1.2 the owner wanted an update to be one action: show that a
+  new version exists, download it, install it and restart into it. The decision of 2026-11-12 ("no
+  in-place self-replacement") is reversed for a user-started update. There is still no silent mode:
+  nothing is installed without a click on "Update and restart".
+- **Trust statement.** The builds are unsigned, so an update rests on the configured server (HTTPS) and
+  the SHA-256 it announces. Whoever controls that server can ship code to the desktops that update. That
+  was already true of the manual download; the difference is that the person no longer handles the file
+  and macOS no longer shows its first-open check for the new version. Accepted by the owner's request;
+  signing remains the way to add an independent check.
+- **Own swap instead of `electron-updater` or Squirrel.** Both expect signed installers and their own
+  package formats; the releases are plain archives. The swap is two renames next to the installation,
+  done by a helper script after the app has exited, with the previous version kept until the new one
+  runs and moved back otherwise.
+- **The helper must be running before the app quits.** If PowerShell is blocked by policy the app stays
+  up and says so, rather than quitting into nothing.
+- **Fallback, never elevation.** Translocated, read-only, installer-made and AppImage copies, and folders
+  that hold other files, get the manual download with the reason.
+- **Tray menu.** One entry is added while an update is on offer ("Update to version …"); the pinned
+  labels are unchanged.
+- **Not verified on Windows and macOS when written:** the code for both was written on Linux. The check
+  script and its workflow exist to find out on native runners.

@@ -83,6 +83,8 @@ function parseArgs(argv) {
     else if (arg === '--out') options.out = path.resolve(argv[(index += 1)]);
     else if (arg === '--no-archive') options.archive = false;
     else if (arg === '--no-inspect') options.inspect = false;
+    // For scripts/update-check.mjs only: package this source as another version.
+    else if (arg === '--app-version') options.appVersion = argv[(index += 1)];
     else throw new Error(`Unknown argument: ${arg}`);
   }
   if (!PLATFORMS.includes(options.platform)) {
@@ -440,6 +442,12 @@ async function packageOne({
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const manifest = readManifest();
+  if (options.appVersion !== undefined) {
+    if (!/^\d+\.\d+\.\d+$/.test(options.appVersion)) {
+      throw new Error(`--app-version must look like 1.2.3 (got ${options.appVersion})`);
+    }
+    manifest.version = options.appVersion;
+  }
   const electronVersion = JSON.parse(
     fs.readFileSync(path.join(root, 'node_modules', 'electron', 'package.json'), 'utf8'),
   ).version;
@@ -448,7 +456,7 @@ async function main() {
     `Building ${APP_NAME} ${manifest.version} (production) for Electron ${electronVersion}`,
   );
   fs.mkdirSync(stage, { recursive: true });
-  await buildApp({ mode: 'production', out: path.join(stage, 'app') });
+  await buildApp({ mode: 'production', out: path.join(stage, 'app'), version: manifest.version });
 
   const results = [];
   let failed = false;

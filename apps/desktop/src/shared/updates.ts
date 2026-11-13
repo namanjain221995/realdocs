@@ -1,11 +1,13 @@
 /**
  * Desktop update state and the pure rules around it (no Electron, no Node I/O).
  *
- * The app NEVER replaces itself. It asks the configured server whether a newer release exists,
- * downloads the installer or archive into the user's Downloads folder only when asked, verifies its
- * size and SHA-256 against what the server announced, and then offers to show the file or open it.
- * Silent in-place replacement needs a signed build (Windows Authenticode / Apple notarisation) and
- * is deliberately not implemented; see docs/desktop-release.md.
+ * The app asks the configured server whether a newer release exists. Nothing is downloaded or
+ * installed until the person asks: "Update and restart" downloads the archive, verifies its size
+ * and SHA-256 against what the server announced, unpacks it next to the installation, checks the
+ * unpacked build, and restarts into it (docs/desktop-release.md, "Updates"). Where the installation
+ * cannot be replaced in place, the verified download is offered for a manual replacement instead.
+ * The builds are not code-signed: what an update is trusted on is the configured server (HTTPS)
+ * and the checksum it announces.
  */
 import {
   RELEASE_FORMAT_EXTENSION,
@@ -21,6 +23,8 @@ export type UpdateStatus =
   | 'available'
   | 'downloading'
   | 'downloaded'
+  /** "Update and restart" is past the download: unpacking, checking, handing over. */
+  | 'installing'
   | 'failed'
   | 'unavailable';
 
@@ -36,6 +40,44 @@ export interface UpdateOffer {
   fileName: string;
   /** `installer` for .exe/.dmg/.AppImage, `archive` for .zip/.tar.gz. */
   kind: 'installer' | 'archive';
+}
+
+/** Where an "Update and restart" is. Only `downloading` has a measurable progress. */
+export const INSTALL_STAGES = [
+  'downloading',
+  'verifying',
+  'unpacking',
+  'installing',
+  'restarting',
+] as const;
+export type InstallStage = (typeof INSTALL_STAGES)[number];
+
+export const INSTALL_STAGE_LABELS: Record<InstallStage, string> = {
+  downloading: 'Downloading',
+  verifying: 'Verifying',
+  unpacking: 'Unpacking',
+  installing: 'Installing',
+  restarting: 'Restarting',
+};
+
+/** What the previous run's update came to; shown once after the restart. */
+export type UpdateNotice =
+  { kind: 'updated'; version: string } | { kind: 'failed'; version: string; message: string };
+
+/** A sentence for each step at which the swap can fail. The previous version runs in every case. */
+export function installFailureMessage(step: string | null): string {
+  switch (step) {
+    case 'wait':
+      return 'The app did not close in time, so the update was not installed.';
+    case 'backup':
+      return 'The installed files were still in use, so the update was not installed.';
+    case 'swap':
+      return 'The new version could not be moved into place.';
+    case 'start':
+      return 'The new version did not start.';
+    default:
+      return 'The update was not completed.';
+  }
 }
 
 export interface UpdateSnapshot {
@@ -54,6 +96,17 @@ export interface UpdateSnapshot {
   deferred: boolean;
   /** File name of the verified download, once there is one. The folder is not exposed. */
   downloadedFile: string | null;
+  /** Bytes received so far while downloading. */
+  receivedBytes: number | null;
+  /** The stage of a running "Update and restart", else null. */
+  stage: InstallStage | null;
+  /**
+   * Why this installation cannot replace itself (then only the manual download is offered), or
+   * null when "Update and restart" is possible.
+   */
+  installBlocker: string | null;
+  /** Outcome of an update started in the previous run. Not persisted: shown once. */
+  notice: UpdateNotice | null;
 }
 
 export function initialUpdateSnapshot(
@@ -71,6 +124,10 @@ export function initialUpdateSnapshot(
     message: null,
     deferred: false,
     downloadedFile: null,
+    receivedBytes: null,
+    stage: null,
+    installBlocker: null,
+    notice: null,
   };
 }
 

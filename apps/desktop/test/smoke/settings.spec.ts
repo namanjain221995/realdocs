@@ -526,3 +526,175 @@ test('closing the settings window does not quit the app, and it can be reopened'
     'true',
   );
 });
+
+test('Updates: "Update and restart" shows its stages, real download progress, and the result', async () => {
+  // A development build cannot replace itself, so the installer and the server are stand-ins
+  // inside the main process; the state machine, the IPC call and both windows are the real ones.
+  await running.app.evaluate(() => {
+    const { controller } = (
+      globalThis as unknown as {
+        __rdTest: { controller: { updates: { options: Record<string, unknown> } } };
+      }
+    ).__rdTest;
+    const bytes = new Uint8Array(400_000).fill(7);
+    const hold = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+    const options = controller.updates.options;
+    options.getServerOrigin = () => 'https://updates.test';
+    options.fetch = async (url: string) => {
+      if (url.includes('/api/v1/desktop/update')) {
+        const digest = await crypto.subtle.digest('SHA-256', bytes);
+        const sha256 = [...new Uint8Array(digest)]
+          .map((byte) => byte.toString(16).padStart(2, '0'))
+          .join('');
+        return new Response(
+          JSON.stringify({
+            updateAvailable: true,
+            required: false,
+            version: '9.9.9',
+            notes: 'Smoke notes',
+            downloadUrl: '/download/releases/stable/9.9.9/RealtimeDocs-9.9.9-linux-x64.zip',
+            sha256,
+            sizeBytes: bytes.length,
+            signatureStatus: 'unsigned',
+            releaseNotesUrl: null,
+            fileName: 'RealtimeDocs-9.9.9-linux-x64.zip',
+          }),
+          { status: 200 },
+        );
+      }
+      // Four slow chunks, so the determinate bar is seen at intermediate values.
+      const stream = new ReadableStream<Uint8Array>({
+        async start(streamController) {
+          for (let index = 0; index < 4; index += 1) {
+            await hold(700);
+            streamController.enqueue(bytes.subarray(index * 100_000, (index + 1) * 100_000));
+          }
+          streamController.close();
+        },
+      });
+      return new Response(stream, {
+        status: 200,
+        headers: { 'content-length': String(bytes.length) },
+      });
+    };
+    options.installer = {
+      blocker: () => null,
+      stage: async (
+        _file: string,
+        _offer: unknown,
+        onPhase: (phase: 'unpacking' | 'checking') => void,
+      ) => {
+        onPhase('unpacking');
+        await hold(1200);
+        onPhase('checking');
+        await hold(1200);
+        return { stagingDir: '/nowhere/.rd-update-00', stagedRoot: '/nowhere/.rd-update-00/app' };
+      },
+      discard: () => undefined,
+      // The real one starts the helper and quits the app; here the app stays, in "Restarting".
+      handOver: async () => undefined,
+      cleanup: () => undefined,
+    };
+  });
+
+  // The panel's way to Settings → Updates (the settings window may have been closed before).
+  await running.panel.evaluate(() =>
+    window.rdDesktop?.window.action('open-settings', { tab: 'updates' }),
+  );
+  settings = await pageByKind(running.app, 'settings');
+  await settings.waitForSelector('[data-testid="rd-update-check"]');
+  await settings.click('[data-testid="rd-update-check"]');
+  await expect(settings.getByTestId('rd-update-offer')).toContainText('Version 9.9.9 is available');
+  await expect(settings.getByTestId('rd-update-install')).toHaveText(/Update and restart/);
+  await expect(settings.getByTestId('rd-update-download')).toHaveText(/Download only/);
+
+  const seen = new Set<string>();
+  const percents = new Set<number>();
+  await settings.click('[data-testid="rd-update-install"]');
+  const progress = settings.getByTestId('rd-update-progress');
+  await expect(progress).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        const stage = await progress.getAttribute('data-stage').catch(() => null);
+        if (stage) seen.add(stage);
+        if (stage === 'downloading') {
+          const value = await settings
+            .getByTestId('rd-update-bar')
+            .getAttribute('value')
+            .catch(() => null);
+          if (value !== null) percents.add(Number(value));
+        }
+        return stage;
+      },
+      { timeout: 20_000, intervals: [100] },
+    )
+    .toBe('restarting');
+  expect([...seen]).toEqual(
+    expect.arrayContaining(['downloading', 'unpacking', 'installing', 'restarting']),
+  );
+  // Real progress: the bar was seen strictly between empty and full.
+  expect([...percents].some((value) => value > 0 && value < 100)).toBe(true);
+  const sentence = settings.getByTestId('rd-update-stage');
+  await expect(sentence).toHaveText('Restarting RealtimeDocs…');
+  await expect(sentence).toHaveAttribute('role', 'status');
+  await expect(settings.getByTestId('rd-update-install')).toBeDisabled();
+  await screenshot(settings, 'settings-update-restarting', false);
+  // The panel shows the same stage in its own strip.
+  await expect(running.panel.getByTestId('rd-update-progress')).toHaveAttribute(
+    'data-stage',
+    'restarting',
+  );
+
+  // With reduced motion the indicator stands still; the stage is still named.
+  await settings.emulateMedia({ reducedMotion: 'reduce' });
+  expect(
+    await settings
+      .locator('.rdu-bar--busy span')
+      .evaluate((element) => getComputedStyle(element).animationName),
+  ).toBe('none');
+  await settings.emulateMedia({ reducedMotion: 'no-preference' });
+
+  // After the restart: said once, in both windows, and it can be closed.
+  await running.app.evaluate(() => {
+    const { updates } = (
+      globalThis as unknown as {
+        __rdTest: { controller: { updates: { set(change: Record<string, unknown>): void } } };
+      }
+    ).__rdTest.controller;
+    updates.set({
+      status: 'up_to_date',
+      stage: null,
+      offer: null,
+      notice: { kind: 'updated', version: '9.9.9' },
+    });
+  });
+  await expect(settings.getByTestId('rd-update-done')).toContainText('Updated to 9.9.9');
+  const panelNotice = running.panel.getByTestId('rd-update-notice');
+  await expect(panelNotice).toContainText('Updated to 9.9.9');
+  await screenshot(running.panel, 'panel-updated-notice');
+  await panelNotice.getByRole('button').click();
+  await expect(panelNotice).toHaveCount(0);
+  await expect(settings.getByTestId('rd-update-done')).toHaveCount(0);
+
+  // A failed update: the plain reason, and the statement that the old version was kept.
+  await running.app.evaluate(() => {
+    const { updates } = (
+      globalThis as unknown as {
+        __rdTest: { controller: { updates: { set(change: Record<string, unknown>): void } } };
+      }
+    ).__rdTest.controller;
+    updates.set({
+      notice: {
+        kind: 'failed',
+        version: '9.9.9',
+        message:
+          'The new version did not start. The version you had (0.1.2) was kept and is running.',
+      },
+    });
+  });
+  await expect(settings.getByTestId('rd-update-not-installed')).toContainText(
+    'did not start. The version you had (0.1.2) was kept',
+  );
+  await expect(settings.getByTestId('rd-update-progress')).toHaveCount(0);
+});

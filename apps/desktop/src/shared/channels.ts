@@ -51,6 +51,8 @@ export const CH = {
 
   updatesCheck: 'rd:updates:check',
   updatesDownload: 'rd:updates:download',
+  updatesInstall: 'rd:updates:install',
+  updatesDismissNotice: 'rd:updates:dismiss-notice',
   updatesDefer: 'rd:updates:defer',
   updatesOpen: 'rd:updates:open',
 

@@ -88,10 +88,15 @@ export interface RdDesktopApi {
     setRecording(active: boolean): ActionResult;
   };
 
-  /** Settings window only. The app checks, downloads and verifies; it never installs by itself. */
+  /**
+   * Settings window only. The app checks by itself; it downloads and installs only when asked
+   * (`install` is "Update and restart").
+   */
   updates: {
     check(): ActionResult;
     download(): ActionResult;
+    install(): ActionResult;
+    dismissNotice(): ActionResult;
     defer(): ActionResult;
     open(action: 'show-in-folder' | 'open-installer'): ActionResult;
   };

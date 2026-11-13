@@ -78,8 +78,9 @@ These are the public artifact names (`RealtimeDocs-<version>-windows-<arch>.<ext
 `win32`. The installers were built earlier under the old name `...-win32-<arch>-setup.exe` and were
 not rebuilt under the new one on the host that renamed the scripts (the NSIS step needs Docker or
 Windows); the zips were rebuilt and inspected. **Updates:** the app checks the server for new versions
-and, when you ask, downloads the new file and verifies its SHA-256; it never installs by itself
-(Settings -> Updates, [desktop-release.md](desktop-release.md#updates-in-the-desktop-app)). The
+and installs nothing by itself. "Update and restart" downloads the new zip, verifies its SHA-256, unpacks
+it next to the app folder and restarts into it; a copy made by the installer, or a folder that also
+holds other files, gets "Download only" instead (Settings -> Updates, [desktop-release.md](desktop-release.md#updates-in-the-desktop-app)). The
 download page of your server (`/download`) shows the build for your PC with its size, checksum and
 signature status, and says "Unsigned build — Windows SmartScreen will warn you before it opens" when
 that is the case.

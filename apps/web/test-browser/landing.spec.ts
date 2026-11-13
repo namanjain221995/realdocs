@@ -405,30 +405,11 @@ test.describe('downloads', () => {
 });
 
 test.describe('compatibility matrix', () => {
-  test('every cell says "Not tested" while there are no verified results', async ({ page }) => {
+  test('the per-app grid is not shown while no test is recorded', async ({ page }) => {
     await page.goto('/');
-    const matrix = page.getByTestId('compatibility-matrix');
-    await expect(matrix.getByRole('table')).toHaveCount(2);
-    const cells = matrix.getByTestId('matrix-cell');
-    // Two platforms, six meeting apps, four capture modes.
-    await expect(cells).toHaveCount(2 * 6 * 4);
-    for (const cell of await cells.all()) await expect(cell).toHaveText('Not tested');
-    await expect(matrix.locator('[data-verified]')).toHaveCount(0);
-    for (const name of [
-      'Zoom',
-      'Microsoft Teams',
-      'Google Meet',
-      'Webex',
-      'Lark',
-      'Amazon Chime',
-    ]) {
-      await expect(matrix.getByRole('rowheader', { name }).first()).toBeVisible();
-    }
-    for (const name of ['Tab', 'Window', 'Application', 'Entire display']) {
-      await expect(matrix.getByRole('columnheader', { name }).first()).toBeVisible();
-    }
-    const text = await matrix.innerText();
-    expect(text).not.toMatch(/[✓✔☑]|\bworks\b/i);
+    await expect(page.getByTestId('platform-table')).toBeVisible();
+    // The grid appears with the first complete record in verified-configurations.json.
+    await expect(page.getByTestId('compatibility-matrix')).toHaveCount(0);
   });
 });
 
@@ -747,7 +728,7 @@ test.describe('OS-aware download button', () => {
     });
   });
 
-  test('required sentence is prominent and the compatibility table says Not tested', async ({
+  test('required sentence is prominent and the platform table states what the team tested', async ({
     page,
   }) => {
     await page.goto('/');
@@ -756,7 +737,15 @@ test.describe('OS-aware download button', () => {
     await expect(rows).toHaveCount(3);
     await expect(rows.nth(2)).toContainText('depends on the display server');
     await expect(rows.nth(2)).toContainText('may be unavailable');
-    for (const row of await rows.all()) await expect(row).toContainText('Not tested');
+    await expect(rows.nth(0)).toContainText('Tested by our team');
+    await expect(rows.nth(1)).toContainText('Tested by our team');
+    // Linux: the app was tested; the exclusion itself is not promised.
+    await expect(rows.nth(2)).toContainText('App tested by our team');
+    await expect(rows.nth(2)).toContainText('Capture exclusion depends on your desktop');
+    // The request to check one's own setup stays next to the claim.
+    await expect(page.getByTestId('compatibility-section')).toContainText(
+      'check your own setup once before you rely on it',
+    );
   });
 });
 

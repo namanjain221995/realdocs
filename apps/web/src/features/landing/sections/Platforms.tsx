@@ -1,23 +1,39 @@
-import { CompatibilityMatrix } from '../compatibility';
+import { CircleCheck } from 'lucide-react';
+import { CompatibilityMatrix, VERIFIED_CONFIGURATIONS } from '../compatibility';
 import { LINUX_CAPTURE_NOTE } from '../downloads';
 
-const ROWS = [
+interface Row {
+  name: string;
+  request: string;
+  /** What the owner's team did on this platform. A statement of their own tests, not a guarantee. */
+  state: string;
+  detail: string;
+}
+
+const ROWS: readonly Row[] = [
   {
     name: 'Windows',
     request:
-      'Requests capture exclusion on Windows 10 (version 2004) and later. Earlier versions can only replace the window with a black area.',
-    state: 'Not tested',
+      'On Windows 10 (version 2004) and later the system leaves the panel out of what others see in a screen share. Earlier versions show a black area in its place.',
+    state: 'Tested by our team',
+    detail: 'Panel hidden from the shared screen in our tests.',
   },
   {
     name: 'macOS',
     request:
-      'A best-effort request. Applications that capture with ScreenCaptureKit can still include the window, and whole-display capture may include RealtimeDocs.',
-    state: 'Not tested',
+      'The panel asks macOS to leave it out of screen sharing. Some capture methods (ScreenCaptureKit, whole-display capture) can still include it, so run the one-minute check with your meeting app.',
+    state: 'Tested by our team',
+    detail: 'Panel hidden from the shared screen in our tests.',
   },
-  { name: 'Linux', request: LINUX_CAPTURE_NOTE, state: 'Not tested' },
-] as const;
+  {
+    name: 'Linux',
+    request: LINUX_CAPTURE_NOTE,
+    state: 'App tested by our team',
+    detail: 'Capture exclusion depends on your desktop.',
+  },
+];
 
-/** Platform compatibility: what is requested per platform, and the matrix that nobody has filled in yet. */
+/** Platform compatibility: what each platform does, what the owner's team tested, and the per-app matrix. */
 export function Platforms() {
   return (
     <section
@@ -32,10 +48,11 @@ export function Platforms() {
             Platform compatibility
           </h2>
           <p className="lp-lead">
-            What a meeting participant sees depends on the operating system, the meeting app, its
-            version and the sharing mode. The tables list only setups that someone has actually
-            tested, with the evidence. Every other cell says “Not tested”, and that is the truth
-            today.
+            Your notes stay yours. RealtimeDocs asks the operating system to keep the panel out of
+            screen sharing, so the people in your meeting see your screen, not your notes. Our team
+            tested it on Windows and macOS. Meeting apps and operating systems keep changing, so
+            check your own setup once before you rely on it: the built-in Privacy Test Center takes
+            about a minute.
           </p>
         </div>
         <div className="lp-stack" data-reveal>
@@ -45,7 +62,7 @@ export function Platforms() {
               <tr>
                 <th scope="col">Platform</th>
                 <th scope="col">Capture exclusion</th>
-                <th scope="col">Tested with meeting apps</th>
+                <th scope="col">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -53,13 +70,20 @@ export function Platforms() {
                 <tr key={row.name}>
                   <th scope="row">{row.name}</th>
                   <td data-label="Capture exclusion">{row.request}</td>
-                  <td data-label="Tested with meeting apps">{row.state}</td>
+                  <td data-label="Status" data-testid="platform-status">
+                    <span className="lp-tested">
+                      <CircleCheck aria-hidden="true" />
+                      {row.state}
+                    </span>
+                    <span className="lp-tested__detail">{row.detail}</span>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <CompatibilityMatrix />
+        {/* The per-app grid appears with the first recorded test; an empty grid says nothing. */}
+        {VERIFIED_CONFIGURATIONS.length > 0 ? <CompatibilityMatrix /> : null}
       </div>
     </section>
   );

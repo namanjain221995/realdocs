@@ -110,6 +110,8 @@ const api: RdDesktopApi = {
   updates: {
     check: () => ipcRenderer.invoke(CH.updatesCheck),
     download: () => ipcRenderer.invoke(CH.updatesDownload),
+    install: () => ipcRenderer.invoke(CH.updatesInstall),
+    dismissNotice: () => ipcRenderer.invoke(CH.updatesDismissNotice),
     defer: () => ipcRenderer.invoke(CH.updatesDefer),
     open: (action) => ipcRenderer.invoke(CH.updatesOpen, { action }),
   },

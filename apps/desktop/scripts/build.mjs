@@ -40,9 +40,14 @@ function parseArgs(argv) {
   return options;
 }
 
-export async function buildApp({ mode = 'development', out = path.join(root, 'dist') } = {}) {
+export async function buildApp({
+  mode = 'development',
+  out = path.join(root, 'dist'),
+  // Only scripts/update-check.mjs sets this, to make a second build that is "newer".
+  version,
+} = {}) {
   const production = mode === 'production';
-  const manifest = readManifest();
+  const manifest = { ...readManifest(), ...(version ? { version } : {}) };
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(out, { recursive: true });
 

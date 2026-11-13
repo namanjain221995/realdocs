@@ -1,10 +1,12 @@
 import { clearLocalDataForAccount } from '@realtimedocs/editor';
 import { Banner, Button, EmptyState, Spinner, cx, useToast } from '@realtimedocs/ui';
+import { Check } from 'lucide-react';
 import { useCallback, useEffect, type CSSProperties } from 'react';
 import { panelWindowTitle } from '../../shared/surfaces';
 import { matchWindowCommand } from '../../shared/window-commands';
 import { attempt, desktop, onAppEvent, useAppState } from '../shared/desktop';
 import { ShareGuideView } from '../shared/ShareGuideView';
+import { UpdateProgress } from '../shared/UpdateProgress';
 import { ClickThroughBadge } from './ClickThroughBadge';
 import { DocumentHost } from './DocumentHost';
 import { PanelHeader } from './PanelHeader';
@@ -173,6 +175,26 @@ export function PanelApp() {
 
       {!panel.collapsed && (
         <div className="rdp-notices">
+          {/* "Update and restart" is started in Settings; the panel shows where it is, and after
+              the restart says once that it worked (or that the previous version was kept). */}
+          {state.updates.stage && <UpdateProgress updates={state.updates} compact />}
+          {state.updates.notice && !state.updates.stage && (
+            <Banner
+              tone={state.updates.notice.kind === 'updated' ? 'success' : 'warning'}
+              data-testid="rd-update-notice"
+              data-kind={state.updates.notice.kind}
+              onDismiss={() => run(desktop?.updates.dismissNotice())}
+            >
+              {state.updates.notice.kind === 'updated' ? (
+                <span className="rdu-updated">
+                  <Check aria-hidden="true" />
+                  Updated to {state.updates.notice.version}
+                </span>
+              ) : (
+                `The update to ${state.updates.notice.version} was not installed. ${state.updates.notice.message}`
+              )}
+            </Banner>
+          )}
           {connection.notice && (
             <Banner
               tone={connection.notice.tone}
