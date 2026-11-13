@@ -90,12 +90,15 @@ for (const scheme of ['light', 'dark'] as const satisfies readonly Scheme[]) {
       await useSavedTheme(context, scheme);
     });
 
-    test('public pages: landing, sign-in, invitation', async ({ page }, testInfo) => {
+    test('public pages: sign-in (the start page for a visitor), invitation', async ({
+      page,
+    }, testInfo) => {
       const findings: string[] = [];
+      // A visitor is sent to sign in: the product page is for signed-in accounts.
       await page.goto('/');
+      await expect(page).toHaveURL('/login');
       await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
-      findings.push(...(await audit(page, 'landing')));
 
       await page.goto('/login');
       await expect(page.getByLabel('Email')).toBeVisible();
@@ -129,7 +132,7 @@ for (const scheme of ['light', 'dark'] as const satisfies readonly Scheme[]) {
       });
     });
 
-    test('signed in: dashboard, editor with content, viewer, settings, accounts', async ({
+    test('signed in: dashboard, product page, editor with content, viewer, settings, accounts', async ({
       page,
       openContext,
     }, testInfo) => {
@@ -137,6 +140,12 @@ for (const scheme of ['light', 'dark'] as const satisfies readonly Scheme[]) {
       const findings: string[] = [];
       await signIn(page, admin);
       findings.push(...(await audit(page, 'dashboard')));
+
+      // The product page is for signed-in accounts.
+      await page.goto('/product');
+      await expect(page.getByTestId('landing')).toBeVisible();
+      findings.push(...(await audit(page, 'landing')));
+      await page.goto('/documents');
 
       const id = await sampleId(page);
       await page.goto(`/d/${id}`);
@@ -176,15 +185,15 @@ for (const width of [360, 768, 1280]) {
       measured[label] = await overflow(target);
     };
 
-    await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-    await measure('landing', page);
     await page.goto('/login');
     await expect(page.getByLabel('Email')).toBeVisible();
     await measure('sign-in', page);
 
     await signIn(page, admin);
     await measure('dashboard', page);
+    await page.goto('/product');
+    await expect(page.getByTestId('landing')).toBeVisible();
+    await measure('landing', page);
     const id = await sampleId(page);
     await page.goto(`/d/${id}`);
     await expectEditorReady(page);

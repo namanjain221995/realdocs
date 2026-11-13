@@ -27,6 +27,9 @@ test('a fresh deployment reaches a first working document', async ({ page }) => 
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Sign in' }).click();
+  // The first administrator lands in the administration area; the documents are one click away.
+  await page.waitForURL((url) => url.pathname !== '/login');
+  await page.goto('/documents');
   await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
   await page
     .getByRole('link', { name: /Welcome to RealtimeDocs/ })
@@ -39,7 +42,7 @@ test('a fresh deployment reaches a first working document', async ({ page }) => 
   await expect(editor).toContainText('End of sample.');
 
   // A document of one's own: create, type, Saved, reload.
-  await page.goto('/');
+  await page.goto('/documents');
   await page
     .getByRole('button', { name: /new document/i })
     .first()

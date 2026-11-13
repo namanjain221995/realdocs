@@ -1,42 +1,28 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, useLocation } from 'react-router';
-import { AppShell } from '../../components/AppShell';
+import { Navigate } from 'react-router';
 import { Splash } from '../../components/Splash';
-import { loginPathFor } from '../../lib/navigation';
+import { ADMIN_HOME_PATH } from '../../lib/navigation';
 import { useSession } from '../../lib/session';
 
 const LandingPage = lazy(async () => ({ default: (await import('./LandingPage')).LandingPage }));
-const DashboardPage = lazy(async () => ({
-  default: (await import('../dashboard/DashboardPage')).DashboardPage,
-}));
 
 /**
- * `/`: the dashboard for someone who is signed in, the public landing page for
- * everyone else. Only the code of the screen that is shown is downloaded.
+ * `/`: where a person starts.
+ *
+ * - Nobody signed in (a visitor, or a guest who only holds a share link): the sign-in page.
+ *   Nothing else of the site is shown without an account.
+ * - An administrator: the administration area.
+ * - A member: the product page, with their account in its header.
+ *
+ * A page that was asked for while signed out (`/login?next=…`) wins over these defaults.
  */
 export function HomeGate() {
-  const { user, endReason } = useSession();
-  const location = useLocation();
-  // A session that ended while the dashboard was open is explained on the sign-in screen,
-  // which brings the person back here afterwards. Everyone else is a visitor.
-  if (!user && endReason === 'expired') {
-    return (
-      <Navigate
-        to={loginPathFor(location.pathname, location.search)}
-        replace
-        state={{ reason: endReason }}
-      />
-    );
-  }
+  const { user, isAdmin, endReason } = useSession();
+  if (!user) return <Navigate to="/login" replace state={{ reason: endReason }} />;
+  if (isAdmin) return <Navigate to={ADMIN_HOME_PATH} replace />;
   return (
     <Suspense fallback={<Splash />}>
-      {user ? (
-        <AppShell>
-          <DashboardPage />
-        </AppShell>
-      ) : (
-        <LandingPage />
-      )}
+      <LandingPage />
     </Suspense>
   );
 }

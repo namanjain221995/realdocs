@@ -12,6 +12,7 @@ import {
   ChevronDown,
   FileText,
   KeyRound,
+  LayoutPanelTop,
   LogOut,
   PackageOpen,
   Settings,
@@ -21,6 +22,7 @@ import {
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router';
 import { useMediaQuery } from '../lib/hooks';
+import { DOCUMENTS_PATH, PRODUCT_PATH } from '../lib/navigation';
 import { workspaceRoleLabel } from '../lib/permissions';
 import { useSession } from '../lib/session';
 import { Brand } from './Brand';
@@ -28,7 +30,7 @@ import { useRouterLink } from './links';
 import { useSignOut } from './SignOut';
 import { THEME_OPTIONS } from './ThemeControl';
 
-interface NavItem {
+export interface NavItem {
   to: string;
   label: string;
   icon: ReactNode;
@@ -37,7 +39,9 @@ interface NavItem {
 }
 
 function navItems(isAdmin: boolean): NavItem[] {
-  const items: NavItem[] = [{ to: '/', label: 'Documents', icon: <FileText />, end: true }];
+  const items: NavItem[] = [
+    { to: DOCUMENTS_PATH, label: 'Documents', icon: <FileText />, end: true },
+  ];
   if (isAdmin) {
     items.push({ to: '/admin/users', label: 'People', icon: <UsersRound /> });
     items.push({ to: '/admin/releases', label: 'Releases', icon: <PackageOpen /> });
@@ -57,8 +61,22 @@ function MenuNavItem({ item }: { item: NavItem }) {
   );
 }
 
-function UserMenu({ items, showNav }: { items: NavItem[]; showNav: boolean }) {
+/**
+ * The account button and its menu. `items` are listed in the menu when `showNav` is set (they
+ * are not visible elsewhere on a narrow screen, or on the product page).
+ */
+export function AccountMenu({
+  items,
+  showNav,
+  productLink = true,
+}: {
+  items: NavItem[];
+  showNav: boolean;
+  /** Offer the product page. Off on the product page itself. */
+  productLink?: boolean;
+}) {
   const { user } = useSession();
+  const product = useRouterLink(PRODUCT_PATH);
   const { theme, setTheme } = useTheme();
   const { requestSignOut } = useSignOut();
   const settings = useRouterLink('/settings');
@@ -90,6 +108,11 @@ function UserMenu({ items, showNav }: { items: NavItem[]; showNav: boolean }) {
             <MenuNavItem key={item.to} item={item} />
           ))}
         </>
+      ) : null}
+      {productLink ? (
+        <MenuItem href={product.href} onClick={product.onClick} icon={<LayoutPanelTop />}>
+          Product page
+        </MenuItem>
       ) : null}
       <MenuItem href={settings.href} onClick={settings.onClick} icon={<Settings />}>
         Settings
@@ -127,7 +150,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
       <header className="app-topbar">
-        <Brand />
+        <Brand to={DOCUMENTS_PATH} />
         {narrow ? null : (
           <nav className="app-nav" aria-label="Main">
             {items.map((item) => (
@@ -138,7 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
         )}
         <div className="app-topbar__end">
-          <UserMenu items={items} showNav={narrow} />
+          <AccountMenu items={items} showNav={narrow} />
         </div>
       </header>
       <main id="main" tabIndex={-1} className="app-main">

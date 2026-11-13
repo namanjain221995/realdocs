@@ -2,12 +2,13 @@ import { ArrowRight, BookOpen } from 'lucide-react';
 import { Skeleton } from '@realtimedocs/ui';
 import { Link } from 'react-router';
 import { RouterLinkButton } from '../../components/links';
+import { DOCUMENTS_PATH } from '../../lib/navigation';
 import { REQUIRED_SENTENCE } from './copy';
 import { DownloadPicker } from './DownloadPicker';
 import { DemoSlot } from './hero/DemoSlot';
 import { useDesktopRelease } from './useDesktopRelease';
 
-export function Hero({ signupEnabled }: { signupEnabled: boolean }) {
+export function Hero() {
   const releases = useDesktopRelease();
   return (
     <section className="lp-hero" aria-labelledby="hero-title">
@@ -41,14 +42,13 @@ export function Hero({ signupEnabled }: { signupEnabled: boolean }) {
               <DownloadPicker release={releases.data?.current ?? null} headingLevel={2} compact />
             )}
             <div className="lp-hero__actions">
-              <RouterLinkButton to="/login" variant="secondary" data-testid="hero-sign-in">
-                Sign in
+              <RouterLinkButton
+                to={DOCUMENTS_PATH}
+                variant="secondary"
+                data-testid="hero-open-documents"
+              >
+                Open documents
               </RouterLinkButton>
-              {signupEnabled ? (
-                <RouterLinkButton to="/signup" variant="ghost" data-testid="hero-sign-up">
-                  Sign up
-                </RouterLinkButton>
-              ) : null}
               <RouterLinkButton
                 to="/docs"
                 variant="ghost"

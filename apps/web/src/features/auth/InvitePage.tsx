@@ -87,7 +87,7 @@ export function InvitePage() {
         title: 'Account created',
         description: 'You are signed in. Documents shared with you appear here.',
       });
-      void navigate('/', { replace: true });
+      void navigate('/documents', { replace: true });
     },
     onError: (error) => {
       const kind = errorScreenKind(error, { online });
@@ -141,7 +141,7 @@ export function InvitePage() {
           the invitation link again.
         </p>
         <div className="app-form__actions">
-          <RouterLinkButton to="/" variant="primary">
+          <RouterLinkButton to="/documents" variant="primary">
             Go to documents
           </RouterLinkButton>
           <Button onClick={signOut.requestSignOut} loading={signOut.pending}>

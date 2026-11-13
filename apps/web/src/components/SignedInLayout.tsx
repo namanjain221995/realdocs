@@ -34,7 +34,7 @@ export function AdminOnly({ children }: { children: ReactNode }) {
       title="This page is for administrators"
       description="Accounts and invitations are managed by workspace administrators. Ask one of them if you need a change."
       actions={
-        <RouterLinkButton to="/" variant="primary">
+        <RouterLinkButton to="/documents" variant="primary">
           Go to documents
         </RouterLinkButton>
       }

@@ -38,8 +38,8 @@ test.describe('sign-in', () => {
     await page.getByLabel('Email').fill(USERS.asha.email);
     await page.getByLabel('Password', { exact: true }).fill(PASSWORDS[USERS.asha.email] ?? '');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page).toHaveURL('/');
-    await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
+    // Not the address in `next`: the administrator's own start page.
+    await expect(page).toHaveURL('/admin/users');
   });
 
   test('gives one message for a wrong password and for an unknown account', async ({ page }) => {
@@ -85,7 +85,7 @@ test.describe('sign-in', () => {
     await expect(page.getByTestId('login-error')).toContainText('The server could not be reached');
 
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
+    await expect(page).toHaveURL('/admin/users');
   });
 
   test('shows the server reference when sign-in fails for an unexpected reason', async ({
@@ -122,7 +122,8 @@ test.describe('sign-in', () => {
     await page.getByLabel('Email').fill(USERS.asha.email);
     await page.getByLabel('Password', { exact: true }).fill(PASSWORDS[USERS.asha.email] ?? '');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
+    await expect(page).toHaveURL('/admin/users');
+    await expect(page.getByRole('heading', { level: 1, name: 'People' })).toBeVisible();
     const stored = await storageDump(page);
     expect(stored).not.toContain(PASSWORDS[USERS.asha.email]);
     expect(stored).not.toContain(api.csrfToken ?? 'no-token');
@@ -139,7 +140,7 @@ test.describe('sign-in', () => {
     api,
   }) => {
     signedInAs(api, USERS.asha);
-    await page.goto('/?view=archived');
+    await page.goto('/documents?view=archived');
     await expect(page.getByTestId('document-row')).toHaveCount(1);
 
     // The session ends on the server; the next request finds out.
@@ -152,7 +153,7 @@ test.describe('sign-in', () => {
     await page.getByLabel('Email').fill(USERS.asha.email);
     await page.getByLabel('Password', { exact: true }).fill(PASSWORDS[USERS.asha.email] ?? '');
     await page.getByRole('button', { name: 'Sign in' }).click();
-    await expect(page).toHaveURL('/?view=recent');
+    await expect(page).toHaveURL('/documents?view=recent');
   });
 });
 
@@ -184,7 +185,7 @@ test.describe('invitation', () => {
     await page.getByLabel('Confirm password').fill('violet-harbor-lantern-42');
     await page.getByRole('button', { name: 'Create account' }).click();
 
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/documents');
     await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
     await expect(page.getByText('Account created')).toBeVisible();
 
@@ -214,7 +215,7 @@ test.describe('invitation', () => {
     await page.getByLabel('Password', { exact: true }).fill('several unrelated words here');
     await page.getByLabel('Confirm password').fill('several unrelated words here');
     await page.getByRole('button', { name: 'Create account' }).click();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/documents');
     expect(api.callsTo('POST', /^\/api\/invitations\/accept$/)[0]?.body).toMatchObject({
       email: 'lena.fischer@northwind.example',
       displayName: 'Lena Fischer',

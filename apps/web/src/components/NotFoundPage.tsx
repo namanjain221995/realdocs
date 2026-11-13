@@ -17,7 +17,7 @@ export function NotFoundPage() {
       data-testid="not-found"
       actions={
         user ? (
-          <RouterLinkButton to="/" variant="primary">
+          <RouterLinkButton to="/documents" variant="primary">
             Go to documents
           </RouterLinkButton>
         ) : (

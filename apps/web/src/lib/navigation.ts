@@ -4,6 +4,13 @@
 
 const DEFAULT_PATH = '/';
 
+/** A person's documents (the dashboard). */
+export const DOCUMENTS_PATH = '/documents';
+/** The product page, for signed-in accounts. `/` shows it to members too. */
+export const PRODUCT_PATH = '/product';
+/** Where an administrator starts after signing in. */
+export const ADMIN_HOME_PATH = '/admin/users';
+
 /**
  * Accepts only a path inside this app. Anything that could leave the origin
  * (`//host`, `/\host`, a scheme, control characters) falls back to the
@@ -31,7 +38,7 @@ export function safeNextPath(value: string | null | undefined, origin: string): 
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-/** `/login?next=<current place>` — omitted for the dashboard, which is the default anyway. */
+/** `/login?next=<current place>` — omitted for the start page, which is the default anyway. */
 export function loginPathFor(pathname: string, search = ''): string {
   const target = `${pathname}${search}`;
   if (target === DEFAULT_PATH || target === '') return '/login';

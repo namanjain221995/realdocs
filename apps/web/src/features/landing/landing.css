@@ -1365,3 +1365,16 @@ html:has(.land) {
   font-size: 0.875em;
   opacity: 0.8;
 }
+
+/* The signed-in account in the product page's header. */
+.lp-nav__account {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 719px) {
+  .lp-nav__account .app-user-button__name,
+  .lp-nav__account .app-user-button__chevron {
+    display: none;
+  }
+}

@@ -28,6 +28,12 @@ const THEMES: readonly ThemeName[] = ['dark', 'light'];
 // Downloads are offered per detected platform; unless a test says otherwise this is a Linux browser.
 test.use({ userAgent: UA.linux });
 
+// The product page, the downloads, the guides and the developer portal are shown to signed-in
+// accounts only. A member starts on the product page; a test that needs somebody else says so.
+test.beforeEach(({ api }) => {
+  signedInAs(api, USERS.ben);
+});
+
 const DIGEST = (digit: string) => digit.repeat(64);
 
 const file = (
@@ -68,7 +74,7 @@ const releaseOf = (artifacts: ReturnType<typeof file>[], version = '1.0.0') => (
 });
 
 test.describe('home page', () => {
-  test('a signed-out visitor sees the landing page, not the sign-in screen', async ({ page }) => {
+  test('a signed-in member sees the product page at the start address', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL('/');
     await expect(page.getByTestId('landing')).toBeVisible();
@@ -83,20 +89,33 @@ test.describe('home page', () => {
     await expect(page.getByTestId('hero-download')).toHaveAttribute('href', '/#download');
   });
 
-  test('a signed-in visitor still gets the dashboard', async ({ page, api }) => {
+  test('an administrator starts in the administration area and can still open the product page', async ({
+    page,
+    api,
+  }) => {
     signedInAs(api, USERS.asha);
     await page.goto('/');
-    await expect(page.getByTestId('document-row')).toHaveCount(5);
+    await expect(page).toHaveURL('/admin/users');
+    await expect(page.getByTestId('landing')).toHaveCount(0);
+    await page.goto('/product');
+    await expect(page.getByTestId('landing')).toBeVisible();
+  });
+
+  test('a visitor without an account gets the sign-in page instead', async ({ page, api }) => {
+    api.signOut();
+    await page.goto('/');
+    await expect(page).toHaveURL('/login');
     await expect(page.getByTestId('landing')).toHaveCount(0);
   });
 
-  test('"Sign in" leads to the sign-in screen, which also opens directly', async ({ page }) => {
+  test('"Open documents" leads to the person\'s documents; nothing on the page says "Sign in"', async ({
+    page,
+  }) => {
     await page.goto('/');
-    await page.getByTestId('hero-sign-in').click();
-    await expect(page).toHaveURL('/login');
-    await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
-    await page.goto('/login');
-    await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toHaveCount(0);
+    await page.getByTestId('hero-open-documents').click();
+    await expect(page).toHaveURL('/documents');
+    await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
   });
 
   test('"Download the desktop app" scrolls to the download section', async ({ page }) => {
@@ -121,7 +140,10 @@ test.describe('home page', () => {
       await page.goBack();
       await expect(page.getByTestId('landing')).toBeVisible();
     }
-    await expect(footer.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/login');
+    await expect(footer.getByRole('link', { name: 'My documents' })).toHaveAttribute(
+      'href',
+      '/documents',
+    );
   });
 
   test('/docs is the developer portal and old guide links under /docs redirect to /guides', async ({
@@ -368,13 +390,13 @@ test.describe('downloads', () => {
     await expect(row).toContainText(DIGEST('a'));
   });
 
-  test('links the sign-in and browser alternatives', async ({ page }) => {
+  test('links the browser alternative', async ({ page }) => {
     await page.goto('/');
     const section = page.locator('#download');
     await expect(section).toContainText('No install? Open your share link in any modern browser.');
     await expect(section).toContainText('Or just use it in your browser');
-    await section.getByRole('link', { name: 'Sign in' }).click();
-    await expect(page).toHaveURL('/login');
+    await section.getByRole('link', { name: 'open your documents' }).click();
+    await expect(page).toHaveURL('/documents');
   });
 
   test('/download lists the requirements and links the release notes; /releases/:version shows them', async ({
@@ -414,23 +436,23 @@ test.describe('compatibility matrix', () => {
 });
 
 test.describe('sign-up', () => {
-  test('is not offered on the landing page unless the server enables it', async ({ page, api }) => {
-    await page.goto('/');
-    await expect(page.getByTestId('hero-sign-in')).toBeVisible();
-    await expect(page.getByTestId('hero-sign-up')).toHaveCount(0);
-    await expect(page.getByTestId('top-sign-up')).toHaveCount(0);
-    await expect(page.getByTestId('start-sign-up')).toHaveCount(0);
-    await expect(page.getByTestId('get-started')).toContainText(
-      'Invitation links come from your administrator',
-    );
+  // The pages below are for people without an account.
+  test.beforeEach(({ api }) => {
+    api.signOut();
+  });
 
+  test('the product page never offers sign-up: everyone who sees it has an account', async ({
+    page,
+    api,
+  }) => {
     api.signupEnabled = true;
+    signedInAs(api, USERS.ben);
     await page.goto('/');
-    await expect(page.getByTestId('hero-sign-up')).toBeVisible();
-    await expect(page.getByTestId('top-sign-up')).toBeVisible();
-    await expect(page.getByTestId('start-sign-up')).toBeVisible();
-    await page.getByTestId('hero-sign-up').click();
-    await expect(page).toHaveURL('/signup');
+    await expect(page.getByTestId('landing')).toBeVisible();
+    await expect(page.locator('a[href="/signup"]')).toHaveCount(0);
+    await expect(page.getByTestId('get-started')).toContainText(
+      'New people join with an invitation link',
+    );
   });
 
   test('/signup says sign-up is off when the server has it off', async ({ page }) => {
@@ -1001,6 +1023,9 @@ test.describe('keyboard and accessibility', () => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.goto('/');
     await expect(page.getByTestId('hero-download-link')).toBeVisible();
+    // The demo is its own chunk, loaded after the first paint: tabbing past its place before it
+    // has mounted would skip its controls (this made the test fail about one run in three).
+    await expect(page.getByTestId('demo-play')).toBeVisible();
     const seen: string[] = [];
     let focusedDemoPlay = false;
     let focusedFaq = false;

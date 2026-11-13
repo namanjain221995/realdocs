@@ -5,14 +5,12 @@ import { Brand } from '../../components/Brand';
 import { NotFoundPage } from '../../components/NotFoundPage';
 import { ThemeControl } from '../../components/ThemeControl';
 import { useDocumentTitle } from '../../lib/hooks';
-import { useSession } from '../../lib/session';
 import { BUNDLED_DOCUMENTS, findDocument, resolveDocumentLink } from './documents';
 import { renderMarkdown } from './markdown';
 
 function GuidesReader({ name }: { name: string }) {
   const entry = findDocument(name);
   useDocumentTitle(entry?.title);
-  const { user } = useSession();
   const body = useMemo(
     () =>
       entry
@@ -40,11 +38,9 @@ function GuidesReader({ name }: { name: string }) {
           ))}
         </nav>
         <div className="docs__bar-end">
-          {user ? null : (
-            <Link to="/login" className="rd-link rd-link--quiet">
-              Sign in
-            </Link>
-          )}
+          <Link to="/documents" className="rd-link rd-link--quiet">
+            Documents
+          </Link>
           <ThemeControl compact />
         </div>
       </header>

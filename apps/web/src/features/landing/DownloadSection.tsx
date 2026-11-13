@@ -47,7 +47,7 @@ export function DownloadSection() {
 
         <p className="land-browser">No install? Open your share link in any modern browser.</p>
         <p className="land-browser">
-          Or just use it in your browser — <Link to="/login">Sign in</Link>.
+          Or just use it in your browser: <Link to="/documents">open your documents</Link>.
         </p>
       </div>
     </section>

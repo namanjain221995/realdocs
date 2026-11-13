@@ -42,6 +42,11 @@ Every published file is named exactly `RealtimeDocs-<version>-<platform>-<arch>.
 The packager's own folders keep their Electron names (`RealtimeDocs-win32-x64`); only the published
 archives and installers use the public names.
 
+Since 2026-11-13 the web pages that list the downloads (`/download`, the product page, `/releases/:version`)
+are shown to signed-in accounts only. The files and the manifest endpoints stay reachable without a
+session, because the desktop app checks for updates and downloads them before or without a browser
+session.
+
 ## Release directory layout
 
 ```text

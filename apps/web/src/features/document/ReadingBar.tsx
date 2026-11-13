@@ -44,7 +44,7 @@ export function ReadingBar({
       <div className="doc-reading-bar__row">
         {signedIn ? (
           <RouterLinkButton
-            to="/"
+            to="/documents"
             variant="ghost"
             className="doc-back"
             aria-label="Back to documents"

@@ -101,7 +101,7 @@ export function AccessEnded({ info }: { info: AccessEndedInfo }) {
   let actions: ReactNode = null;
   if (user) {
     actions = (
-      <RouterLinkButton to="/" variant="primary">
+      <RouterLinkButton to="/documents" variant="primary">
         Go to documents
       </RouterLinkButton>
     );

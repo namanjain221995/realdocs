@@ -560,6 +560,25 @@ Code: `apps/server/src/http/routes/auth.ts`, `routes/meta.ts`, `routes/download.
   or pasted, and anything else renders as `info`. Nothing is written to a `style` attribute. See
   "Content safety in the editor" for why attributes written by another client are never trusted.
 
+## What a visitor without an account can reach
+
+Since 2026-11-13 the web app shows a visitor nothing but the sign-in page. The table says what is
+enforced where.
+
+| Surface                                                                                                                      | Without an account                                                                                                      | Enforced by                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/` and every unknown address                                                                                                | Sign-in page                                                                                                            | Route guard in the app                                                                                                                                                                |
+| Product page (`/product`), `/download`, `/releases/:version`, `/guides/:name`, `/docs`                                       | Sent to sign in, then back to the page asked for                                                                        | Route guard in the app. These pages are static text inside the application bundle, which any visitor's browser downloads: the guard hides them, it does not make their wording secret |
+| `GET /api/openapi.json`                                                                                                      | 401                                                                                                                     | The server: an account session or any valid API key                                                                                                                                   |
+| `/login`, `/signup` (when enabled), `/invite/:id`, `/s/:grantId`, `/d/:documentId`                                           | Reachable, as before: sign-in, invitations and share links must work without an account                                 | The server decides what a share link or an invitation may do                                                                                                                          |
+| `/api/v1/**`                                                                                                                 | 401 without an API key                                                                                                  | The server                                                                                                                                                                            |
+| `/api/health`, `/api/ready`, `/api/meta`, `/api/downloads`, `/api/v1/desktop/**`, `/download/releases/**`, `/download/:file` | Public, as before: the desktop app asks for them before anybody has signed in, and its update check downloads from them | By design; the files are the published desktop packages                                                                                                                               |
+
+A guest who holds only a share link has no account session: the guard treats them as a visitor, so
+a share link opens its document and nothing else. After sign-in an administrator is sent to
+`/admin/users` and a member to the product page; an address asked for while signed out wins over
+that default, and only a path on the same origin is accepted as a return address (`safeNextPath`).
+
 ## Public deployment through a Cloudflare Tunnel
 
 The deployment on the build server (`deploy/`) is published through a Cloudflare Tunnel. What that

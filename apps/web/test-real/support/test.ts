@@ -139,6 +139,10 @@ export async function signIn(page: Page, account: Account): Promise<void> {
   await page.getByLabel('Email').fill(account.email);
   await page.getByLabel('Password', { exact: true }).fill(account.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
+  // An administrator lands in the administration area and a member on the product page; the
+  // tests start from the person's documents.
+  await page.waitForURL((url) => url.pathname !== '/login');
+  await page.goto('/documents');
   await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
 }
 

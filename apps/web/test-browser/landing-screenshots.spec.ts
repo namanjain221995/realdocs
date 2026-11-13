@@ -4,7 +4,7 @@
  * `landing-top-…` (first screen) and `landing-demo-…` (the demonstration on its Presenter scene).
  */
 import type { Page } from '@playwright/test';
-import { expect, setSavedTheme, test } from './support/test';
+import { expect, setSavedTheme, signedInAs, test, USERS } from './support/test';
 
 const WIDTHS = [
   { width: 1440, height: 900 },
@@ -54,7 +54,7 @@ for (const theme of ['dark', 'light'] as const) {
           },
         ],
       };
-      api.signupEnabled = true;
+      signedInAs(api, USERS.ben);
       await page.goto('/');
       await expect(page.getByTestId('hero-download-link')).toBeVisible();
       await page.screenshot({ path: `.stage/screenshots/landing-top-${width}-${theme}.png` });

@@ -10,7 +10,7 @@ test.describe('dashboard for an administrator', () => {
 
   test('shows a skeleton while loading, then the documents', async ({ page, api }) => {
     const release = api.holdNext('GET', LIST);
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId('documents-loading')).toBeVisible();
     await expect(page.getByTestId(rows)).toHaveCount(0);
     release();
@@ -20,14 +20,14 @@ test.describe('dashboard for an administrator', () => {
   });
 
   test('lists each view with its own timestamps', async ({ page, api }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     const first = page.getByTestId(rows).first();
     await expect(first).toContainText('Q4 launch plan');
     await expect(first).toContainText('Edited 5 minutes ago');
     await expect(first.getByText('Admin', { exact: true })).toBeVisible();
 
     await page.getByRole('tab', { name: 'Archived' }).click();
-    await expect(page).toHaveURL('/?view=archived');
+    await expect(page).toHaveURL('/documents?view=archived');
     await expect(page.getByTestId(rows)).toHaveCount(1);
     await expect(page.getByTestId(rows).first()).toContainText('Archived 6 days ago');
 
@@ -61,7 +61,7 @@ test.describe('dashboard for an administrator', () => {
     // The server orders this view by the time of the last title or state change.
     // The board notes were edited a minute ago, which that clock does not show.
     api.document(DOC_IDS.board).contentUpdatedAt = new Date(NOW_MS - 60_000).toISOString();
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId(rows)).toHaveCount(5);
     await expect(page.getByTestId(rows).first()).toContainText('Board meeting notes, November');
     await expect(page.getByTestId(rows).first()).toContainText('Edited 1 minute ago');
@@ -75,14 +75,14 @@ test.describe('dashboard for an administrator', () => {
   });
 
   test('searches after a pause, not on every key', async ({ page, api }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId(rows)).toHaveCount(5);
     const before = api.callsTo('GET', LIST).length;
 
     await page.getByTestId('document-search').pressSequentially('pricing', { delay: 20 });
     await expect(page.getByTestId(rows)).toHaveCount(1);
     await expect(page.getByTestId(rows).first()).toContainText('Pricing questions and answers');
-    await expect(page).toHaveURL('/?q=pricing');
+    await expect(page).toHaveURL('/documents?q=pricing');
     // Typing seven letters must not mean seven requests.
     const searches = api.callsTo('GET', LIST).slice(before);
     expect(searches.length).toBeLessThanOrEqual(2);
@@ -92,7 +92,7 @@ test.describe('dashboard for an administrator', () => {
   });
 
   test('offers a way out when nothing matches', async ({ page }) => {
-    await page.goto('/?view=archived&q=budget');
+    await page.goto('/documents?view=archived&q=budget');
     const empty = page.getByTestId('documents-no-results');
     await expect(empty).toContainText('No documents match “budget”');
     await expect(empty).toContainText('titles in Archived only');
@@ -103,7 +103,7 @@ test.describe('dashboard for an administrator', () => {
 
   test('has a useful empty state for every view', async ({ page, api }) => {
     api.documents = [];
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId('documents-empty')).toContainText('No documents yet');
     await expect(
       page.getByTestId('documents-empty').getByRole('button', { name: 'New document' }),
@@ -119,7 +119,7 @@ test.describe('dashboard for an administrator', () => {
   test('shows an error with the server reference and recovers on retry', async ({ page, api }) => {
     // Three failures: the first attempt and both automatic retries.
     api.failNext('GET', LIST, 'internal', { requestId: 'req_dash_1', times: 3 });
-    await page.goto('/');
+    await page.goto('/documents');
     const error = page.getByTestId('documents-error');
     await expect(error).toContainText('The server is not responding');
     await expect(error).toContainText('Reference req_dash_1');
@@ -131,7 +131,7 @@ test.describe('dashboard for an administrator', () => {
 
   test('does not retry a request the server refused', async ({ page, api }) => {
     api.failNext('GET', LIST, 'forbidden', { times: 5 });
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId('documents-error')).toHaveAttribute(
       'data-error-kind',
       'forbidden',
@@ -140,7 +140,7 @@ test.describe('dashboard for an administrator', () => {
   });
 
   test('creates a document and opens it', async ({ page, api }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     await page.getByTestId('new-document').click();
     await expect(page).toHaveURL(/\/d\/c0ffee00-/);
     await expect(page.getByTestId('document-title')).toHaveText('Untitled document');
@@ -151,7 +151,7 @@ test.describe('dashboard for an administrator', () => {
     page,
     api,
   }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     const release = api.holdNext('PATCH', new RegExp(`^/api/documents/${DOC_IDS.board}$`));
     const row = page.locator(`[data-document-id="${DOC_IDS.board}"]`);
     await row.getByTestId('row-actions').click();
@@ -172,7 +172,7 @@ test.describe('dashboard for an administrator', () => {
   });
 
   test('puts the old name back when a rename is refused', async ({ page, api }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     api.failNext('PATCH', /^\/api\/documents\//, 'conflict', {
       message: 'Another administrator renamed this document a moment ago.',
       requestId: 'req_rename',
@@ -189,7 +189,7 @@ test.describe('dashboard for an administrator', () => {
   });
 
   test('duplicates, archives with undo, and moves to trash', async ({ page, api }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     const row = page.locator(`[data-document-id="${DOC_IDS.pricing}"]`);
 
     await row.getByTestId('row-actions').click();
@@ -218,7 +218,7 @@ test.describe('dashboard for an administrator', () => {
     page,
     api,
   }) => {
-    await page.goto('/?view=trash');
+    await page.goto('/documents?view=trash');
     const old = page.locator(`[data-document-id="${DOC_IDS.oldPlan}"]`);
     const scratch = page.locator(`[data-document-id="${DOC_IDS.scratch}"]`);
 
@@ -250,7 +250,7 @@ test.describe('dashboard for an administrator', () => {
 
   test('keeps a failed permanent delete inside the dialog', async ({ page, api }) => {
     api.failNext('DELETE', /^\/api\/documents\//, 'internal', { requestId: 'req_del' });
-    await page.goto('/?view=trash');
+    await page.goto('/documents?view=trash');
     await page
       .locator(`[data-document-id="${DOC_IDS.scratch}"]`)
       .getByTestId('row-actions')
@@ -269,7 +269,7 @@ test.describe('dashboard for a member', () => {
   });
 
   test('shows only what the server returns, with the role on each document', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId(rows)).toHaveCount(2);
     await expect(
       page.locator(`[data-document-id="${DOC_IDS.launch}"]`).getByText('Editor', { exact: true }),
@@ -280,14 +280,14 @@ test.describe('dashboard for a member', () => {
   });
 
   test('offers no administrator actions', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId(rows)).toHaveCount(2);
     await expect(page.getByTestId('new-document')).toHaveCount(0);
     await expect(page.getByTestId('row-actions')).toHaveCount(0);
     await expect(page.getByRole('tab', { name: 'Trash' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'People' })).toHaveCount(0);
     // Asking for the trash by address falls back to the active view.
-    await page.goto('/?view=trash');
+    await page.goto('/documents?view=trash');
     await expect(page.getByRole('tab', { name: 'Active' })).toHaveAttribute(
       'aria-selected',
       'true',
@@ -296,7 +296,7 @@ test.describe('dashboard for a member', () => {
 
   test('explains an empty list without offering to create', async ({ page, api }) => {
     api.members = {};
-    await page.goto('/');
+    await page.goto('/documents');
     const empty = page.getByTestId('documents-empty');
     await expect(empty).toContainText('Nothing has been shared with you yet');
     await expect(empty.getByRole('button')).toHaveCount(0);

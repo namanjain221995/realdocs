@@ -73,7 +73,7 @@ const SCREENS: Screen[] = [
     name: 'dashboard-admin',
     open: async (page, api) => {
       signedInAs(api, USERS.asha);
-      await page.goto('/');
+      await page.goto('/documents');
       await expect(page.getByTestId('document-row')).toHaveCount(5);
     },
   },
@@ -81,7 +81,7 @@ const SCREENS: Screen[] = [
     name: 'dashboard-trash',
     open: async (page, api) => {
       signedInAs(api, USERS.asha);
-      await page.goto('/?view=trash');
+      await page.goto('/documents?view=trash');
       await expect(page.getByTestId('document-row')).toHaveCount(2);
     },
   },
@@ -89,7 +89,7 @@ const SCREENS: Screen[] = [
     name: 'dashboard-menu',
     open: async (page, api) => {
       signedInAs(api, USERS.asha);
-      await page.goto('/');
+      await page.goto('/documents');
       await page.getByTestId('row-actions').first().click();
       await expect(page.getByRole('menu')).toBeVisible();
     },
@@ -99,7 +99,7 @@ const SCREENS: Screen[] = [
     open: async (page, api) => {
       signedInAs(api, USERS.asha);
       api.documents = [];
-      await page.goto('/');
+      await page.goto('/documents');
       await expect(page.getByTestId('documents-empty')).toBeVisible();
     },
   },
@@ -107,7 +107,7 @@ const SCREENS: Screen[] = [
     name: 'dashboard-no-results',
     open: async (page, api) => {
       signedInAs(api, USERS.asha);
-      await page.goto('/?q=budget');
+      await page.goto('/documents?q=budget');
       await expect(page.getByTestId('documents-no-results')).toBeVisible();
     },
   },
@@ -115,7 +115,7 @@ const SCREENS: Screen[] = [
     name: 'dashboard-member',
     open: async (page, api) => {
       signedInAs(api, USERS.ben);
-      await page.goto('/?view=recent');
+      await page.goto('/documents?view=recent');
       await expect(page.getByTestId('document-row')).toHaveCount(2);
     },
   },
@@ -127,7 +127,7 @@ const SCREENS: Screen[] = [
         requestId: 'req_7f3a9c21',
         times: 3,
       });
-      await page.goto('/');
+      await page.goto('/documents');
       await expect(page.getByTestId('documents-error')).toBeVisible();
     },
   },
@@ -232,7 +232,7 @@ const SCREENS: Screen[] = [
     name: 'account-menu',
     open: async (page, api) => {
       signedInAs(api, USERS.asha);
-      await page.goto('/');
+      await page.goto('/documents');
       await expect(page.getByTestId('document-row')).toHaveCount(5);
       await page.getByRole('button', { name: 'Account menu for Asha Rao' }).click();
       await expect(page.getByRole('menu')).toBeVisible();

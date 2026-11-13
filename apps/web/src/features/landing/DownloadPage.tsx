@@ -18,7 +18,7 @@ export function DownloadPage() {
   return (
     <div className="dl-page">
       <header className="dl-page__bar">
-        <Brand to="/" />
+        <Brand to="/product" />
         <ThemeControl compact />
       </header>
       <main id="main" tabIndex={-1} className="dl-page__main">

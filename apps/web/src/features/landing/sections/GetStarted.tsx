@@ -1,6 +1,10 @@
 import { Link } from 'react-router';
+import { DOCUMENTS_PATH } from '../../../lib/navigation';
+import { useSession } from '../../../lib/session';
 
-export function GetStarted({ signupEnabled }: { signupEnabled: boolean }) {
+/** The last step of the page, for someone who is already signed in. */
+export function GetStarted() {
+  const { isAdmin } = useSession();
   return (
     <section className="lp-sec lp-start" aria-labelledby="start-title" data-testid="get-started">
       <div className="land-wrap">
@@ -10,17 +14,23 @@ export function GetStarted({ signupEnabled }: { signupEnabled: boolean }) {
           </h2>
           <ul>
             <li>
-              Already have an account? <Link to="/login">Sign in</Link>.
+              Your documents, and the ones shared with you, are one click away:{' '}
+              <Link to={DOCUMENTS_PATH}>open your documents</Link>.
             </li>
             <li>
-              Invitation links come from your administrator. Open yours and you will be asked for
-              your name and a password.
+              For the floating notes panel, <Link to="#download">download the desktop app</Link> and
+              connect it to this server.
             </li>
-            {signupEnabled ? (
-              <li data-testid="start-sign-up">
-                This server lets you create your own account. <Link to="/signup">Sign up</Link>.
-              </li>
-            ) : null}
+            <li>
+              {isAdmin ? (
+                <>
+                  New people join with an invitation link. Send one from{' '}
+                  <Link to="/admin/users">People</Link>.
+                </>
+              ) : (
+                <>New people join with an invitation link from a workspace administrator.</>
+              )}
+            </li>
           </ul>
         </div>
       </div>

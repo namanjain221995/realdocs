@@ -552,7 +552,10 @@ test.describe('access that ends while the document is open', () => {
     await expect(ended).toHaveAttribute('data-reason', 'access_revoked');
     await expect(ended).toContainText('An administrator revoked your access');
     // Still signed in: the way on is the dashboard.
-    await expect(ended.getByRole('link', { name: 'Go to documents' })).toHaveAttribute('href', '/');
+    await expect(ended.getByRole('link', { name: 'Go to documents' })).toHaveAttribute(
+      'href',
+      '/documents',
+    );
     await expect(page.getByRole('button', { name: /^Account menu for Ben/ })).toBeVisible();
     await expect(page.getByTestId('editor-mount')).toHaveCount(0);
   });

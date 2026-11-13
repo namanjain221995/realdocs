@@ -1,8 +1,11 @@
-import { Download, Menu, X } from 'lucide-react';
+import { Download, FileText, Menu, ShieldCheck, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router';
+import { AccountMenu, type NavItem } from '../../components/AppShell';
 import { Brand } from '../../components/Brand';
 import { ThemeControl } from '../../components/ThemeControl';
+import { ADMIN_HOME_PATH, DOCUMENTS_PATH, PRODUCT_PATH } from '../../lib/navigation';
+import { useSession } from '../../lib/session';
 import { NAV_LINKS } from './copy';
 import { PLATFORM_NAMES, chooseBuild } from './downloads';
 import { detectPlatform, type PlatformGuess } from './platform';
@@ -43,7 +46,17 @@ function useDownloadLabel(): string {
     : 'Download';
 }
 
-export function LandingNav({ signupEnabled }: { signupEnabled: boolean }) {
+/**
+ * The product page is shown to signed-in accounts only, so its header says who is signed in: the
+ * account menu (documents, settings, sign out) and "Open documents" where a visitor's page would
+ * have had "Sign in".
+ */
+export function LandingNav() {
+  const { isAdmin } = useSession();
+  const accountItems: NavItem[] = [
+    { to: DOCUMENTS_PATH, label: 'My documents', icon: <FileText /> },
+    ...(isAdmin ? [{ to: ADMIN_HOME_PATH, label: 'Administration', icon: <ShieldCheck /> }] : []),
+  ];
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -64,7 +77,7 @@ export function LandingNav({ signupEnabled }: { signupEnabled: boolean }) {
   return (
     <header className="lp-nav">
       <div className="land-wrap lp-nav__row">
-        <Brand to="/" />
+        <Brand to={PRODUCT_PATH} />
         <nav aria-label="Page sections" className="lp-nav__links">
           {NAV_LINKS.filter((item) => item.href !== '#download').map((item) => (
             <Link key={item.href} to={item.href}>
@@ -74,14 +87,9 @@ export function LandingNav({ signupEnabled }: { signupEnabled: boolean }) {
         </nav>
         <div className="lp-nav__end">
           <ThemeControl compact className="lp-nav__theme" />
-          <Link to="/login" className="lp-nav__signin">
-            Sign in
+          <Link to={DOCUMENTS_PATH} className="lp-nav__signin" data-testid="nav-open-documents">
+            Open documents
           </Link>
-          {signupEnabled ? (
-            <Link to="/signup" className="lp-nav__signin" data-testid="top-sign-up">
-              Sign up
-            </Link>
-          ) : null}
           <Link
             to="#download"
             className="lp-btn lp-btn--primary lp-nav__cta"
@@ -91,6 +99,9 @@ export function LandingNav({ signupEnabled }: { signupEnabled: boolean }) {
             <span>{action}</span>
             {os ? <span className="lp-nav__for"> for {os}</span> : null}
           </Link>
+          <div className="lp-nav__account" data-testid="nav-account">
+            <AccountMenu items={accountItems} showNav productLink={false} />
+          </div>
           <button
             ref={buttonRef}
             type="button"
@@ -112,7 +123,9 @@ export function LandingNav({ signupEnabled }: { signupEnabled: boolean }) {
                 {item.label}
               </Link>
             ))}
-            <Link to="/login">Sign in</Link>
+            <Link to={DOCUMENTS_PATH} onClick={() => setOpen(false)}>
+              Open documents
+            </Link>
           </nav>
           <ThemeControl />
         </div>

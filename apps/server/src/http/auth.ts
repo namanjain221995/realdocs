@@ -195,6 +195,28 @@ export async function requireService(
   return principal;
 }
 
+/**
+ * Who may read the description of the service API (`GET /api/openapi.json`): a signed-in account,
+ * or any valid API key whatever its scopes. The route is not under `/api/v1/`, so this is the one
+ * place outside it where a key is accepted; guessing keys is throttled exactly as there.
+ */
+export async function requireSpecReader(
+  ctx: AppContext,
+  limits: Limiters,
+  request: FastifyRequest,
+): Promise<void> {
+  const auth = await getAuth(ctx, request);
+  if (auth.apiKeyToken) {
+    await limits.apiKeyFailures.assertAllowed(request, request.ip);
+    const principal = await authenticateApiKey(ctx, request, auth.apiKeyToken, () =>
+      limits.apiKeyFailures.recordFailure(request, request.ip),
+    );
+    await limits.apiKey.consume(request, principal.keyId);
+    return;
+  }
+  await requireAccount(ctx, request);
+}
+
 export interface DocumentAccessOptions {
   /** Administrator lifecycle routes may reach trashed documents. */
   allowTrashed?: boolean;

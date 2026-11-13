@@ -12,7 +12,9 @@ interview documents from other systems. It has three parts:
 
 - **A server** (Fastify for the HTTP API, Hocuspocus and Yjs for live collaboration, PostgreSQL for
   storage, a private directory for uploaded files). It also serves the web app.
-- **A web app** (React) with a public landing page, sign-in, invitations and optional sign-up, a
+- **A web app** (React) whose only page for a visitor is sign-in (plus invitations, share links and
+  optional sign-up); a signed-in account gets the product page, the downloads, the guides, the
+  developer portal, a
   dashboard, the document editor and viewer, sharing controls, snapshots, exports and account
   administration. A share link opens in any modern browser, so the browser is also the fallback for
   people without the desktop app.
@@ -37,13 +39,15 @@ blocks, images, Mermaid diagrams and callouts.
 | Version history              | For administrators: who changed what and when (server time), grouped by day and person, with a text comparison, a read-only preview, naming, restore as the new current version, restore as a copy and export. History starts at the first change after the upgrade                                                                                                                                                                                                                                                                       | [docs/version-history.md](docs/version-history.md)                                               |
 | Uploads that wait            | Uploads that hit a limit or a network problem are retried with growing delays instead of failing; identical files are sent once                                                                                                                                                                                                                                                                                                                                                                                                           | [docs/troubleshooting.md](docs/troubleshooting.md)                                               |
 | Content from a newer version | A document that holds content the app does not know is never rewritten: the window names the content and pauses editing until the app is current                                                                                                                                                                                                                                                                                                                                                                                          | [docs/known-limitations.md](docs/known-limitations.md)                                           |
-| OS-aware downloads           | The landing page and `/download` pick the desktop file for the visitor's system and architecture, show version, size, SHA-256 and signature status, and say honestly when nothing is published. The desktop app checks for updates, verifies a download and never installs by itself. Builds are unsigned until signing credentials exist                                                                                                                                                                                                 | [docs/desktop-release.md](docs/desktop-release.md)                                               |
+| OS-aware downloads           | The product page and `/download` (both for signed-in accounts) pick the desktop file for the person's system and architecture, show version, size, SHA-256 and signature status, and say honestly when nothing is published. The desktop app checks for updates, verifies a download and never installs by itself. Builds are unsigned until signing credentials exist                                                                                                                                                                    | [docs/desktop-release.md](docs/desktop-release.md)                                               |
 | Multi-instance mode          | Optional. With `REDIS_URL`, several server instances behind one load balancer share rooms, tickets, rate limits and revocation. Without it the server runs as one process, as today                                                                                                                                                                                                                                                                                                                                                       | [docs/scaling.md](docs/scaling.md)                                                               |
 | Metrics and health           | `GET /metrics` (Prometheus text, off unless `METRICS_TOKEN` is set), `GET /api/health`, `GET /api/ready` (database, Redis and shutdown state)                                                                                                                                                                                                                                                                                                                                                                                             | [docs/observability.md](docs/observability.md)                                                   |
 
 **A live deployment exists** at <https://realdocs.techsarasolutions.com>, published through a
 Cloudflare Tunnel from the build server. How it is run is in [deploy/README.md](deploy/README.md).
-It publishes no desktop build yet: the download section of its landing page says so.
+A visitor sees only its sign-in page. After signing in, an administrator starts in the administration
+area (`/admin/users`) and a member on the product page (`/`, also at `/product`); documents are at
+`/documents`. Desktop builds are published there for signed-in accounts ([docs/desktop-release.md](docs/desktop-release.md)).
 
 ## What it is not
 
@@ -270,7 +274,7 @@ browser's "Save as PDF".
 ### Sign up (optional)
 
 Self-service sign-up is **off by default** (`ALLOW_SIGNUP=false`). When an operator turns it on,
-the landing page and the sign-in page offer "Sign up", which creates a member account that cannot see
+the sign-in page offers "sign up", which creates a member account that cannot see
 any document until an administrator adds it. Without it, accounts are created by the first-administrator
 command and by invitation links.
 

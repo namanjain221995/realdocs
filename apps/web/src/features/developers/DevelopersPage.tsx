@@ -4,7 +4,6 @@ import { Brand } from '../../components/Brand';
 import { NotFoundPage } from '../../components/NotFoundPage';
 import { ThemeControl } from '../../components/ThemeControl';
 import { useDocumentTitle } from '../../lib/hooks';
-import { useSession } from '../../lib/session';
 import { ApiReference } from './ApiReference';
 import { PORTAL_SECTIONS } from './sections';
 
@@ -25,7 +24,6 @@ export function DevelopersPage() {
   const id = section ?? 'overview';
   const current = ALL.find((entry) => entry.id === id);
   useDocumentTitle(current ? `${current.title} – Developers` : 'Developers');
-  const { user } = useSession();
   if (!current) return <NotFoundPage />;
   const portal = PORTAL_SECTIONS.find((entry) => entry.id === id);
   const index = ALL.findIndex((entry) => entry.id === id);
@@ -40,15 +38,9 @@ export function DevelopersPage() {
           <Link to="/guides/readme" className="rd-link rd-link--quiet">
             Guides
           </Link>
-          {user ? (
-            <Link to="/" className="rd-link rd-link--quiet">
-              Open app
-            </Link>
-          ) : (
-            <Link to="/login" className="rd-link rd-link--quiet">
-              Sign in
-            </Link>
-          )}
+          <Link to="/documents" className="rd-link rd-link--quiet">
+            Open app
+          </Link>
           <ThemeControl compact />
         </div>
       </header>

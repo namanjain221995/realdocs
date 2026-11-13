@@ -1126,16 +1126,32 @@ describe('admin interface', () => {
 });
 
 describe('OpenAPI and the portal routes', () => {
-  it('serves the OpenAPI document publicly and cacheably', async () => {
-    const result = await new Agent(fx.server).get<{
-      openapi: string;
-      paths: Record<string, unknown>;
-    }>('/api/openapi.json');
-    expect(result.status).toBe(200);
-    expect(result.body.openapi).toBe('3.1.0');
-    expect(Object.keys(result.body.paths)).toContain('/api/v1/interview-sessions');
-    expect(result.headers.get('cache-control')).toContain('max-age');
-    expect(result.headers.get('cache-control')).not.toContain('no-store');
+  it('serves the OpenAPI document to a signed-in account and to an API key, and to nobody else', async () => {
+    type Spec = { openapi: string; paths: Record<string, unknown> };
+    // Anonymous: the developer portal is not public, and neither is the document behind it.
+    const anonymous = await new Agent(fx.server).get<{ error: { code: string } }>(
+      '/api/openapi.json',
+    );
+    expect(anonymous.status).toBe(401);
+    expect(anonymous.body.error.code).toBe('unauthenticated');
+
+    // An account session.
+    const viaSession = await fx.admin.get<Spec>('/api/openapi.json');
+    expect(viaSession.status).toBe(200);
+    expect(viaSession.body.openapi).toBe('3.1.0');
+    expect(Object.keys(viaSession.body.paths)).toContain('/api/v1/interview-sessions');
+    expect(viaSession.headers.get('cache-control')).toContain('private');
+
+    // Any valid key, whatever its scopes.
+    const key = await makeKey(['webhooks:manage']);
+    const viaKey = await key.client.get<Spec>('/api/openapi.json');
+    expect(viaKey.status).toBe(200);
+    expect(viaKey.body.openapi).toBe('3.1.0');
+
+    // A key that is not a key, and a revoked one.
+    expect((await serviceClient('rdk_garbage').get('/api/openapi.json')).status).toBe(401);
+    await fx.admin.ok(fx.admin.post(`/api/admin/api-keys/${key.id}/revoke`));
+    expect((await key.client.get('/api/openapi.json')).status).toBe(401);
   });
 
   it('serves the single-page shell for /docs, /guides and the admin pages', async () => {

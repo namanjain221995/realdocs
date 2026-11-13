@@ -50,7 +50,7 @@ for (const theme of ['dark', 'light'] as const satisfies readonly ThemeName[]) {
     test('landing page', async ({ page, api }) => {
       // Colours are measured in the settled state, not half-way through the entrance animation.
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      api.signupEnabled = true;
+      signedInAs(api, USERS.ben);
       api.desktopReleases = {
         channel: 'stable',
         releases: [
@@ -88,6 +88,8 @@ for (const theme of ['dark', 'light'] as const satisfies readonly ThemeName[]) {
     });
 
     test('sign-in', async ({ page }) => {
+      // Colours are measured in the settled state, not half-way through the entrance animation.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.goto('/login');
       await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
       await audit(page, 'login');
@@ -114,7 +116,7 @@ for (const theme of ['dark', 'light'] as const satisfies readonly ThemeName[]) {
 
     test('documents (dashboard)', async ({ page, api }) => {
       signedInAs(api, USERS.asha);
-      await page.goto('/');
+      await page.goto('/documents');
       await expect(page.getByTestId('document-row')).toHaveCount(5);
       await audit(page, 'dashboard');
     });
@@ -126,7 +128,8 @@ for (const theme of ['dark', 'light'] as const satisfies readonly ThemeName[]) {
       await audit(page, 'document viewer');
     });
 
-    test('guide pages', async ({ page }) => {
+    test('guide pages', async ({ page, api }) => {
+      signedInAs(api, USERS.ben);
       await page.goto('/guides/security');
       await expect(page.getByTestId('docs-article')).toBeVisible();
       await audit(page, 'docs');
@@ -135,7 +138,8 @@ for (const theme of ['dark', 'light'] as const satisfies readonly ThemeName[]) {
 }
 
 test.describe('keyboard', () => {
-  test('the landing page can be used without a mouse', async ({ page }) => {
+  test('the landing page can be used without a mouse', async ({ page, api }) => {
+    signedInAs(api, USERS.ben);
     await page.goto('/');
     await expect(page.getByTestId('landing')).toBeVisible();
     // The first stop is the skip link; the main actions follow in reading order.
@@ -151,11 +155,11 @@ test.describe('keyboard', () => {
         ),
       );
     }
-    expect(names).toContain('Sign in');
+    expect(names).toContain('Open documents');
     expect(names.some((name) => name.startsWith('Download'))).toBe(true);
     // Every focused control shows a visible focus indicator.
     const outlined = await page.evaluate(() => {
-      const element = document.querySelector('[data-testid="hero-sign-in"]') as HTMLElement;
+      const element = document.querySelector('[data-testid="hero-open-documents"]') as HTMLElement;
       element.focus();
       const style = getComputedStyle(element);
       return style.outlineStyle !== 'none' || style.boxShadow !== 'none';

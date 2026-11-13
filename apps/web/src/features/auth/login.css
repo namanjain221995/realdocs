@@ -1,0 +1,381 @@
+/*
+ * The sign-in page: the form on the left, a shared document being written on the right.
+ * Colours and type are the app's tokens, so the light and the dark theme both apply.
+ */
+.login {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+.login__bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-4);
+  padding: 14px var(--app-gutter);
+}
+
+.login__body {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: clamp(20px, 5vh, 40px);
+  padding: clamp(8px, 4vh, 40px) var(--app-gutter) 56px;
+}
+
+.login__form {
+  width: 100%;
+  max-width: 384px;
+  margin-inline: auto;
+  /* One entrance, when the page opens. */
+  animation: login-enter 520ms var(--rd-ease) both;
+}
+
+.login__form .auth-title {
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.375rem);
+  letter-spacing: -0.03em;
+}
+
+/* The notice opens by growing: what is below it moves smoothly instead of jumping. */
+.login__reveal {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: login-open 260ms var(--rd-ease) both;
+}
+
+.login__reveal > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@keyframes login-open {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+  to {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+@keyframes login-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ scene */
+.login-scene {
+  --scene-a: var(--rd-accent);
+  --scene-b: var(--rd-info);
+  /* On a narrow screen the scene is a band above the form: the top of the sheet only. */
+  order: -1;
+  width: 100%;
+  max-width: 384px;
+  height: 132px;
+  margin-inline: auto;
+  overflow: hidden;
+  border-radius: var(--rd-radius-lg);
+  pointer-events: none;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(#000 62%, transparent);
+  mask-image: linear-gradient(#000 62%, transparent);
+}
+
+.login-scene__stage {
+  position: relative;
+  width: 100%;
+}
+
+.login-scene__sheet {
+  overflow: hidden;
+  border: 1px solid var(--rd-border-strong);
+  border-radius: var(--rd-radius-lg);
+  background: var(--rd-surface-1);
+  box-shadow: var(--rd-shadow-2);
+}
+
+/* The ruler of the editor: ticks, and the two margin handles. */
+.login-scene__ruler {
+  position: relative;
+  height: 22px;
+  border-bottom: 1px solid var(--rd-border);
+  background:
+    repeating-linear-gradient(90deg, var(--rd-border-strong) 0 1px, transparent 1px 40px) 0 100% /
+      100% 9px no-repeat,
+    repeating-linear-gradient(90deg, var(--rd-border) 0 1px, transparent 1px 8px) 0 100% / 100% 5px
+      no-repeat,
+    var(--rd-surface-2);
+}
+
+.login-scene__margin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  border-radius: 2px;
+  background: var(--rd-accent);
+}
+
+.login-scene__margin--left {
+  left: 11%;
+}
+
+.login-scene__margin--right {
+  right: 11%;
+}
+
+.login-scene__page {
+  padding: 18px 11% 28px;
+  font-family: var(--rd-font-doc);
+}
+
+.login-scene__title {
+  color: var(--rd-text);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.login-scene__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--rd-text-muted);
+  font-family: var(--rd-font-ui);
+  font-size: var(--rd-text-xs);
+}
+
+.login-scene__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rd-success);
+}
+
+.login-scene__saved {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: var(--rd-radius-full);
+  background: var(--rd-success-soft);
+  color: var(--rd-success);
+  /* Appears when the last line has been written. */
+  animation: login-fade 300ms var(--rd-ease) 5.4s both;
+}
+
+.login-scene__lines {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--rd-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.login-scene__line {
+  --caret: var(--scene-a);
+  --start: calc(0.7s + var(--i) * 1.55s);
+  display: flex;
+  align-items: center;
+  min-height: 1.5em;
+  white-space: nowrap;
+}
+
+.login-scene__line[data-who='b'] {
+  --caret: var(--scene-b);
+}
+
+/* Typed, not faded: the text is uncovered a step at a time and the caret rides its edge. */
+.login-scene__typed {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 100%;
+  animation: login-type 1.3s steps(26, end) var(--start) both;
+}
+
+.login-scene__caret {
+  position: relative;
+  flex: none;
+  width: 2px;
+  height: 1.2em;
+  margin-left: 1px;
+  border-radius: 1px;
+  background: var(--caret);
+  opacity: 0;
+  animation:
+    login-fade 120ms linear var(--start) forwards,
+    app-caret 1.05s steps(1, end) calc(var(--start) + 1.3s) infinite;
+}
+
+/* One caret per person: it leaves a line when its owner starts writing another. */
+.login-scene__line[data-leaves] .login-scene__caret {
+  animation:
+    login-fade 120ms linear var(--start) forwards,
+    app-caret 1.05s steps(1, end) calc(var(--start) + 1.3s) 2,
+    login-leave 140ms linear 3.75s forwards;
+}
+
+.login-scene__flag {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  padding: 0 5px;
+  border-radius: 3px 3px 3px 0;
+  background: var(--caret);
+  color: var(--rd-bg);
+  font-family: var(--rd-font-ui);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+}
+
+/* The presenter panel, floating over the corner of the sheet. */
+.login-scene__panel {
+  display: none;
+}
+
+@keyframes login-type {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
+}
+
+@keyframes login-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes login-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes login-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-7px);
+  }
+}
+
+@media (min-width: 960px) {
+  .login__body {
+    grid-template-columns: minmax(340px, 5fr) minmax(0, 7fr);
+    align-items: center;
+    align-content: center;
+    gap: clamp(40px, 6vw, 104px);
+    max-width: 1240px;
+    width: 100%;
+    margin-inline: auto;
+    padding-block: 24px 72px;
+  }
+
+  .login__form {
+    margin-inline: 0 auto;
+    justify-self: end;
+  }
+
+  .login-scene {
+    order: 0;
+    max-width: 560px;
+    height: auto;
+    margin-inline: 0;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+    animation: login-enter 640ms var(--rd-ease) 120ms both;
+  }
+
+  .login-scene__stage {
+    padding: 0 44px 64px 0;
+  }
+
+  .login-scene__page {
+    padding-bottom: 96px;
+  }
+
+  .login-scene__panel {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: block;
+    width: min(62%, 300px);
+    padding: 10px 14px 14px;
+    border: 1px solid var(--rd-border-strong);
+    border-radius: var(--rd-radius-lg);
+    background: color-mix(in srgb, var(--rd-surface-2) 82%, transparent);
+    box-shadow: var(--rd-shadow-3);
+    color: var(--rd-text);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    animation: login-drift 5.5s ease-in-out 1s infinite alternate;
+  }
+
+  .login-scene__panel-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: var(--rd-text-muted);
+    font-size: var(--rd-text-xs);
+    font-weight: 600;
+  }
+
+  .login-scene__pin {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--rd-accent);
+  }
+
+  .login-scene__panel-next {
+    margin-top: 4px;
+    color: var(--rd-text-muted);
+  }
+}
+
+/* Nothing moves when the system asks for that: the page is simply there, complete. */
+@media (prefers-reduced-motion: reduce) {
+  .login__form,
+  .login__reveal,
+  .login-scene,
+  .login-scene__typed,
+  .login-scene__caret,
+  .login-scene__line[data-leaves] .login-scene__caret,
+  .login-scene__saved,
+  .login-scene__panel {
+    animation: none;
+  }
+
+  .login-scene__caret {
+    opacity: 1;
+  }
+
+  .login-scene__line[data-leaves] .login-scene__caret {
+    opacity: 0;
+  }
+}

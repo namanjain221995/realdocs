@@ -2,8 +2,14 @@
 
 This is the guide for a system (an HR tool, a scheduler) that creates interview documents through the
 service API. The same material, with a live reference and a "try it" form, is at `/docs` on every
-deployment; the machine-readable contract is `GET /api/openapi.json` (OpenAPI 3.1, generated from the
-schemas the server validates with).
+deployment for a signed-in account; the machine-readable contract is `GET /api/openapi.json` (OpenAPI
+3.1, generated from the schemas the server validates with). Neither is public: the document is served
+to a signed-in account (the browser session) or to any valid API key
+(`Authorization: Bearer rdk_…`, whatever its scopes), and answers 401 otherwise:
+
+```sh
+curl -sS https://docs.example.com/api/openapi.json -H "Authorization: Bearer $RDK_KEY"
+```
 
 ## Model
 

@@ -7,7 +7,16 @@
  * specs: their own projects, one worker, after everything else.
  */
 import { createHash } from 'node:crypto';
-import { expect, publishDownload, resetDownloads, setSignup, test, unique } from './support/test';
+import {
+  admin,
+  expect,
+  publishDownload,
+  resetDownloads,
+  setSignup,
+  signIn,
+  test,
+  unique,
+} from './support/test';
 
 test.describe.configure({ mode: 'serial' });
 // The Playwright desktop devices present themselves as Windows or macOS; this spec needs a Linux
@@ -37,7 +46,9 @@ test('with DOWNLOAD_DIR unset nothing is listed and the page says the release is
   expect(listed.status()).toBe(200);
   expect(await listed.json()).toEqual({ release: null, artifacts: [] });
 
-  await page.goto('/');
+  // The product page is for signed-in accounts.
+  await signIn(page, admin);
+  await page.goto('/product');
   await expect(page.getByTestId('downloads-empty')).toContainText(
     'Release not published — build the desktop app locally (see the Windows, macOS and Linux guides)',
   );
@@ -54,7 +65,9 @@ test('with one dummy build published, only that build is listed, with version, s
   await publishDownload(FILE, 2048, { version: '0.0.1-test', signed: false });
   const expectedHash = createHash('sha256').update(Buffer.alloc(2048, 0x5a)).digest('hex');
 
-  await page.goto('/');
+  // The product page is for signed-in accounts.
+  await signIn(page, admin);
+  await page.goto('/product');
   // The test browser is Linux and only a Windows build exists: no dead link, and the manual list has it.
   await expect(page.getByTestId('download-unavailable')).toContainText(
     'No release published for Linux',
@@ -87,7 +100,9 @@ test('with one dummy build published, only that build is listed, with version, s
 
 test('a release stated to be signed has no unsigned notice', async ({ page }) => {
   await publishDownload(FILE, 1024, { version: '1.0.0', signed: true });
-  await page.goto('/');
+  // The product page is for signed-in accounts.
+  await signIn(page, admin);
+  await page.goto('/product');
   await page.getByTestId('download-choose-other').click();
   await expect(page.getByTestId('download-build')).toHaveCount(1);
   await expect(page.getByTestId('download-build')).toContainText('Signed build.');
@@ -96,9 +111,10 @@ test('a release stated to be signed has no unsigned notice', async ({ page }) =>
 
 test('sign-up is off by default, and works when the operator turns it on', async ({ page }) => {
   await setSignup(false);
+  // A visitor only ever sees the sign-in page, which does not mention sign-up while it is off.
   await page.goto('/');
-  await expect(page.getByTestId('hero-sign-in')).toBeVisible();
-  await expect(page.getByTestId('hero-sign-up')).toHaveCount(0);
+  await expect(page).toHaveURL('/login');
+  await expect(page.getByRole('link', { name: 'sign up' })).toHaveCount(0);
   await page.goto('/signup');
   await expect(page.getByTestId('signup-off')).toContainText(
     'Sign-up is turned off on this server.',
@@ -111,13 +127,17 @@ test('sign-up is off by default, and works when the operator turns it on', async
 
   await setSignup(true);
   await page.goto('/');
-  await expect(page.getByTestId('hero-sign-up')).toBeVisible();
-  await page.getByTestId('hero-sign-up').click();
+  await expect(page).toHaveURL('/login');
+  await page.getByRole('link', { name: 'sign up' }).click();
   await expect(page).toHaveURL('/signup');
   const email = `${unique('nora').replace(/\s+/g, '.')}@example.com`;
   await page.getByLabel('Name').fill('Nora Quill');
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill('violet-harbor-lantern-42');
   await page.getByRole('button', { name: 'Create account' }).click();
+  // A new member starts on the product page, signed in.
+  await expect(page.getByTestId('landing')).toBeVisible();
+  await expect(page.getByTestId('nav-account')).toBeVisible();
+  await page.getByTestId('hero-open-documents').click();
   await expect(page.getByRole('heading', { level: 1, name: 'Documents' })).toBeVisible();
 });

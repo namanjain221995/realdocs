@@ -178,7 +178,7 @@ test.describe('settings', () => {
   });
 
   test('signs out from the account menu too', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/documents');
     await page.getByRole('button', { name: 'Account menu for Ben Ortiz' }).click();
     const menu = page.getByRole('menu');
     await expect(menu).toContainText('ben.ortiz@northwind.example');

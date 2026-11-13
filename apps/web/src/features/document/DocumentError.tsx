@@ -78,13 +78,13 @@ export function DocumentError({ documentId, error, kind, onRetry, retrying }: Do
         <Button variant="primary" loading={restore.isPending} onClick={() => restore.mutate()}>
           Restore document
         </Button>
-        <RouterLinkButton to="/?view=trash">Open trash</RouterLinkButton>
+        <RouterLinkButton to="/documents?view=trash">Open trash</RouterLinkButton>
       </>
     );
   } else if (user) {
     // "Try again" (from ErrorView) is the main action on retryable screens.
     actions = (
-      <RouterLinkButton to="/" variant={canRetry ? 'secondary' : 'primary'}>
+      <RouterLinkButton to="/documents" variant={canRetry ? 'secondary' : 'primary'}>
         Go to documents
       </RouterLinkButton>
     );

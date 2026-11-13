@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { Brand } from '../../components/Brand';
 import { ThemeControl } from '../../components/ThemeControl';
 import { useDocumentTitle } from '../../lib/hooks';
-import { useServerMeta } from '../../lib/useLimits';
+import { DOCUMENTS_PATH, PRODUCT_PATH } from '../../lib/navigation';
 import { DownloadSection } from './DownloadSection';
 import { Hero } from './Hero';
 import { LandingNav } from './LandingNav';
@@ -24,15 +24,14 @@ export { CAVEAT, REQUIRED_SENTENCE } from './copy';
 
 export function LandingPage() {
   useDocumentTitle(null);
-  const signupEnabled = useServerMeta().data?.signupEnabled === true;
   const rootRef = useRef<HTMLDivElement>(null);
   useReveal(rootRef);
 
   return (
     <div ref={rootRef} className="land rd-landing" data-testid="landing">
-      <LandingNav signupEnabled={signupEnabled} />
+      <LandingNav />
       <main id="main" tabIndex={-1} className="land-main">
-        <Hero signupEnabled={signupEnabled} />
+        <Hero />
         <Product />
         <Presenter />
         <Sessions />
@@ -42,14 +41,14 @@ export function LandingPage() {
         <Reliability />
         <Platforms />
         <DownloadSection />
-        <GetStarted signupEnabled={signupEnabled} />
+        <GetStarted />
         <Faq />
       </main>
 
       <footer className="lp-footer">
         <div className="land-wrap">
           <div className="lp-footer__row">
-            <Brand to="/" />
+            <Brand to={PRODUCT_PATH} />
             <nav aria-label="Footer" className="lp-footer__nav">
               <Link to="/guides/readme">About</Link>
               <Link to="/guides/windows-client">Windows app</Link>
@@ -57,7 +56,7 @@ export function LandingPage() {
               <Link to="/guides/linux-client">Linux app</Link>
               <Link to="/guides/security">Security</Link>
               <Link to="/docs">Developers</Link>
-              <Link to="/login">Sign in</Link>
+              <Link to={DOCUMENTS_PATH}>My documents</Link>
             </nav>
             <ThemeControl />
           </div>

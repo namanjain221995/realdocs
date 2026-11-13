@@ -172,7 +172,7 @@ function Workspace({
       queryClient.removeQueries({ queryKey: queryKeys.document(document.id) });
       if (user) {
         toast.show({ title: 'You left the shared document' });
-        void navigate('/', { replace: true });
+        void navigate('/documents', { replace: true });
       } else {
         onLeft();
       }

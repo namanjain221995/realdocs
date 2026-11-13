@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router';
+import { AccountOnly } from './components/AccountOnly';
 import { NotFoundPage } from './components/NotFoundPage';
 import { RootLayout } from './components/RootLayout';
 import { RouteErrorScreen } from './components/RouteErrorScreen';
@@ -60,41 +61,62 @@ export function createAppRouter() {
           }),
         },
         {
-          // Dashboard when signed in, landing page otherwise.
+          // Sign-in for visitors, the administration area for administrators, the product
+          // page for members.
           index: true,
           Component: HomeGate,
         },
         {
-          // Public: the distribution page and the notes of one release.
-          path: 'download',
-          lazy: async () => ({
-            Component: (await import('./features/landing/DownloadPage')).DownloadPage,
-          }),
-        },
-        {
-          path: 'releases/:version',
-          lazy: async () => ({
-            Component: (await import('./features/landing/ReleaseNotesPage')).ReleaseNotesPage,
-          }),
-        },
-        {
-          // The in-app guides (README, desktop clients, security). They used to live under /docs.
-          path: 'guides/:name',
-          lazy: async () => ({
-            Component: (await import('./features/guides/GuidesPage')).GuidesPage,
-          }),
-        },
-        {
-          // Public developer portal. Old guide links (/docs/readme …) are sent on to /guides.
-          path: 'docs/:section?',
-          loader: legacyGuideLoader,
-          lazy: async () => ({
-            Component: (await import('./features/developers/DevelopersPage')).DevelopersPage,
-          }),
+          // For signed-in accounts only: nothing of the product page, the downloads, the guides
+          // or the developer portal is shown to a visitor or to a share-link guest.
+          Component: AccountOnly,
+          children: [
+            {
+              path: 'product',
+              lazy: async () => ({
+                Component: (await import('./features/landing/LandingPage')).LandingPage,
+              }),
+            },
+            {
+              // The distribution page and the notes of one release.
+              path: 'download',
+              lazy: async () => ({
+                Component: (await import('./features/landing/DownloadPage')).DownloadPage,
+              }),
+            },
+            {
+              path: 'releases/:version',
+              lazy: async () => ({
+                Component: (await import('./features/landing/ReleaseNotesPage')).ReleaseNotesPage,
+              }),
+            },
+            {
+              // The in-app guides (README, desktop clients, security). They used to live under /docs.
+              path: 'guides/:name',
+              lazy: async () => ({
+                Component: (await import('./features/guides/GuidesPage')).GuidesPage,
+              }),
+            },
+            {
+              // Developer portal. Old guide links (/docs/readme …) are sent on to /guides.
+              path: 'docs/:section?',
+              loader: legacyGuideLoader,
+              lazy: async () => ({
+                Component: (await import('./features/developers/DevelopersPage')).DevelopersPage,
+              }),
+            },
+          ],
         },
         {
           Component: SignedInLayout,
           children: [
+            {
+              // A person's documents.
+              path: 'documents',
+              lazy: async () => ({
+                Component: (await import('./features/dashboard/DashboardPage')).DashboardPage,
+              }),
+            },
             {
               path: 'settings',
               lazy: async () => ({

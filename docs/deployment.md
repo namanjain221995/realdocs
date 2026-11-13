@@ -724,7 +724,9 @@ bundled are shown as plain text in the reader.
 
 ## Publish desktop downloads
 
-The server offers the packaged desktop apps at `/download` and on the landing page, but it never
+The server offers the packaged desktop apps at `/download` and on the product page (both shown to
+signed-in accounts only; the files themselves, under `/download/releases/…`, stay reachable without a
+session because the desktop app's update check fetches them), but it never
 builds or signs them: the operator publishes them as files. The complete guide (layout, manifest,
 signing flags, rollout, rollback, CI) is [desktop-release.md](desktop-release.md); this section is the
 short operational version. **Until something is published the site says "Release not published" and
@@ -1087,13 +1089,14 @@ docker run --rm -v "$PWD":/work -w /work \
 `firefox` or `webkit`). Do not put the password in a shell history or a log; pass it from a file or a
 secret store.
 
-The checks cover: the landing page, `/docs`, `/api/openapi.json` (OpenAPI 3.1.0), health and
-readiness, login, the administrator account list, document creation, typing, bold and autosave,
+The checks cover: a visitor ending on the sign-in page at `/`, `/docs`, `/download`, `/product` and a
+guide, `/api/openapi.json` answering 401 without credentials, health and readiness, login, the product
+page, `/docs` and `/api/openapi.json` (OpenAPI 3.1.0) for the signed-in account and for an API key, the administrator account list, document creation, typing, bold and autosave,
 reopening, a guest through a share link, two-way sync, an image paste reaching the other person, page
 orientation reaching the other person, the history listing both people, the history page, restoring an
 earlier revision, the session API (401 without a valid key, 403 for a key without the scope, 201 and
 idempotent creation of a session), the candidate page (it works and shows no desktop download
-controls), a revoked key answering 401, the release manifest, and a click on the landing page's
+controls), a revoked key answering 401, the release manifest, and a click on the product page's
 Download button whose file checksum matches.
 
 On 2026-11-12 it passed 26/26 checks against `https://realdocs.techsarasolutions.com` after the

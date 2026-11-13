@@ -18,7 +18,7 @@ test.describe('page delivery', () => {
     api,
   }) => {
     signedInAs(api, USERS.asha);
-    const response = await page.goto('/');
+    const response = await page.goto('/documents');
     expect(response?.headers()['content-security-policy']).toBe(REQUIRED_CSP);
     expect(response?.headers()['referrer-policy']).toBe('no-referrer');
     await expect(page.getByTestId('document-row')).toHaveCount(5);
@@ -55,7 +55,7 @@ test.describe('page delivery', () => {
     page.on('request', (request) => {
       if (request.resourceType() === 'script') scripts.push(new URL(request.url()).pathname);
     });
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId('document-row')).toHaveCount(5);
     expect(scripts.filter((path) => /EditorMount|DocumentPage/.test(path))).toEqual([]);
 
@@ -75,8 +75,10 @@ test.describe('page delivery', () => {
     const error = page.getByTestId('session-error');
     await expect(error).toContainText('The server is not responding');
     await error.getByRole('button', { name: 'Try again' }).click();
-    // Not signed in: the public landing page.
-    await expect(page.getByTestId('landing')).toBeVisible();
+    // Not signed in: the sign-in page, and nothing of the product page.
+    await expect(page).toHaveURL('/login');
+    await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+    await expect(page.getByTestId('landing')).toHaveCount(0);
   });
 });
 
@@ -87,7 +89,7 @@ test.describe('when part of the app cannot be loaded', () => {
       page,
       /dynamically imported module|Importing a module script failed|module script/i,
     );
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId('document-row')).toHaveCount(5);
     // The settings screen's code is gone, as after a deployment that replaced it.
     await page.route(/\/assets\/SettingsPage-.*\.js$/, (route) => route.abort());
@@ -115,7 +117,7 @@ test.describe('navigation and accessibility', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
     await expect(menu).toBeVisible();
     await menu.getByRole('menuitem', { name: 'Documents' }).click();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/documents');
   });
 
   test('has a 404 page for accounts and for visitors', async ({ page, api }) => {
@@ -139,7 +141,7 @@ test.describe('navigation and accessibility', () => {
     api,
   }) => {
     signedInAs(api, USERS.asha);
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId('document-row')).toHaveCount(5);
     await page.keyboard.press('Tab');
     const skip = page.getByRole('link', { name: 'Skip to content' });
@@ -148,12 +150,12 @@ test.describe('navigation and accessibility', () => {
     await page.keyboard.press('Enter');
     await expect(page.locator('#main')).toBeFocused();
     // Using it leaves the address alone.
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/documents');
   });
 
   test('moves focus to the new page and updates the title on navigation', async ({ page, api }) => {
     signedInAs(api, USERS.asha);
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page).toHaveTitle('Documents – RealtimeDocs');
     await page.getByRole('link', { name: 'People' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'People' })).toBeVisible();
@@ -173,16 +175,16 @@ test.describe('navigation and accessibility', () => {
 
   test('can be driven from the keyboard: tabs, row menu and dialog', async ({ page, api }) => {
     signedInAs(api, USERS.asha);
-    await page.goto('/');
+    await page.goto('/documents');
     await expect(page.getByTestId('document-row')).toHaveCount(5);
 
     await page.getByRole('tab', { name: 'Active' }).focus();
     await page.keyboard.press('ArrowRight');
     await expect(page.getByRole('tab', { name: 'Recent' })).toBeFocused();
-    await expect(page).toHaveURL('/?view=recent');
+    await expect(page).toHaveURL('/documents?view=recent');
     await page.keyboard.press('Home');
     await expect(page.getByRole('tab', { name: 'Active' })).toBeFocused();
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/documents');
     // Keys pressed faster than the address can follow still end where the last one points.
     await page.keyboard.press('End');
     await page.keyboard.press('Home');
@@ -191,9 +193,9 @@ test.describe('navigation and accessibility', () => {
       'aria-selected',
       'true',
     );
-    await expect(page).toHaveURL('/?view=recent');
+    await expect(page).toHaveURL('/documents?view=recent');
     await page.keyboard.press('Home');
-    await expect(page).toHaveURL('/');
+    await expect(page).toHaveURL('/documents');
 
     await page.getByTestId('row-actions').first().focus();
     await page.keyboard.press('Enter');
@@ -286,8 +288,8 @@ test.describe('layout', () => {
       signedInAs(api, USERS.asha);
       await page.setViewportSize({ width, height: 800 });
       for (const path of [
-        '/',
-        '/?view=trash',
+        '/documents',
+        '/documents?view=trash',
         `/d/${DOC_IDS.allHands}`,
         `/d/${DOC_IDS.launch}?panel=share`,
         `/d/${DOC_IDS.launch}?panel=snapshots`,

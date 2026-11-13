@@ -13,7 +13,7 @@ import { auditAdminView } from '../../service/sessions';
 import { SERVICE_ROUTES } from '../../service/v1-routes';
 import { errors } from '../../errors';
 import type { RouteDeps } from '../app';
-import { requireAdmin, requireService } from '../auth';
+import { requireAdmin, requireService, requireSpecReader } from '../auth';
 import { parseInput } from '../util';
 
 export function registerV1Routes(app: FastifyInstance, { ctx, limits }: RouteDeps): void {
@@ -124,9 +124,11 @@ export function registerV1Routes(app: FastifyInstance, { ctx, limits }: RouteDep
     }
   }
 
-  // Public and cacheable: the document describes the API, not any deployment data.
-  app.get('/api/openapi.json', async (_request, reply) => {
-    reply.header('cache-control', 'public, max-age=300');
+  // For signed-in accounts and API-key holders: the developer portal is not public, and neither
+  // is the document it is built from.
+  app.get('/api/openapi.json', async (request, reply) => {
+    await requireSpecReader(ctx, limits, request);
+    reply.header('cache-control', 'private, max-age=300');
     return buildOpenApi(SERVICE_ROUTES, ctx.config.publicOrigin);
   });
 }

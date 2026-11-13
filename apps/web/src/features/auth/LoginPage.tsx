@@ -1,15 +1,18 @@
 import './auth.css';
+import './login.css';
 import { Banner, Button, TextField } from '@realtimedocs/ui';
 import { useMutation } from '@tanstack/react-query';
 import { type FormEvent, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router';
-import { PublicShell } from '../../components/PublicShell';
+import { Brand } from '../../components/Brand';
+import { ThemeControl } from '../../components/ThemeControl';
 import { api } from '../../lib/api';
 import { errorMessage, formatWait, isApiError, requestIdOf } from '../../lib/errors';
 import { useCountdown, useDocumentTitle } from '../../lib/hooks';
 import { safeNextPath } from '../../lib/navigation';
 import { type SessionEndReason, useSession } from '../../lib/session';
 import { useServerMeta } from '../../lib/useLimits';
+import { LoginScene } from './LoginScene';
 import { PasswordField } from './password';
 
 interface LoginFailure {
@@ -117,84 +120,102 @@ export function LoginPage() {
   const reason = endReasonFrom(location.state);
 
   return (
-    <PublicShell blink>
-      <h1 className="auth-title">Sign in</h1>
-      <p className="auth-lede">Open your documents and the ones shared with your account.</p>
+    <div className="login" data-testid="login-page">
+      <header className="login__bar">
+        <Brand to={null} blink />
+        <ThemeControl compact />
+      </header>
+      <div className="login__body">
+        <main id="main" tabIndex={-1} className="login__form">
+          <h1 className="auth-title">Sign in</h1>
+          <p className="auth-lede">Open your documents and the ones shared with your account.</p>
 
-      {reason === 'expired' && !failure ? (
-        <Banner tone="info" className="auth-banner" data-testid="session-expired-notice">
-          Your session ended. Sign in again to pick up where you left off.
-        </Banner>
-      ) : null}
-      {failure ? (
-        <Banner tone="danger" className="auth-banner" data-testid="login-error">
-          {failure.message}
-          {failure.requestId ? (
-            <span className="app-note"> Reference {failure.requestId}</span>
-          ) : null}
-        </Banner>
-      ) : null}
+          {/* Announced when it changes; it opens by growing, so the form below does not jump. */}
+          <div className="login__notice" aria-live="polite">
+            {reason === 'expired' && !failure ? (
+              <div className="login__reveal" key="expired">
+                <Banner tone="info" className="auth-banner" data-testid="session-expired-notice">
+                  Your session ended. Sign in again to pick up where you left off.
+                </Banner>
+              </div>
+            ) : null}
+            {failure ? (
+              <div className="login__reveal" key={failure.message}>
+                <Banner tone="danger" className="auth-banner" data-testid="login-error">
+                  {failure.message}
+                  {failure.requestId ? (
+                    <span className="app-note"> Reference {failure.requestId}</span>
+                  ) : null}
+                </Banner>
+              </div>
+            ) : null}
+          </div>
 
-      <form className="app-form" onSubmit={onSubmit} noValidate>
-        <TextField
-          ref={emailRef}
-          label="Email"
-          name="email"
-          type="email"
-          inputMode="email"
-          autoComplete="username"
-          autoCapitalize="none"
-          spellCheck={false}
-          autoFocus
-          value={email}
-          error={fieldErrors.email}
-          onChange={(event) => {
-            setEmail(event.target.value);
-            if (fieldErrors.email) setFieldErrors((current) => ({ ...current, email: undefined }));
-          }}
-        />
-        <PasswordField
-          ref={passwordRef}
-          label="Password"
-          name="password"
-          autoComplete="current-password"
-          value={password}
-          error={fieldErrors.password}
-          onChange={(event) => {
-            setPassword(event.target.value);
-            if (fieldErrors.password) {
-              setFieldErrors((current) => ({ ...current, password: undefined }));
-            }
-          }}
-        />
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth
-          loading={login.isPending}
-          disabled={secondsLocked > 0}
-        >
-          {secondsLocked > 0 ? `Sign in available in ${secondsLocked} s` : 'Sign in'}
-        </Button>
-      </form>
+          <form className="app-form" onSubmit={onSubmit} noValidate>
+            <TextField
+              ref={emailRef}
+              label="Email"
+              name="email"
+              type="email"
+              inputMode="email"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              autoFocus
+              value={email}
+              error={fieldErrors.email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (fieldErrors.email) {
+                  setFieldErrors((current) => ({ ...current, email: undefined }));
+                }
+              }}
+            />
+            <PasswordField
+              ref={passwordRef}
+              label="Password"
+              name="password"
+              autoComplete="current-password"
+              value={password}
+              error={fieldErrors.password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                if (fieldErrors.password) {
+                  setFieldErrors((current) => ({ ...current, password: undefined }));
+                }
+              }}
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              loading={login.isPending}
+              disabled={secondsLocked > 0}
+            >
+              {secondsLocked > 0 ? `Sign in available in ${secondsLocked} s` : 'Sign in'}
+            </Button>
+          </form>
 
-      <div className="auth-footnote">
-        <p>
-          No account yet? Accounts are created from an invitation link. Ask a workspace
-          administrator to send you one.
-          {signupEnabled ? (
-            <>
-              {' '}
-              This server also lets you <Link to="/signup">sign up</Link> yourself.
-            </>
-          ) : null}
-        </p>
-        <p data-testid="forgot-password-hint">
-          Forgot your password? RealtimeDocs sends no email, so it cannot be reset from here. Ask
-          the person who runs this server: they can set a new password for your account with the
-          server’s <code>reset-password</code> command.
-        </p>
+          <div className="auth-footnote">
+            <p>
+              No account yet? Accounts are created from an invitation link. Ask a workspace
+              administrator to send you one.
+              {signupEnabled ? (
+                <>
+                  {' '}
+                  This server also lets you <Link to="/signup">sign up</Link> yourself.
+                </>
+              ) : null}
+            </p>
+            <p data-testid="forgot-password-hint">
+              Forgot your password? RealtimeDocs sends no email, so it cannot be reset from here.
+              Ask the person who runs this server: they can set a new password for your account with
+              the server’s <code>reset-password</code> command.
+            </p>
+          </div>
+        </main>
+        <LoginScene />
       </div>
-    </PublicShell>
+    </div>
   );
 }

@@ -116,22 +116,24 @@ try {
   page = await context.newPage();
   owner = page;
 
-  // ── Public pages ─────────────────────────────────────────────────────────
-  await step('landing page renders', async () => {
-    const response = await page.goto('/');
-    if (response.status() !== 200) throw new Error(`HTTP ${response.status()}`);
-    await playwright.expect(page.locator('h1').first()).toBeVisible();
-    return (await page.locator('h1').first().innerText()).slice(0, 60);
+  // ── Without an account: the sign-in page and nothing else ─────────────────
+  await step('a visitor sees only the sign-in page', async () => {
+    for (const path of ['/', '/docs', '/download', '/product', '/guides/windows-client']) {
+      const response = await page.goto(path);
+      if (response.status() !== 200) throw new Error(`${path}: HTTP ${response.status()}`);
+      await playwright
+        .expect(page.getByRole('heading', { level: 1, name: 'Sign in' }))
+        .toBeVisible({ timeout: 20_000 });
+      if (new URL(page.url()).pathname !== '/login')
+        throw new Error(`${path} ended on ${page.url()}`);
+      if ((await page.getByTestId('landing').count()) > 0)
+        throw new Error(`${path} shows the product page`);
+    }
+    return 'checked /, /docs, /download, /product, /guides/windows-client';
   });
-  await step('developer portal /docs renders', async () => {
-    await page.goto('/docs');
-    await playwright.expect(page.locator('h1').first()).toBeVisible();
-    return (await page.locator('h1').first().innerText()).slice(0, 60);
-  });
-  await step('/api/openapi.json is an OpenAPI document', async () => {
+  await step('/api/openapi.json is refused without credentials (401)', async () => {
     const result = await api(page, 'GET', '/api/openapi.json');
-    if (result.status !== 200 || !result.body?.openapi) throw new Error(`HTTP ${result.status}`);
-    return `openapi ${result.body.openapi}, ${Object.keys(result.body.paths ?? {}).length} paths`;
+    if (result.status !== 401) throw new Error(`HTTP ${result.status}`);
   });
   await step('health and readiness (database)', async () => {
     const health = await api(page, 'GET', '/api/health');
@@ -160,11 +162,34 @@ try {
     await page.getByLabel('Email').fill(EMAIL);
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     await page.getByRole('button', { name: 'Sign in' }).click();
+    // An administrator lands in the administration area, a member on the product page.
+    await page.waitForURL((url) => url.pathname !== '/login', { timeout: 20_000 });
+    const landedOn = new URL(page.url()).pathname;
+    await page.goto('/documents');
     await playwright
       .expect(page.getByRole('heading', { level: 1, name: 'Documents' }))
       .toBeVisible({ timeout: 20_000 });
+    return `landed on ${landedOn}`;
   });
   if (!signedIn) throw new Error('cannot continue without a session');
+
+  // ── Pages for signed-in accounts ─────────────────────────────────────────
+  await step('product page renders for a signed-in account', async () => {
+    await page.goto('/product');
+    await playwright.expect(page.getByTestId('landing')).toBeVisible({ timeout: 20_000 });
+    await playwright.expect(page.getByTestId('nav-account')).toBeVisible();
+    return (await page.locator('h1').first().innerText()).slice(0, 60);
+  });
+  await step('developer portal /docs renders', async () => {
+    await page.goto('/docs');
+    await playwright.expect(page.locator('h1').first()).toBeVisible();
+    return (await page.locator('h1').first().innerText()).slice(0, 60);
+  });
+  await step('/api/openapi.json is an OpenAPI document for a signed-in account', async () => {
+    const result = await api(page, 'GET', '/api/openapi.json');
+    if (result.status !== 200 || !result.body?.openapi) throw new Error(`HTTP ${result.status}`);
+    return `openapi ${result.body.openapi}, ${Object.keys(result.body.paths ?? {}).length} paths`;
+  });
 
   await step('admin access: account list', async () => {
     const result = await api(page, 'GET', '/api/users');
@@ -397,6 +422,12 @@ try {
     if (controls > 0 || /download the desktop app|open in desktop/i.test(words))
       throw new Error(`${controls} download/desktop control(s) on the candidate page`);
   });
+  await step('an API key may read /api/openapi.json', async () => {
+    const result = await api(page, 'GET', '/api/openapi.json', undefined, {
+      authorization: `Bearer ${key}`,
+    });
+    if (result.status !== 200 || !result.body?.openapi) throw new Error(`HTTP ${result.status}`);
+  });
   await step('revoked API key is refused (401)', async () => {
     await api(page, 'POST', `/api/admin/api-keys/${keyId}/revoke`);
     const result = await api(page, 'GET', '/api/v1/interview-sessions', undefined, {
@@ -414,10 +445,8 @@ try {
     return `${releases[0].version}: ${releases[0].artifacts.map((a) => a.fileName).join(', ')}`;
   });
   await step('landing page Download button downloads the package for this computer', async () => {
-    // A signed-in person is taken to their documents; the landing page is for visitors.
-    const visitor = await browser.newContext({ baseURL: BASE, acceptDownloads: true });
-    page = await visitor.newPage();
-    await page.goto('/');
+    // The product page is for signed-in accounts: the same session is used.
+    await page.goto('/product');
     const link = page.getByTestId('hero-download-link');
     await playwright.expect(link).toBeVisible({ timeout: 20_000 });
     const expected = await link.getAttribute('data-file');
