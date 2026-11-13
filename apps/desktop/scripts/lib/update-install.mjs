@@ -756,7 +756,11 @@ export async function startSwapHelper({
   const child = spawn(command, args, {
     // Not inside the installation: a working directory there would keep the folder in use.
     cwd: scriptDir,
-    detached: true,
+    // Windows PowerShell started as a detached process (no console at all) exits at once with
+    // status 0 and runs nothing (observed on Windows Server 2025, GitHub runner). A child with a
+    // hidden console is not ended when its parent exits on Windows, so it needs no detaching
+    // there; elsewhere the helper gets its own session to outlive the app.
+    detached: platform !== 'win32',
     stdio: ['ignore', logFd, logFd],
     windowsHide: true,
   });
