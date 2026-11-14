@@ -21,3 +21,6 @@ test-results/
 .DS_Store
 Thumbs.db
 deploy/admin-credentials*
+
+# The owner's sample files: real interview data, never committed.
+example/

@@ -1,0 +1,3158 @@
+{
+ "scenario": "E",
+ "title": "E. Escalation of concurrent users",
+ "topology": "A",
+ "startedAt": "2026-11-14T06:50:08.867Z",
+ "config": {
+  "steps": [
+   200,
+   500,
+   1000,
+   1500,
+   2000,
+   3000,
+   4000,
+   5000
+  ],
+  "holdS": 60,
+  "perDocument": 2,
+  "classShares": {
+   "idle": 0,
+   "viewing": 0,
+   "active": 1
+  },
+  "profiles": {
+   "viewing": {
+    "rate": 0.05,
+    "type": 1,
+    "delete": 0,
+    "format": 0,
+    "cursor": 4,
+    "pauseChance": 0.3,
+    "pauseS": [
+     5,
+     30
+    ],
+    "reconnectChance": 0.002
+   },
+   "active": {
+    "rate": 1,
+    "type": 7,
+    "delete": 1,
+    "format": 1,
+    "cursor": 1,
+    "pauseChance": 0.04,
+    "pauseS": [
+     1,
+     6
+    ],
+    "reconnectChance": 0.001
+   }
+  },
+  "seed": 20261114
+ },
+ "phases": [
+  {
+   "name": "200 users",
+   "durationS": 60.001,
+   "latency": {
+    "active": {
+     "remote": {
+      "n": 7274,
+      "min": 0.095458984375,
+      "p50": 0.70849609375,
+      "p95": 1.103515625,
+      "p99": 1.3408203125,
+      "mean": 0.8000577224425178,
+      "max": 185.743896484375
+     },
+     "ack": {
+      "n": 7272,
+      "min": 1.71337890625,
+      "p50": 3.3515625,
+      "p95": 4.668212890625,
+      "p99": 5.69970703125,
+      "mean": 3.4177369976987935,
+      "max": 18.649658203125
+     },
+     "presence": {
+      "n": 1272,
+      "min": 0,
+      "p50": 1,
+      "p95": 17814,
+      "p99": 32708,
+      "mean": 3895.151729559748,
+      "max": 47991
+     },
+     "ticketMs": {
+      "n": 11,
+      "min": 2.932861328125,
+      "p50": 4.163818359375,
+      "p95": 4.653076171875,
+      "p99": 4.653076171875,
+      "mean": 4.084095348011363,
+      "max": 4.653076171875
+     },
+     "reconnect": {
+      "n": 11,
+      "min": 250.892822265625,
+      "p50": 317.509521484375,
+      "p95": 378.495361328125,
+      "p99": 378.495361328125,
+      "mean": 318.81223366477275,
+      "max": 378.495361328125
+     },
+     "ackOffline": {
+      "n": 4,
+      "min": 117.02783203125,
+      "p50": 130.487548828125,
+      "p95": 200.405517578125,
+      "p99": 200.405517578125,
+      "mean": 158.60699462890625,
+      "max": 200.405517578125
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 7274,
+      "min": 0.095458984375,
+      "p50": 0.70849609375,
+      "p95": 1.103515625,
+      "p99": 1.3408203125,
+      "mean": 0.8000577224425178,
+      "max": 185.743896484375
+     },
+     "ack": {
+      "n": 7272,
+      "min": 1.71337890625,
+      "p50": 3.3515625,
+      "p95": 4.668212890625,
+      "p99": 5.69970703125,
+      "mean": 3.4177369976987935,
+      "max": 18.649658203125
+     },
+     "presence": {
+      "n": 1272,
+      "min": 0,
+      "p50": 1,
+      "p95": 17814,
+      "p99": 32708,
+      "mean": 3895.151729559748,
+      "max": 47991
+     },
+     "ticketMs": {
+      "n": 11,
+      "min": 2.932861328125,
+      "p50": 4.163818359375,
+      "p95": 4.653076171875,
+      "p99": 4.653076171875,
+      "mean": 4.084095348011363,
+      "max": 4.653076171875
+     },
+     "reconnect": {
+      "n": 11,
+      "min": 250.892822265625,
+      "p50": 317.509521484375,
+      "p95": 378.495361328125,
+      "p99": 378.495361328125,
+      "mean": 318.81223366477275,
+      "max": 378.495361328125
+     },
+     "ackOffline": {
+      "n": 4,
+      "min": 117.02783203125,
+      "p50": 130.487548828125,
+      "p95": 200.405517578125,
+      "p99": 200.405517578125,
+      "mean": 158.60699462890625,
+      "max": 200.405517578125
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "edits": 7276,
+     "cursor_updates": 1051,
+     "deletes": 1034,
+     "formats": 1018,
+     "drops": 11,
+     "reconnects": 11
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 11
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 1.398410623566694,
+     "cpuSecondsTotal": 1.547892,
+     "rssMb": 122.05078125,
+     "lagP99Ms": 10.829823,
+     "lagMaxMs": 11.124735,
+     "clients": 20
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 1.3682125042500655,
+     "cpuSecondsTotal": 1.535991,
+     "rssMb": 121.16015625,
+     "lagP99Ms": 10.788863,
+     "lagMaxMs": 11.124735,
+     "clients": 20
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 1.2671237272276328,
+     "cpuSecondsTotal": 1.528034,
+     "rssMb": 124.76171875,
+     "lagP99Ms": 10.813439,
+     "lagMaxMs": 11.132927,
+     "clients": 20
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 1.3534707601159903,
+     "cpuSecondsTotal": 1.488599,
+     "rssMb": 117.484375,
+     "lagP99Ms": 10.797055,
+     "lagMaxMs": 11.149311,
+     "clients": 20
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 1.2899345296186466,
+     "cpuSecondsTotal": 1.47088,
+     "rssMb": 121.17578125,
+     "lagP99Ms": 10.788863,
+     "lagMaxMs": 11.239423,
+     "clients": 20
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 1.2843396056205267,
+     "cpuSecondsTotal": 1.503482,
+     "rssMb": 126.53515625,
+     "lagP99Ms": 10.772479,
+     "lagMaxMs": 11.067391,
+     "clients": 20
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 1.2641814304743262,
+     "cpuSecondsTotal": 1.491672,
+     "rssMb": 119.95703125,
+     "lagP99Ms": 10.788863,
+     "lagMaxMs": 11.124735,
+     "clients": 20
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 1.2878844020028979,
+     "cpuSecondsTotal": 1.461871,
+     "rssMb": 125.95703125,
+     "lagP99Ms": 10.838015,
+     "lagMaxMs": 12.779519,
+     "clients": 20
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 1.1628759465800507,
+     "cpuSecondsTotal": 1.453916,
+     "rssMb": 127.0625,
+     "lagP99Ms": 10.797055,
+     "lagMaxMs": 11.132927,
+     "clients": 20
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 1.3531174360256848,
+     "cpuSecondsTotal": 1.54878,
+     "rssMb": 127.20703125,
+     "lagP99Ms": 10.780671,
+     "lagMaxMs": 11.116543,
+     "clients": 20
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 13,
+     "upSamples": 13,
+     "cpuPctAvg": 10.400717236982553,
+     "cpuPctMax": 12.536098340995409,
+     "rssMbMax": 318.58203125,
+     "rssMbEnd": 318.58203125,
+     "heapMbMax": 157.3051300048828,
+     "wsMax": 200,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 100,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.495807,
+     "queueBytesMax": 56,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 8560,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 8540,
+       "meanMs": 2.6285534852458974,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 11,
+       "meanMs": 2.452054272725944,
+       "p95UpperMs": 5
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 11,
+       "meanMs": 2.452054272725944,
+       "p95UpperMs": 5
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 11
+     }
+    }
+   ],
+   "hostLoadMax": 3.03,
+   "extra": {
+    "firstAttempt": {
+     "ok": 200
+    },
+    "connectS": 20,
+    "connected": 200,
+    "notConnected": 0,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 200
+    },
+    "markerEditsPerSecond": 121.3,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 12,
+     "host": {
+      "load1Max": 3.1,
+      "availableMbMin": 29813.3,
+      "swapUsedMbMax": 17514.5
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 10.6,
+       "cpuPctMax": 12.2,
+       "rssMbMax": 318.6
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 18.4,
+      "cpuPctMax": 23.4,
+      "memMbMax": 76.7,
+      "commitsPerSecond": 183,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 304.2,
+      "walMbPerSecond": 0.2,
+      "blockReadMs": 0.2,
+      "blockWriteMs": 24,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 2,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "500 users",
+   "durationS": 60.001,
+   "latency": {
+    "active": {
+     "remote": {
+      "n": 18164,
+      "min": 0.102294921875,
+      "p50": 0.557373046875,
+      "p95": 1.00048828125,
+      "p99": 1.33203125,
+      "mean": 0.6636839503103666,
+      "max": 396.996337890625
+     },
+     "ack": {
+      "n": 18157,
+      "min": 1.6259765625,
+      "p50": 3.207275390625,
+      "p95": 4.54833984375,
+      "p99": 5.848388671875,
+      "mean": 3.283626596104464,
+      "max": 20.2216796875
+     },
+     "presence": {
+      "n": 3195,
+      "min": 0,
+      "p50": 1,
+      "p95": 17860,
+      "p99": 32867,
+      "mean": 4256.250078247262,
+      "max": 47957
+     },
+     "ticketMs": {
+      "n": 25,
+      "min": 2.64404296875,
+      "p50": 3.79736328125,
+      "p95": 5.12353515625,
+      "p99": 7.015869140625,
+      "mean": 3.803662109375,
+      "max": 7.015869140625
+     },
+     "reconnect": {
+      "n": 25,
+      "min": 221.586669921875,
+      "p50": 357.8505859375,
+      "p95": 409.430419921875,
+      "p99": 412.64306640625,
+      "mean": 322.45703125,
+      "max": 412.64306640625
+     },
+     "ackOffline": {
+      "n": 6,
+      "min": 20.453125,
+      "p50": 152.435791015625,
+      "p95": 409.63134765625,
+      "p99": 409.63134765625,
+      "mean": 219.30631510416666,
+      "max": 409.63134765625
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 18164,
+      "min": 0.102294921875,
+      "p50": 0.557373046875,
+      "p95": 1.00048828125,
+      "p99": 1.33203125,
+      "mean": 0.6636839503103666,
+      "max": 396.996337890625
+     },
+     "ack": {
+      "n": 18157,
+      "min": 1.6259765625,
+      "p50": 3.207275390625,
+      "p95": 4.54833984375,
+      "p99": 5.848388671875,
+      "mean": 3.283626596104464,
+      "max": 20.2216796875
+     },
+     "presence": {
+      "n": 3195,
+      "min": 0,
+      "p50": 1,
+      "p95": 17860,
+      "p99": 32867,
+      "mean": 4256.250078247262,
+      "max": 47957
+     },
+     "ticketMs": {
+      "n": 25,
+      "min": 2.64404296875,
+      "p50": 3.79736328125,
+      "p95": 5.12353515625,
+      "p99": 7.015869140625,
+      "mean": 3.803662109375,
+      "max": 7.015869140625
+     },
+     "reconnect": {
+      "n": 25,
+      "min": 221.586669921875,
+      "p50": 357.8505859375,
+      "p95": 409.430419921875,
+      "p99": 412.64306640625,
+      "mean": 322.45703125,
+      "max": 412.64306640625
+     },
+     "ackOffline": {
+      "n": 6,
+      "min": 20.453125,
+      "p50": 152.435791015625,
+      "p95": 409.63134765625,
+      "p99": 409.63134765625,
+      "mean": 219.30631510416666,
+      "max": 409.63134765625
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "edits": 18165,
+     "formats": 2574,
+     "cursor_updates": 2656,
+     "deletes": 2653,
+     "drops": 25,
+     "reconnects": 25
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 25
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 2.24477054462176,
+     "cpuSecondsTotal": 3.418339,
+     "rssMb": 124.86328125,
+     "lagP99Ms": 10.887167,
+     "lagMaxMs": 11.124735,
+     "clients": 50
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 2.2938617309935165,
+     "cpuSecondsTotal": 3.418571,
+     "rssMb": 112.5390625,
+     "lagP99Ms": 10.862591,
+     "lagMaxMs": 11.198463,
+     "clients": 50
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 2.3725342631019934,
+     "cpuSecondsTotal": 3.44446,
+     "rssMb": 130.85546875,
+     "lagP99Ms": 10.895359,
+     "lagMaxMs": 11.149311,
+     "clients": 50
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 2.2956970100862053,
+     "cpuSecondsTotal": 3.446342,
+     "rssMb": 119.828125,
+     "lagP99Ms": 10.887167,
+     "lagMaxMs": 11.100159,
+     "clients": 50
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 2.7661101587729275,
+     "cpuSecondsTotal": 3.646956,
+     "rssMb": 116.859375,
+     "lagP99Ms": 10.887167,
+     "lagMaxMs": 11.337727,
+     "clients": 50
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 2.729336582338212,
+     "cpuSecondsTotal": 3.656576,
+     "rssMb": 117.48046875,
+     "lagP99Ms": 10.895359,
+     "lagMaxMs": 11.165695,
+     "clients": 50
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 2.32483979790974,
+     "cpuSecondsTotal": 3.356768,
+     "rssMb": 125.11328125,
+     "lagP99Ms": 10.870783,
+     "lagMaxMs": 11.182079,
+     "clients": 50
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 2.6301155458503627,
+     "cpuSecondsTotal": 3.549528,
+     "rssMb": 112.87109375,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.575295,
+     "clients": 50
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 2.6785267196664586,
+     "cpuSecondsTotal": 3.53694,
+     "rssMb": 113.25390625,
+     "lagP99Ms": 10.903551,
+     "lagMaxMs": 11.100159,
+     "clients": 50
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 2.3839316773602928,
+     "cpuSecondsTotal": 3.461554,
+     "rssMb": 114.12109375,
+     "lagP99Ms": 10.895359,
+     "lagMaxMs": 11.198463,
+     "clients": 50
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 13,
+     "upSamples": 13,
+     "cpuPctAvg": 20.18751033212009,
+     "cpuPctMax": 23.663901659004583,
+     "rssMbMax": 339.33203125,
+     "rssMbEnd": 339.33203125,
+     "heapMbMax": 177.6919937133789,
+     "wsMax": 500,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 250,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.086206999999998,
+     "queueBytesMax": 189,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 21530,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 21494,
+       "meanMs": 2.6432483786637717,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      },
+      "compact": {
+       "count": 88,
+       "meanMs": 3.044876136364607,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 25,
+       "meanMs": 2.1182665199978334,
+       "p95UpperMs": 5
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 25,
+       "meanMs": 2.1182665199978334,
+       "p95UpperMs": 5
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 25
+     }
+    }
+   ],
+   "hostLoadMax": 2.26,
+   "extra": {
+    "firstAttempt": {
+     "ok": 300
+    },
+    "connectS": 19.9,
+    "connected": 500,
+    "notConnected": 0,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 500
+    },
+    "markerEditsPerSecond": 302.7,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 12,
+     "host": {
+      "load1Max": 2.3,
+      "availableMbMin": 29911.2,
+      "swapUsedMbMax": 17514.5
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 20.2,
+       "cpuPctMax": 22.8,
+       "rssMbMax": 339.3
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 45,
+      "cpuPctMax": 55,
+      "memMbMax": 108.1,
+      "commitsPerSecond": 451.8,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 757,
+      "walMbPerSecond": 0.5,
+      "blockReadMs": 0.1,
+      "blockWriteMs": 58.3,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 3,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "1000 users",
+   "durationS": 60,
+   "latency": {
+    "active": {
+     "remote": {
+      "n": 36777,
+      "min": 0.081787109375,
+      "p50": 0.522216796875,
+      "p95": 1.175048828125,
+      "p99": 2.281494140625,
+      "mean": 0.7062069857902018,
+      "max": 367.538330078125
+     },
+     "ack": {
+      "n": 36775,
+      "min": 1.60205078125,
+      "p50": 3.3623046875,
+      "p95": 4.949462890625,
+      "p99": 7.283935546875,
+      "mean": 3.5234234324545377,
+      "max": 52.516357421875
+     },
+     "presence": {
+      "n": 5985,
+      "min": 0,
+      "p50": 1,
+      "p95": 17939,
+      "p99": 32853,
+      "mean": 4268.272514619883,
+      "max": 47960
+     },
+     "ticketMs": {
+      "n": 59,
+      "min": 2.93359375,
+      "p50": 4.193603515625,
+      "p95": 6.814208984375,
+      "p99": 10.923583984375,
+      "mean": 4.445151118908898,
+      "max": 10.923583984375
+     },
+     "ackOffline": {
+      "n": 18,
+      "min": 4.23876953125,
+      "p50": 158.276123046875,
+      "p95": 377.504638671875,
+      "p99": 377.504638671875,
+      "mean": 172.65261501736111,
+      "max": 377.504638671875
+     },
+     "reconnect": {
+      "n": 59,
+      "min": 219.67578125,
+      "p50": 312.127685546875,
+      "p95": 416.5419921875,
+      "p99": 417.614501953125,
+      "mean": 316.54323771848516,
+      "max": 417.614501953125
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 36777,
+      "min": 0.081787109375,
+      "p50": 0.522216796875,
+      "p95": 1.175048828125,
+      "p99": 2.281494140625,
+      "mean": 0.7062069857902018,
+      "max": 367.538330078125
+     },
+     "ack": {
+      "n": 36775,
+      "min": 1.60205078125,
+      "p50": 3.3623046875,
+      "p95": 4.949462890625,
+      "p99": 7.283935546875,
+      "mean": 3.5234234324545377,
+      "max": 52.516357421875
+     },
+     "presence": {
+      "n": 5985,
+      "min": 0,
+      "p50": 1,
+      "p95": 17939,
+      "p99": 32853,
+      "mean": 4268.272514619883,
+      "max": 47960
+     },
+     "ticketMs": {
+      "n": 59,
+      "min": 2.93359375,
+      "p50": 4.193603515625,
+      "p95": 6.814208984375,
+      "p99": 10.923583984375,
+      "mean": 4.445151118908898,
+      "max": 10.923583984375
+     },
+     "ackOffline": {
+      "n": 18,
+      "min": 4.23876953125,
+      "p50": 158.276123046875,
+      "p95": 377.504638671875,
+      "p99": 377.504638671875,
+      "mean": 172.65261501736111,
+      "max": 377.504638671875
+     },
+     "reconnect": {
+      "n": 59,
+      "min": 219.67578125,
+      "p50": 312.127685546875,
+      "p95": 416.5419921875,
+      "p99": 417.614501953125,
+      "mean": 316.54323771848516,
+      "max": 417.614501953125
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "edits": 36793,
+     "formats": 5210,
+     "cursor_updates": 5226,
+     "deletes": 5379,
+     "drops": 59,
+     "reconnects": 59
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 59
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 3.3450091073495827,
+     "cpuSecondsTotal": 6.295199,
+     "rssMb": 139.23828125,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.116543,
+     "clients": 100
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 3.5983009781807227,
+     "cpuSecondsTotal": 6.499304,
+     "rssMb": 137.3828125,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 11.075583,
+     "clients": 100
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 3.4852442747518553,
+     "cpuSecondsTotal": 6.470286,
+     "rssMb": 143.04296875,
+     "lagP99Ms": 10.919935,
+     "lagMaxMs": 11.108351,
+     "clients": 100
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 3.4333940878032663,
+     "cpuSecondsTotal": 6.421393,
+     "rssMb": 138.890625,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 11.067391,
+     "clients": 100
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 3.637669911474034,
+     "cpuSecondsTotal": 6.846953,
+     "rssMb": 138.265625,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 11.223039,
+     "clients": 100
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 3.4976692038332797,
+     "cpuSecondsTotal": 6.796849,
+     "rssMb": 139.19921875,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.649023,
+     "clients": 100
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 3.414005554501502,
+     "cpuSecondsTotal": 6.324584,
+     "rssMb": 139.48828125,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.231231,
+     "clients": 100
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 3.3834156236215844,
+     "cpuSecondsTotal": 6.614447,
+     "rssMb": 140.05859375,
+     "lagP99Ms": 10.919935,
+     "lagMaxMs": 11.132927,
+     "clients": 100
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 3.698060639634078,
+     "cpuSecondsTotal": 6.793032,
+     "rssMb": 138.87890625,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 13.361151,
+     "clients": 100
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 3.534898645672639,
+     "cpuSecondsTotal": 6.624649,
+     "rssMb": 138.33984375,
+     "lagP99Ms": 10.919935,
+     "lagMaxMs": 11.263999,
+     "clients": 100
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 14,
+     "upSamples": 14,
+     "cpuPctAvg": 39.43203662746099,
+     "cpuPctMax": 44.23633819708175,
+     "rssMbMax": 532.45703125,
+     "rssMbEnd": 532.45703125,
+     "heapMbMax": 291.71834564208984,
+     "wsMax": 1000,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 500,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.938175,
+     "queueBytesMax": 180,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 45915,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 45767,
+       "meanMs": 2.827374745493411,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      },
+      "compact": {
+       "count": 142,
+       "meanMs": 3.2932269014094278,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 59,
+       "meanMs": 2.5864613220333497,
+       "p95UpperMs": 10
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 59,
+       "meanMs": 2.5864613220333497,
+       "p95UpperMs": 10
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 59
+     }
+    }
+   ],
+   "hostLoadMax": 3.54,
+   "extra": {
+    "firstAttempt": {
+     "ok": 500
+    },
+    "connectS": 22.5,
+    "connected": 1000,
+    "notConnected": 0,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 1000
+    },
+    "markerEditsPerSecond": 613.2,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 12,
+     "host": {
+      "load1Max": 3.2,
+      "availableMbMin": 29558.4,
+      "swapUsedMbMax": 17514.5
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 38.9,
+       "cpuPctMax": 41.8,
+       "rssMbMax": 531.7
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 84.4,
+      "cpuPctMax": 94.4,
+      "memMbMax": 165,
+      "commitsPerSecond": 920.6,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 1530.5,
+      "walMbPerSecond": 1.1,
+      "blockReadMs": 0,
+      "blockWriteMs": 108.2,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 4,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "1500 users",
+   "durationS": 60.001,
+   "latency": {
+    "active": {
+     "remote": {
+      "n": 55473,
+      "min": 0.079833984375,
+      "p50": 0.573974609375,
+      "p95": 1.792236328125,
+      "p99": 4.2705078125,
+      "mean": 0.8344930244077073,
+      "max": 330.691650390625
+     },
+     "ack": {
+      "n": 55463,
+      "min": 1.681884765625,
+      "p50": 3.91845703125,
+      "p95": 6.8388671875,
+      "p99": 14.1279296875,
+      "mean": 4.328778267542945,
+      "max": 56.63330078125
+     },
+     "presence": {
+      "n": 8826,
+      "min": 0,
+      "p50": 1,
+      "p95": 17936,
+      "p99": 32933,
+      "mean": 4154.321323362792,
+      "max": 49493
+     },
+     "ticketMs": {
+      "n": 81,
+      "min": 2.44384765625,
+      "p50": 4.643798828125,
+      "p95": 9.024169921875,
+      "p99": 17.702880859375,
+      "mean": 5.392252604166667,
+      "max": 17.702880859375
+     },
+     "reconnect": {
+      "n": 81,
+      "min": 223.814453125,
+      "p50": 313.084716796875,
+      "p95": 410.767578125,
+      "p99": 424.9111328125,
+      "mean": 321.228889371142,
+      "max": 424.9111328125
+     },
+     "ackOffline": {
+      "n": 11,
+      "min": 83.586181640625,
+      "p50": 203.419921875,
+      "p95": 343.0771484375,
+      "p99": 343.0771484375,
+      "mean": 208.51755593039772,
+      "max": 343.0771484375
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 55473,
+      "min": 0.079833984375,
+      "p50": 0.573974609375,
+      "p95": 1.792236328125,
+      "p99": 4.2705078125,
+      "mean": 0.8344930244077073,
+      "max": 330.691650390625
+     },
+     "ack": {
+      "n": 55463,
+      "min": 1.681884765625,
+      "p50": 3.91845703125,
+      "p95": 6.8388671875,
+      "p99": 14.1279296875,
+      "mean": 4.328778267542945,
+      "max": 56.63330078125
+     },
+     "presence": {
+      "n": 8826,
+      "min": 0,
+      "p50": 1,
+      "p95": 17936,
+      "p99": 32933,
+      "mean": 4154.321323362792,
+      "max": 49493
+     },
+     "ticketMs": {
+      "n": 81,
+      "min": 2.44384765625,
+      "p50": 4.643798828125,
+      "p95": 9.024169921875,
+      "p99": 17.702880859375,
+      "mean": 5.392252604166667,
+      "max": 17.702880859375
+     },
+     "reconnect": {
+      "n": 81,
+      "min": 223.814453125,
+      "p50": 313.084716796875,
+      "p95": 410.767578125,
+      "p99": 424.9111328125,
+      "mean": 321.228889371142,
+      "max": 424.9111328125
+     },
+     "ackOffline": {
+      "n": 11,
+      "min": 83.586181640625,
+      "p50": 203.419921875,
+      "p95": 343.0771484375,
+      "p99": 343.0771484375,
+      "mean": 208.51755593039772,
+      "max": 343.0771484375
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "edits": 55480,
+     "cursor_updates": 8055,
+     "formats": 7886,
+     "drops": 81,
+     "deletes": 7953,
+     "reconnects": 81
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 81
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 4.983395611906623,
+     "cpuSecondsTotal": 10.625145,
+     "rssMb": 170.77734375,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.558911,
+     "clients": 150
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 4.616967766915239,
+     "cpuSecondsTotal": 10.57812,
+     "rssMb": 174.2578125,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 13.058047,
+     "clients": 150
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 4.943483734138296,
+     "cpuSecondsTotal": 10.745386,
+     "rssMb": 170.90234375,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 11.812863,
+     "clients": 150
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 5.158050105254244,
+     "cpuSecondsTotal": 10.780009,
+     "rssMb": 170.0703125,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 11.329535,
+     "clients": 150
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 5.117747063341625,
+     "cpuSecondsTotal": 11.285343,
+     "rssMb": 171.859375,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 11.239423,
+     "clients": 150
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 5.0933209565230255,
+     "cpuSecondsTotal": 11.207169,
+     "rssMb": 173.10546875,
+     "lagP99Ms": 10.919935,
+     "lagMaxMs": 11.427839,
+     "clients": 150
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 4.800402724038897,
+     "cpuSecondsTotal": 10.410726,
+     "rssMb": 170.734375,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 12.296191,
+     "clients": 150
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 5.070672981018762,
+     "cpuSecondsTotal": 10.995326,
+     "rssMb": 171.76953125,
+     "lagP99Ms": 10.919935,
+     "lagMaxMs": 12.328959,
+     "clients": 150
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 4.984373727912901,
+     "cpuSecondsTotal": 11.1195,
+     "rssMb": 171.84765625,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 11.837439,
+     "clients": 150
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 5.079284268712856,
+     "cpuSecondsTotal": 11.003744,
+     "rssMb": 171.6171875,
+     "lagP99Ms": 10.919935,
+     "lagMaxMs": 11.395071,
+     "clients": 150
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 13,
+     "upSamples": 13,
+     "cpuPctAvg": 57.99351158582689,
+     "cpuPctMax": 59.755417832866954,
+     "rssMbMax": 633.23828125,
+     "rssMbEnd": 633.23828125,
+     "heapMbMax": 378.77183532714844,
+     "wsMax": 1500,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 750,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 39,
+     "poolWaitingAvg": 3.923076923076923,
+     "lagP99MaxMs": 23.134207,
+     "queueBytesMax": 994,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 67241,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 67027,
+       "meanMs": 3.4105024502068364,
+       "p95UpperMs": 10,
+       "p99UpperMs": 10
+      },
+      "compact": {
+       "count": 325,
+       "meanMs": 3.9667741261558787,
+       "p95UpperMs": 10,
+       "p99UpperMs": 10
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 78,
+       "meanMs": 3.2770437179461664,
+       "p95UpperMs": 10
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 78,
+       "meanMs": 3.2770437179461664,
+       "p95UpperMs": 10
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 78
+     }
+    }
+   ],
+   "hostLoadMax": 4.6,
+   "extra": {
+    "firstAttempt": {
+     "ok": 500
+    },
+    "connectS": 22.5,
+    "connected": 1500,
+    "notConnected": 0,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 1500
+    },
+    "markerEditsPerSecond": 924.7,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 12,
+     "host": {
+      "load1Max": 4.6,
+      "availableMbMin": 28944.2,
+      "swapUsedMbMax": 17514.5
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 58.1,
+       "cpuPctMax": 60.6,
+       "rssMbMax": 625.7
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 157.3,
+      "cpuPctMax": 192.1,
+      "memMbMax": 210.6,
+      "commitsPerSecond": 1270.6,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 2299.8,
+      "walMbPerSecond": 2,
+      "blockReadMs": 1,
+      "blockWriteMs": 207.2,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 6,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "2000 users",
+   "durationS": 60,
+   "latency": {
+    "active": {
+     "presence": {
+      "n": 11093,
+      "min": 0,
+      "p50": 1,
+      "p95": 17970,
+      "p99": 32849,
+      "mean": 4263.157035968629,
+      "max": 48526
+     },
+     "remote": {
+      "n": 72972,
+      "min": 0.075927734375,
+      "p50": 0.653076171875,
+      "p95": 2.80615234375,
+      "p99": 6.45849609375,
+      "mean": 1.0789081155486009,
+      "max": 359.29443359375
+     },
+     "ack": {
+      "n": 72964,
+      "min": 1.631591796875,
+      "p50": 4.004638671875,
+      "p95": 8.142578125,
+      "p99": 15.9599609375,
+      "mean": 4.606755172740367,
+      "max": 79.931884765625
+     },
+     "ticketMs": {
+      "n": 124,
+      "min": 2.56787109375,
+      "p50": 4.80517578125,
+      "p95": 9.99755859375,
+      "p99": 13.41015625,
+      "mean": 5.410110965851815,
+      "max": 14.296142578125
+     },
+     "reconnect": {
+      "n": 124,
+      "min": 220.9853515625,
+      "p50": 328.2783203125,
+      "p95": 405.252685546875,
+      "p99": 417.16162109375,
+      "mean": 322.5324451077369,
+      "max": 420.388671875
+     },
+     "ackOffline": {
+      "n": 32,
+      "min": 9.29443359375,
+      "p50": 134.58935546875,
+      "p95": 312.044921875,
+      "p99": 373.31396484375,
+      "mean": 154.58438110351562,
+      "max": 373.31396484375
+     }
+    },
+    "ALL": {
+     "presence": {
+      "n": 11093,
+      "min": 0,
+      "p50": 1,
+      "p95": 17970,
+      "p99": 32849,
+      "mean": 4263.157035968629,
+      "max": 48526
+     },
+     "remote": {
+      "n": 72972,
+      "min": 0.075927734375,
+      "p50": 0.653076171875,
+      "p95": 2.80615234375,
+      "p99": 6.45849609375,
+      "mean": 1.0789081155486009,
+      "max": 359.29443359375
+     },
+     "ack": {
+      "n": 72964,
+      "min": 1.631591796875,
+      "p50": 4.004638671875,
+      "p95": 8.142578125,
+      "p99": 15.9599609375,
+      "mean": 4.606755172740367,
+      "max": 79.931884765625
+     },
+     "ticketMs": {
+      "n": 124,
+      "min": 2.56787109375,
+      "p50": 4.80517578125,
+      "p95": 9.99755859375,
+      "p99": 13.41015625,
+      "mean": 5.410110965851815,
+      "max": 14.296142578125
+     },
+     "reconnect": {
+      "n": 124,
+      "min": 220.9853515625,
+      "p50": 328.2783203125,
+      "p95": 405.252685546875,
+      "p99": 417.16162109375,
+      "mean": 322.5324451077369,
+      "max": 420.388671875
+     },
+     "ackOffline": {
+      "n": 32,
+      "min": 9.29443359375,
+      "p50": 134.58935546875,
+      "p95": 312.044921875,
+      "p99": 373.31396484375,
+      "mean": 154.58438110351562,
+      "max": 373.31396484375
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "cursor_updates": 10286,
+     "edits": 72996,
+     "deletes": 10468,
+     "formats": 10418,
+     "drops": 124,
+     "reconnects": 124
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 124
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 6.350804826417303,
+     "cpuSecondsTotal": 16.07562,
+     "rssMb": 234.25390625,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 12.787711,
+     "clients": 200
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 6.155368482280426,
+     "cpuSecondsTotal": 15.823678,
+     "rssMb": 233.59765625,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 12.435455,
+     "clients": 200
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 6.037323262653019,
+     "cpuSecondsTotal": 15.93258,
+     "rssMb": 236.68359375,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 13.303807,
+     "clients": 200
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 5.985782635989109,
+     "cpuSecondsTotal": 15.956908,
+     "rssMb": 235.3828125,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 12.533759,
+     "clients": 200
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 6.3909559934113025,
+     "cpuSecondsTotal": 16.834192,
+     "rssMb": 233.99609375,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 12.681215,
+     "clients": 200
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 6.361781084648564,
+     "cpuSecondsTotal": 16.642939,
+     "rssMb": 235.22265625,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 13.148159,
+     "clients": 200
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 6.133761132991382,
+     "cpuSecondsTotal": 15.668964,
+     "rssMb": 233.54296875,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 13.279231,
+     "clients": 200
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 6.3130199125650845,
+     "cpuSecondsTotal": 16.375376,
+     "rssMb": 234.3671875,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 13.492223,
+     "clients": 200
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 6.493980361247139,
+     "cpuSecondsTotal": 16.534333,
+     "rssMb": 234.58984375,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 12.066815,
+     "clients": 200
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 6.505299455865471,
+     "cpuSecondsTotal": 16.491171,
+     "rssMb": 234.0390625,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 12.943359,
+     "clients": 200
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 13,
+     "upSamples": 13,
+     "cpuPctAvg": 67.89478572899397,
+     "cpuPctMax": 73.69438112377557,
+     "rssMbMax": 740.42578125,
+     "rssMbEnd": 740.42578125,
+     "heapMbMax": 485.4909973144531,
+     "wsMax": 2000,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 1000,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 41,
+     "poolWaitingAvg": 3.769230769230769,
+     "lagP99MaxMs": 23.756798999999997,
+     "queueBytesMax": 1159,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 86956,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 86587,
+       "meanMs": 3.557643595470314,
+       "p95UpperMs": 10,
+       "p99UpperMs": 25
+      },
+      "compact": {
+       "count": 376,
+       "meanMs": 4.129232577128886,
+       "p95UpperMs": 10,
+       "p99UpperMs": 25
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 118,
+       "meanMs": 3.541592033899093,
+       "p95UpperMs": 10
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 118,
+       "meanMs": 3.541592033899093,
+       "p95UpperMs": 10
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 118
+     }
+    }
+   ],
+   "hostLoadMax": 5.65,
+   "extra": {
+    "firstAttempt": {
+     "ok": 500
+    },
+    "connectS": 22.5,
+    "connected": 2000,
+    "notConnected": 0,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 2000
+    },
+    "markerEditsPerSecond": 1216.6,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 12,
+     "host": {
+      "load1Max": 5.7,
+      "availableMbMin": 28391.6,
+      "swapUsedMbMax": 17514.5
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 67.9,
+       "cpuPctMax": 74.4,
+       "rssMbMax": 740.4
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 176.7,
+      "cpuPctMax": 189.1,
+      "memMbMax": 216.7,
+      "commitsPerSecond": 1836.5,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 3058.7,
+      "walMbPerSecond": 2.3,
+      "blockReadMs": 17.4,
+      "blockWriteMs": 211.7,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 10,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "3000 users",
+   "durationS": 60,
+   "latency": {
+    "active": {
+     "remote": {
+      "n": 111168,
+      "min": 0.088623046875,
+      "p50": 0.453125,
+      "p95": 3.53662109375,
+      "p99": 6.866455078125,
+      "mean": 1.063460662437707,
+      "max": 379.7158203125
+     },
+     "ack": {
+      "n": 111174,
+      "min": 1.669189453125,
+      "p50": 4.365234375,
+      "p95": 11.998779296875,
+      "p99": 25.688232421875,
+      "mean": 5.872918137562655,
+      "max": 403.45263671875
+     },
+     "presence": {
+      "n": 16707,
+      "min": 0,
+      "p50": 1,
+      "p95": 17929,
+      "p99": 32982,
+      "mean": 4149.651762734184,
+      "max": 49283
+     },
+     "ticketMs": {
+      "n": 153,
+      "min": 2.330810546875,
+      "p50": 5.915771484375,
+      "p95": 19.79248046875,
+      "p99": 28.476806640625,
+      "mean": 7.573138467626634,
+      "max": 30.397216796875
+     },
+     "reconnect": {
+      "n": 153,
+      "min": 220.098876953125,
+      "p50": 333.178955078125,
+      "p95": 412.796875,
+      "p99": 427.8984375,
+      "mean": 328.9185798994077,
+      "max": 431.4833984375
+     },
+     "ackOffline": {
+      "n": 30,
+      "min": 21.849609375,
+      "p50": 192.623779296875,
+      "p95": 377.300048828125,
+      "p99": 393.2236328125,
+      "mean": 196.91520182291666,
+      "max": 393.2236328125
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 111168,
+      "min": 0.088623046875,
+      "p50": 0.453125,
+      "p95": 3.53662109375,
+      "p99": 6.866455078125,
+      "mean": 1.063460662437707,
+      "max": 379.7158203125
+     },
+     "ack": {
+      "n": 111174,
+      "min": 1.669189453125,
+      "p50": 4.365234375,
+      "p95": 11.998779296875,
+      "p99": 25.688232421875,
+      "mean": 5.872918137562655,
+      "max": 403.45263671875
+     },
+     "presence": {
+      "n": 16707,
+      "min": 0,
+      "p50": 1,
+      "p95": 17929,
+      "p99": 32982,
+      "mean": 4149.651762734184,
+      "max": 49283
+     },
+     "ticketMs": {
+      "n": 153,
+      "min": 2.330810546875,
+      "p50": 5.915771484375,
+      "p95": 19.79248046875,
+      "p99": 28.476806640625,
+      "mean": 7.573138467626634,
+      "max": 30.397216796875
+     },
+     "reconnect": {
+      "n": 153,
+      "min": 220.098876953125,
+      "p50": 333.178955078125,
+      "p95": 412.796875,
+      "p99": 427.8984375,
+      "mean": 328.9185798994077,
+      "max": 431.4833984375
+     },
+     "ackOffline": {
+      "n": 30,
+      "min": 21.849609375,
+      "p50": 192.623779296875,
+      "p95": 377.300048828125,
+      "p99": 393.2236328125,
+      "mean": 196.91520182291666,
+      "max": 393.2236328125
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "deletes": 15735,
+     "formats": 15813,
+     "edits": 111197,
+     "cursor_updates": 15881,
+     "drops": 153,
+     "reconnects": 153
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 153
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 8.869108083549946,
+     "cpuSecondsTotal": 24.588445,
+     "rssMb": 254.87890625,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 12.533759,
+     "clients": 300
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 8.704543699282553,
+     "cpuSecondsTotal": 24.226686,
+     "rssMb": 256.72265625,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 12.369919,
+     "clients": 300
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 9.917993385873066,
+     "cpuSecondsTotal": 25.163965,
+     "rssMb": 201.34765625,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 12.656639,
+     "clients": 300
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 9.826452763321713,
+     "cpuSecondsTotal": 25.123635,
+     "rssMb": 197.53125,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 13.139967,
+     "clients": 300
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 8.835416097756951,
+     "cpuSecondsTotal": 25.240257,
+     "rssMb": 258.0390625,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 12.369919,
+     "clients": 300
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 9.234601071766248,
+     "cpuSecondsTotal": 25.483124,
+     "rssMb": 249.390625,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 14.614527,
+     "clients": 300
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 8.710932981062175,
+     "cpuSecondsTotal": 24.168676,
+     "rssMb": 255.57421875,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 13.074431,
+     "clients": 300
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 9.513523484295854,
+     "cpuSecondsTotal": 25.200277,
+     "rssMb": 253.328125,
+     "lagP99Ms": 10.936319,
+     "lagMaxMs": 13.279231,
+     "clients": 300
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 9.162863178511786,
+     "cpuSecondsTotal": 25.203514,
+     "rssMb": 257.40234375,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 13.099007,
+     "clients": 300
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 8.982539320534578,
+     "cpuSecondsTotal": 25.045616,
+     "rssMb": 252.3203125,
+     "lagP99Ms": 10.928127,
+     "lagMaxMs": 12.124159,
+     "clients": 300
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 13,
+     "upSamples": 13,
+     "cpuPctAvg": 64.75676207682693,
+     "cpuPctMax": 73.05432740355798,
+     "rssMbMax": 914.95703125,
+     "rssMbEnd": 914.95703125,
+     "heapMbMax": 568.3572692871094,
+     "wsMax": 3000,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 1500,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 204,
+     "poolWaitingAvg": 20,
+     "lagP99MaxMs": 24.887295,
+     "queueBytesMax": 7196,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 135567,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 134986,
+       "meanMs": 4.814190595587461,
+       "p95UpperMs": 25,
+       "p99UpperMs": 25
+      },
+      "compact": {
+       "count": 487,
+       "meanMs": 5.799090071867806,
+       "p95UpperMs": 25,
+       "p99UpperMs": 50
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 148,
+       "meanMs": 5.275032905406288,
+       "p95UpperMs": 25
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 148,
+       "meanMs": 5.275032905406288,
+       "p95UpperMs": 25
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 148
+     }
+    }
+   ],
+   "hostLoadMax": 6.63,
+   "extra": {
+    "firstAttempt": {
+     "ok": 1000
+    },
+    "connectS": 35,
+    "connected": 3000,
+    "notConnected": 0,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 3000
+    },
+    "markerEditsPerSecond": 1853.3,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 12,
+     "host": {
+      "load1Max": 6.6,
+      "availableMbMin": 28024.6,
+      "swapUsedMbMax": 17514.5
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 64.8,
+       "cpuPctMax": 75,
+       "rssMbMax": 914.8
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 301.3,
+      "cpuPctMax": 412.5,
+      "memMbMax": 227.8,
+      "commitsPerSecond": 2637.8,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 4606.1,
+      "walMbPerSecond": 4,
+      "blockReadMs": 9.9,
+      "blockWriteMs": 352.4,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 10,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "4000 users",
+   "durationS": 60.001,
+   "latency": {
+    "active": {
+     "ack": {
+      "n": 151259,
+      "min": 1.849365234375,
+      "p50": 80.8701171875,
+      "p95": 188.6572265625,
+      "p99": 262.115234375,
+      "mean": 86.7630101229901,
+      "max": 1368.035400390625
+     },
+     "presence": {
+      "n": 21900,
+      "min": 0,
+      "p50": 1,
+      "p95": 17942,
+      "p99": 32944,
+      "mean": 4146.847899543379,
+      "max": 50524
+     },
+     "remote": {
+      "n": 151217,
+      "min": 0.0859375,
+      "p50": 0.45947265625,
+      "p95": 4.050048828125,
+      "p99": 14.971435546875,
+      "mean": 1.6644376625612944,
+      "max": 1138.559326171875
+     },
+     "ticketMs": {
+      "n": 257,
+      "min": 6.070556640625,
+      "p50": 254.87109375,
+      "p95": 485.25244140625,
+      "p99": 561.143310546875,
+      "mean": 245.5911841485287,
+      "max": 585.187255859375
+     },
+     "reconnect": {
+      "n": 257,
+      "min": 258.20263671875,
+      "p50": 729.447021484375,
+      "p95": 1166.895751953125,
+      "p99": 1425.052734375,
+      "mean": 744.687367005107,
+      "max": 1481.3642578125
+     },
+     "ackOffline": {
+      "n": 116,
+      "min": 39.2861328125,
+      "p50": 536.30908203125,
+      "p95": 1138.624755859375,
+      "p99": 3115.746826171875,
+      "mean": 610.7541272393588,
+      "max": 6776.20947265625
+     }
+    },
+    "ALL": {
+     "ack": {
+      "n": 151259,
+      "min": 1.849365234375,
+      "p50": 80.8701171875,
+      "p95": 188.6572265625,
+      "p99": 262.115234375,
+      "mean": 86.7630101229901,
+      "max": 1368.035400390625
+     },
+     "presence": {
+      "n": 21900,
+      "min": 0,
+      "p50": 1,
+      "p95": 17942,
+      "p99": 32944,
+      "mean": 4146.847899543379,
+      "max": 50524
+     },
+     "remote": {
+      "n": 151217,
+      "min": 0.0859375,
+      "p50": 0.45947265625,
+      "p95": 4.050048828125,
+      "p99": 14.971435546875,
+      "mean": 1.6644376625612944,
+      "max": 1138.559326171875
+     },
+     "ticketMs": {
+      "n": 257,
+      "min": 6.070556640625,
+      "p50": 254.87109375,
+      "p95": 485.25244140625,
+      "p99": 561.143310546875,
+      "mean": 245.5911841485287,
+      "max": 585.187255859375
+     },
+     "reconnect": {
+      "n": 257,
+      "min": 258.20263671875,
+      "p50": 729.447021484375,
+      "p95": 1166.895751953125,
+      "p99": 1425.052734375,
+      "mean": 744.687367005107,
+      "max": 1481.3642578125
+     },
+     "ackOffline": {
+      "n": 116,
+      "min": 39.2861328125,
+      "p50": 536.30908203125,
+      "p95": 1138.624755859375,
+      "p99": 3115.746826171875,
+      "mean": 610.7541272393588,
+      "max": 6776.20947265625
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "deletes": 21703,
+     "cursor_updates": 21502,
+     "edits": 151330,
+     "formats": 21373,
+     "drops": 257,
+     "reconnects": 257
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 257
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 12.683556898088508,
+     "cpuSecondsTotal": 37.333474,
+     "rssMb": 263.5703125,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 14.327807,
+     "clients": 400
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 12.225986795575043,
+     "cpuSecondsTotal": 36.825051,
+     "rssMb": 263.12109375,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 13.910015,
+     "clients": 400
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 12.090833650854496,
+     "cpuSecondsTotal": 37.263777,
+     "rssMb": 261.13671875,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 12.607487,
+     "clients": 400
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 11.830289814151483,
+     "cpuSecondsTotal": 37.146735,
+     "rssMb": 267.4921875,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 13.967359,
+     "clients": 400
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 12.712593146375642,
+     "cpuSecondsTotal": 38.360583,
+     "rssMb": 263.27734375,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 14.270463,
+     "clients": 400
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 12.051798332179695,
+     "cpuSecondsTotal": 37.364673,
+     "rssMb": 270.41015625,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 12.091391,
+     "clients": 400
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 12.136625426282015,
+     "cpuSecondsTotal": 36.584644,
+     "rssMb": 266.18359375,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 12.165119,
+     "clients": 400
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 11.854085762733387,
+     "cpuSecondsTotal": 36.933594,
+     "rssMb": 276.04296875,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 12.795903,
+     "clients": 400
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 12.51476559332846,
+     "cpuSecondsTotal": 38.136463,
+     "rssMb": 264.51171875,
+     "lagP99Ms": 10.969087,
+     "lagMaxMs": 15.319039,
+     "clients": 400
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 12.026788392278128,
+     "cpuSecondsTotal": 36.87921,
+     "rssMb": 269.29296875,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 13.377535,
+     "clients": 400
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 14,
+     "upSamples": 14,
+     "cpuPctAvg": 74.5013378964387,
+     "cpuPctMax": 83.56159536185547,
+     "rssMbMax": 936.20703125,
+     "rssMbEnd": 936.20703125,
+     "heapMbMax": 553.3603591918945,
+     "wsMax": 4000,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 2000,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 572,
+     "poolWaitingAvg": 217.57142857142858,
+     "lagP99MaxMs": 37.257215,
+     "queueBytesMax": 18133,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 185647,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 182917,
+       "meanMs": 79.46709595612002,
+       "p95UpperMs": 250,
+       "p99UpperMs": 250
+      },
+      "compact": {
+       "count": 921,
+       "meanMs": 85.23683506731615,
+       "p95UpperMs": 250,
+       "p99UpperMs": 250
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 255,
+       "meanMs": 244.52615677646537,
+       "p95UpperMs": 500
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 255,
+       "meanMs": 244.52615677646537,
+       "p95UpperMs": 500
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 255
+     }
+    }
+   ],
+   "hostLoadMax": 8.86,
+   "extra": {
+    "firstAttempt": {
+     "ok": 1000
+    },
+    "connectS": 35,
+    "connected": 4000,
+    "notConnected": 0,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 4000
+    },
+    "markerEditsPerSecond": 2522.1,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 12,
+     "host": {
+      "load1Max": 8.9,
+      "availableMbMin": 27646.6,
+      "swapUsedMbMax": 17526.1
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 74.7,
+       "cpuPctMax": 84.2,
+       "rssMbMax": 936.2
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 393.3,
+      "cpuPctMax": 403.2,
+      "memMbMax": 242.2,
+      "commitsPerSecond": 3298.1,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 6108.5,
+      "walMbPerSecond": 4.7,
+      "blockReadMs": 85.4,
+      "blockWriteMs": 506,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 10,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  },
+  {
+   "name": "5000 users",
+   "durationS": 60,
+   "latency": {
+    "active": {
+     "ack": {
+      "n": 213176,
+      "min": 548.46337890625,
+      "p50": 839.395263671875,
+      "p95": 1268.25146484375,
+      "p99": 1572.226318359375,
+      "mean": 877.6716828390095,
+      "max": 6073.89599609375
+     },
+     "remote": {
+      "n": 213413,
+      "min": 0.12353515625,
+      "p50": 0.637451171875,
+      "p95": 10.0478515625,
+      "p99": 140.64111328125,
+      "mean": 9.256748621931859,
+      "max": 4163.3544921875
+     },
+     "presence": {
+      "n": 28791,
+      "min": 0,
+      "p50": 1,
+      "p95": 30078,
+      "p99": 45117,
+      "mean": 4220.623180855128,
+      "max": 49869
+     },
+     "ackOffline": {
+      "n": 836,
+      "min": 583.373291015625,
+      "p50": 2420.610595703125,
+      "p95": 4325.831298828125,
+      "p99": 4969.36962890625,
+      "mean": 2505.2026603735235,
+      "max": 7066.097900390625
+     },
+     "reconnect": {
+      "n": 296,
+      "min": 3164.829345703125,
+      "p50": 4150.592529296875,
+      "p95": 5004.138916015625,
+      "p99": 5339.933349609375,
+      "mean": 4214.258670291385,
+      "max": 5544.629150390625
+     },
+     "ticketMs": {
+      "n": 304,
+      "min": 1692.861328125,
+      "p50": 1857.0673828125,
+      "p95": 2339.837646484375,
+      "p99": 2544.0048828125,
+      "mean": 1917.1584103232935,
+      "max": 2737.241455078125
+     }
+    },
+    "ALL": {
+     "ack": {
+      "n": 213176,
+      "min": 548.46337890625,
+      "p50": 839.395263671875,
+      "p95": 1268.25146484375,
+      "p99": 1572.226318359375,
+      "mean": 877.6716828390095,
+      "max": 6073.89599609375
+     },
+     "remote": {
+      "n": 213413,
+      "min": 0.12353515625,
+      "p50": 0.637451171875,
+      "p95": 10.0478515625,
+      "p99": 140.64111328125,
+      "mean": 9.256748621931859,
+      "max": 4163.3544921875
+     },
+     "presence": {
+      "n": 28791,
+      "min": 0,
+      "p50": 1,
+      "p95": 30078,
+      "p99": 45117,
+      "mean": 4220.623180855128,
+      "max": 49869
+     },
+     "ackOffline": {
+      "n": 836,
+      "min": 583.373291015625,
+      "p50": 2420.610595703125,
+      "p95": 4325.831298828125,
+      "p99": 4969.36962890625,
+      "mean": 2505.2026603735235,
+      "max": 7066.097900390625
+     },
+     "reconnect": {
+      "n": 296,
+      "min": 3164.829345703125,
+      "p50": 4150.592529296875,
+      "p95": 5004.138916015625,
+      "p99": 5339.933349609375,
+      "mean": 4214.258670291385,
+      "max": 5544.629150390625
+     },
+     "ticketMs": {
+      "n": 304,
+      "min": 1692.861328125,
+      "p50": 1857.0673828125,
+      "p95": 2339.837646484375,
+      "p99": 2544.0048828125,
+      "mean": 1917.1584103232935,
+      "max": 2737.241455078125
+     }
+    }
+   },
+   "counts": {
+    "active": {
+     "cursor_updates": 30196,
+     "formats": 30310,
+     "deletes": 30465,
+     "edits": 214250,
+     "drops": 299,
+     "reconnects": 296
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 299
+   },
+   "generator": [
+    {
+     "pid": 4008398,
+     "cpuPct": 14.152580757224714,
+     "cpuSecondsTotal": 56.181187,
+     "rssMb": 304.5703125,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 12.197887,
+     "clients": 500
+    },
+    {
+     "pid": 4008462,
+     "cpuPct": 14.381544508229258,
+     "cpuSecondsTotal": 56.073091,
+     "rssMb": 296.63671875,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 14.188543,
+     "clients": 500
+    },
+    {
+     "pid": 4008547,
+     "cpuPct": 14.304028748464614,
+     "cpuSecondsTotal": 56.273225,
+     "rssMb": 301.375,
+     "lagP99Ms": 10.944511,
+     "lagMaxMs": 14.786559,
+     "clients": 500
+    },
+    {
+     "pid": 4008562,
+     "cpuPct": 14.469481860666896,
+     "cpuSecondsTotal": 56.226591,
+     "rssMb": 304.81640625,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 13.451263,
+     "clients": 500
+    },
+    {
+     "pid": 4008570,
+     "cpuPct": 14.614215349789397,
+     "cpuSecondsTotal": 57.722517,
+     "rssMb": 294.22265625,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 13.254655,
+     "clients": 500
+    },
+    {
+     "pid": 4008578,
+     "cpuPct": 14.99548186774551,
+     "cpuSecondsTotal": 56.941469,
+     "rssMb": 205.44921875,
+     "lagP99Ms": 10.969087,
+     "lagMaxMs": 38.109183,
+     "clients": 500
+    },
+    {
+     "pid": 4008586,
+     "cpuPct": 14.195894620685404,
+     "cpuSecondsTotal": 55.64403,
+     "rssMb": 307.49609375,
+     "lagP99Ms": 10.969087,
+     "lagMaxMs": 15.581183,
+     "clients": 500
+    },
+    {
+     "pid": 4008594,
+     "cpuPct": 15.104603356883569,
+     "cpuSecondsTotal": 57.632292,
+     "rssMb": 286.8046875,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 15.327231,
+     "clients": 500
+    },
+    {
+     "pid": 4008634,
+     "cpuPct": 14.68044507760357,
+     "cpuSecondsTotal": 57.719621,
+     "rssMb": 295.30078125,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 14.409727,
+     "clients": 500
+    },
+    {
+     "pid": 4008662,
+     "cpuPct": 15.059751947691776,
+     "cpuSecondsTotal": 56.58789,
+     "rssMb": 296.6640625,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 14.073855,
+     "clients": 500
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 13,
+     "upSamples": 13,
+     "cpuPctAvg": 94.87943269623047,
+     "cpuPctMax": 112.3782443511303,
+     "rssMbMax": 1738.0078125,
+     "rssMbEnd": 1738.0078125,
+     "heapMbMax": 1249.5969772338867,
+     "wsMax": 4994,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 2500,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 2102,
+     "poolWaitingAvg": 1792.923076923077,
+     "lagP99MaxMs": 88.145919,
+     "queueBytesMax": 138902,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 228751,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 166352,
+       "meanMs": 628.799869125614,
+       "p95UpperMs": 1000,
+       "p99UpperMs": 2500
+      },
+      "compact": {
+       "count": 870,
+       "meanMs": 631.3827658747159,
+       "p95UpperMs": 1000,
+       "p99UpperMs": 1000
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 253,
+       "meanMs": 1892.483245130442,
+       "p95UpperMs": 2500
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 253,
+       "meanMs": 1892.483245130442,
+       "p95UpperMs": 2500
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 253
+     }
+    }
+   ],
+   "hostLoadMax": 10.43,
+   "extra": {
+    "firstAttempt": {
+     "ok": 1000
+    },
+    "connectS": 39.2,
+    "connected": 4981,
+    "notConnected": 19,
+    "classes": {
+     "idle": 0,
+     "viewing": 0,
+     "activeEditors": 5000
+    },
+    "markerEditsPerSecond": 3570.8,
+    "completedFullDuration": true,
+    "system": {
+     "samples": 13,
+     "host": {
+      "load1Max": 10.4,
+      "availableMbMin": 26473.4,
+      "swapUsedMbMax": 17529.9
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 94.4,
+       "cpuPctMax": 113,
+       "rssMbMax": 1738.5
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 369.5,
+      "cpuPctMax": 379.7,
+      "memMbMax": 253.6,
+      "commitsPerSecond": 2846.7,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 6010.2,
+      "walMbPerSecond": 5.7,
+      "blockReadMs": 84.7,
+      "blockWriteMs": 537.5,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 10,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  }
+ ],
+ "results": {
+  "steps": [
+   {
+    "users": 200,
+    "connected": 200,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 121.3,
+    "remote": {
+     "n": 7274,
+     "min": 0.095458984375,
+     "p50": 0.70849609375,
+     "p95": 1.103515625,
+     "p99": 1.3408203125,
+     "mean": 0.8000577224425178,
+     "max": 185.743896484375
+    },
+    "ack": {
+     "n": 7272,
+     "min": 1.71337890625,
+     "p50": 3.3515625,
+     "p95": 4.668212890625,
+     "p99": 5.69970703125,
+     "mean": 3.4177369976987935,
+     "max": 18.649658203125
+    },
+    "presence": {
+     "n": 1272,
+     "min": 0,
+     "p50": 1,
+     "p95": 17814,
+     "p99": 32708,
+     "mean": 3895.151729559748,
+     "max": 47991
+    },
+    "verdict": {
+     "stable": true,
+     "reasons": []
+    }
+   },
+   {
+    "users": 500,
+    "connected": 500,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 302.7,
+    "remote": {
+     "n": 18164,
+     "min": 0.102294921875,
+     "p50": 0.557373046875,
+     "p95": 1.00048828125,
+     "p99": 1.33203125,
+     "mean": 0.6636839503103666,
+     "max": 396.996337890625
+    },
+    "ack": {
+     "n": 18157,
+     "min": 1.6259765625,
+     "p50": 3.207275390625,
+     "p95": 4.54833984375,
+     "p99": 5.848388671875,
+     "mean": 3.283626596104464,
+     "max": 20.2216796875
+    },
+    "presence": {
+     "n": 3195,
+     "min": 0,
+     "p50": 1,
+     "p95": 17860,
+     "p99": 32867,
+     "mean": 4256.250078247262,
+     "max": 47957
+    },
+    "verdict": {
+     "stable": true,
+     "reasons": []
+    }
+   },
+   {
+    "users": 1000,
+    "connected": 1000,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 613.2,
+    "remote": {
+     "n": 36777,
+     "min": 0.081787109375,
+     "p50": 0.522216796875,
+     "p95": 1.175048828125,
+     "p99": 2.281494140625,
+     "mean": 0.7062069857902018,
+     "max": 367.538330078125
+    },
+    "ack": {
+     "n": 36775,
+     "min": 1.60205078125,
+     "p50": 3.3623046875,
+     "p95": 4.949462890625,
+     "p99": 7.283935546875,
+     "mean": 3.5234234324545377,
+     "max": 52.516357421875
+    },
+    "presence": {
+     "n": 5985,
+     "min": 0,
+     "p50": 1,
+     "p95": 17939,
+     "p99": 32853,
+     "mean": 4268.272514619883,
+     "max": 47960
+    },
+    "verdict": {
+     "stable": true,
+     "reasons": []
+    }
+   },
+   {
+    "users": 1500,
+    "connected": 1500,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 924.7,
+    "remote": {
+     "n": 55473,
+     "min": 0.079833984375,
+     "p50": 0.573974609375,
+     "p95": 1.792236328125,
+     "p99": 4.2705078125,
+     "mean": 0.8344930244077073,
+     "max": 330.691650390625
+    },
+    "ack": {
+     "n": 55463,
+     "min": 1.681884765625,
+     "p50": 3.91845703125,
+     "p95": 6.8388671875,
+     "p99": 14.1279296875,
+     "mean": 4.328778267542945,
+     "max": 56.63330078125
+    },
+    "presence": {
+     "n": 8826,
+     "min": 0,
+     "p50": 1,
+     "p95": 17936,
+     "p99": 32933,
+     "mean": 4154.321323362792,
+     "max": 49493
+    },
+    "verdict": {
+     "stable": true,
+     "reasons": []
+    }
+   },
+   {
+    "users": 2000,
+    "connected": 2000,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 1216.6,
+    "remote": {
+     "n": 72972,
+     "min": 0.075927734375,
+     "p50": 0.653076171875,
+     "p95": 2.80615234375,
+     "p99": 6.45849609375,
+     "mean": 1.0789081155486009,
+     "max": 359.29443359375
+    },
+    "ack": {
+     "n": 72964,
+     "min": 1.631591796875,
+     "p50": 4.004638671875,
+     "p95": 8.142578125,
+     "p99": 15.9599609375,
+     "mean": 4.606755172740367,
+     "max": 79.931884765625
+    },
+    "presence": {
+     "n": 11093,
+     "min": 0,
+     "p50": 1,
+     "p95": 17970,
+     "p99": 32849,
+     "mean": 4263.157035968629,
+     "max": 48526
+    },
+    "verdict": {
+     "stable": true,
+     "reasons": []
+    }
+   },
+   {
+    "users": 3000,
+    "connected": 3000,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 1853.3,
+    "remote": {
+     "n": 111168,
+     "min": 0.088623046875,
+     "p50": 0.453125,
+     "p95": 3.53662109375,
+     "p99": 6.866455078125,
+     "mean": 1.063460662437707,
+     "max": 379.7158203125
+    },
+    "ack": {
+     "n": 111174,
+     "min": 1.669189453125,
+     "p50": 4.365234375,
+     "p95": 11.998779296875,
+     "p99": 25.688232421875,
+     "mean": 5.872918137562655,
+     "max": 403.45263671875
+    },
+    "presence": {
+     "n": 16707,
+     "min": 0,
+     "p50": 1,
+     "p95": 17929,
+     "p99": 32982,
+     "mean": 4149.651762734184,
+     "max": 49283
+    },
+    "verdict": {
+     "stable": true,
+     "reasons": []
+    }
+   },
+   {
+    "users": 4000,
+    "connected": 4000,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 2522.1,
+    "remote": {
+     "n": 151217,
+     "min": 0.0859375,
+     "p50": 0.45947265625,
+     "p95": 4.050048828125,
+     "p99": 14.971435546875,
+     "mean": 1.6644376625612944,
+     "max": 1138.559326171875
+    },
+    "ack": {
+     "n": 151259,
+     "min": 1.849365234375,
+     "p50": 80.8701171875,
+     "p95": 188.6572265625,
+     "p99": 262.115234375,
+     "mean": 86.7630101229901,
+     "max": 1368.035400390625
+    },
+    "presence": {
+     "n": 21900,
+     "min": 0,
+     "p50": 1,
+     "p95": 17942,
+     "p99": 32944,
+     "mean": 4146.847899543379,
+     "max": 50524
+    },
+    "verdict": {
+     "stable": true,
+     "reasons": []
+    }
+   },
+   {
+    "users": 5000,
+    "connected": 4981,
+    "newConnectionSuccessPct": 100,
+    "failuresByCause": {},
+    "editsPerSecond": 3570.8,
+    "remote": {
+     "n": 213413,
+     "min": 0.12353515625,
+     "p50": 0.637451171875,
+     "p95": 10.0478515625,
+     "p99": 140.64111328125,
+     "mean": 9.256748621931859,
+     "max": 4163.3544921875
+    },
+    "ack": {
+     "n": 213176,
+     "min": 548.46337890625,
+     "p50": 839.395263671875,
+     "p95": 1268.25146484375,
+     "p99": 1572.226318359375,
+     "mean": 877.6716828390095,
+     "max": 6073.89599609375
+    },
+    "presence": {
+     "n": 28791,
+     "min": 0,
+     "p50": 1,
+     "p95": 30078,
+     "p99": 45117,
+     "mean": 4220.623180855128,
+     "max": 49869
+    },
+    "verdict": {
+     "stable": false,
+     "reasons": [
+      "19 clients not connected at the end"
+     ]
+    }
+   }
+  ],
+  "maximumStableUsers": 4000,
+  "criterion": "all of: p50 <= 50 ms, p95 <= 100 ms, p99 <= 200 ms edit to remote; new connections >= 99.9% on the first attempt; nobody disconnected at the end of the step; watchdog quiet",
+  "quiesce": {
+   "ok": false,
+   "unacked": 5,
+   "waitedMs": 120238
+  },
+  "verification": {
+   "docs": 2500,
+   "checked": 1027523,
+   "missing": 0,
+   "missingSamples": [],
+   "unackedAtEnd": 5,
+   "exportErrors": 0
+  },
+  "convergence": {
+   "docs": 2500,
+   "diverged": 0,
+   "clientsCompared": 5000,
+   "samples": []
+  },
+  "systemWholeScenario": {
+   "samples": 173,
+   "host": {
+    "load1Max": 10.7,
+    "availableMbMin": 26473.4,
+    "swapUsedMbMax": 17529.9
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 51.7,
+     "cpuPctMax": 113,
+     "rssMbMax": 1759.6
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 181.7,
+    "cpuPctMax": 412.5,
+    "memMbMax": 253.6,
+    "commitsPerSecond": 1757.9,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 2863.8,
+    "walMbPerSecond": 2.4,
+    "blockReadMs": 518.5,
+    "blockWriteMs": 3627.2,
+    "deadlocks": 0,
+    "backendsMax": 12,
+    "activeMax": 10,
+    "waitingOnLocksMax": 0
+   }
+  }
+ },
+ "notes": [],
+ "status": "ok",
+ "endedAt": "2026-11-14T07:04:37.627Z"
+}

@@ -84,6 +84,8 @@ export class Ctx {
   state!: StackState;
   sampler!: Sampler;
   specCounter = 0;
+  /** The worker script; tests/performance uses its own, which extends this one. */
+  workerEntry = path.join(loadRoot, 'src/worker.ts');
   docCounter = 0;
   constructor(
     readonly outDir: string,
@@ -113,7 +115,7 @@ export class Ctx {
 
   private spawnWorker(): Promise<void> {
     return new Promise((resolve) => {
-      const proc = fork(path.join(loadRoot, 'src/worker.ts'), [], {
+      const proc = fork(this.workerEntry, [], {
         execArgv: ['--import', 'tsx', '--max-old-space-size=3072'],
         serialization: 'advanced',
         stdio: ['ignore', 'inherit', 'inherit', 'ipc'],

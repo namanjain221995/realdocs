@@ -54,10 +54,148 @@ Actions on a revision:
 - **Restore as a copy** creates a new document from the revision and links to it.
 - **Download** exports the revision as JSON, Markdown or plain text.
 - **Export audit trail** (page level) downloads every retained row as CSV or JSON.
+- The **version history document** (`doc.txt`, with the images as a zip) is described below.
 
 On a phone the timeline and the revision are separate views with a back button. The page works from
 320 px wide and at 200 % zoom, is keyboard operable (Up/Down move between rows, Enter opens one) and
 announces loading with a status message.
+
+## The version history document
+
+Besides the timeline, the history of a document can be taken away as one text document, `doc.txt`,
+in a fixed layout: numbered versions, each with the editor, the time, the lines that were added and
+removed and the whole text at that point. Images that were pasted are named in it by their id and
+come with it as files.
+
+```text
+DOCUMENT VERSION HISTORY
+Document ID: 3b9a6a52-1f0e-4c7d-8a2b-5d6e7f809a1b
+Document URL: https://docs.example.com/d/3b9a6a52-1f0e-4c7d-8a2b-5d6e7f809a1b
+Title: Aarav_Sharma_Acme_Corp_Round_2_2030-03-14_15-30
+Session ID: 7d0f6a5e-3c1b-4a52-9d57-2f4a1c8e9b10
+Candidate: Aarav Sharma
+Company: Acme Corp
+Round: 2 System design
+Tracking Started: 2030-03-14 10:00:05 UTC
+
+
+==================================================
+VERSION 1
+Started At: 2030-03-14 03:30:05 PM IST
+Edited At: 2030-03-14 03:30:21 PM IST
+Edited By: Meera Iyer (Interviewer, meera@acme.example)
+Action: Typed
+
+ADDED:
+- [03:30:21 PM] Design a URL shortener.
+
+REMOVED:
+- (nothing removed)
+
+CURRENT SNAPSHOT:
+Design a URL shortener.
+
+==================================================
+VERSION 2
+Edited At: 2030-03-14 03:32:41 PM IST
+Edited By: Aarav Sharma (Candidate, aarav@example.com)
+Action: Pasted
+
+ADDED:
+- [03:32:41 PM] Start with the API: POST /shorten and GET /{code}.
+- [03:32:41 PM] [IMAGE 5a4b3c2d-0000-4000-8000-0000000000a1] image pasted (images/5a4b3c2d-0000-4000-8000-0000000000a1.png)
+
+REMOVED:
+- (nothing removed)
+
+CURRENT SNAPSHOT:
+Design a URL shortener.
+Start with the API: POST /shorten and GET /{code}.
+[IMAGE 5a4b3c2d-0000-4000-8000-0000000000a1] images/5a4b3c2d-0000-4000-8000-0000000000a1.png
+
+==================================================
+CURRENT FINAL CONTENT
+Design a URL shortener.
+Start with the API: POST /shorten and GET /{code}.
+[IMAGE 5a4b3c2d-0000-4000-8000-0000000000a1] images/5a4b3c2d-0000-4000-8000-0000000000a1.png
+
+
+==================================================
+FINALIZED AT: 2030-03-14 10:02:41 UTC
+```
+
+**Header.** The session lines appear only when the document belongs to an interview session.
+"Tracking Started" is the server time of the first recorded history row, in UTC.
+
+**What a version is.** One stretch of work by one editor. A new version starts when the editor
+changes, when the same editor pauses for longer than `gapSeconds` (default 15), when the version
+would cover more than `maxSpanSeconds` (default 60), and before and after every paste: a paste (of
+text or of an image) is always a version of its own. A stretch that adds or removes no line and no
+image (formatting, caret movement, blank lines) is not a version; the numbers have no gaps. The
+content that already existed when recording began is version 1 by "System" with the action
+`Initial`; a restored version is a version by "System" with the action `Restored`.
+
+**Lines.** A line is one block of the document: a paragraph or heading (a line break inside it
+starts another line), a list item with its marker, a table row with its cells joined by tabs, a
+line of a code block. "ADDED" lists the lines of this version that the previous one did not have,
+in document order; "REMOVED" lists the lines of the previous version that are gone. A line that was
+edited therefore appears under both (old text removed, new text added). Blank lines are not listed.
+"CURRENT SNAPSHOT" is the whole text; empty paragraphs at its very beginning and end are dropped.
+
+**Times.** All times are the server's. "Edited At" is the last change of the version and "Started
+At" its first (printed when they are more than a second apart), in the time zone given by
+`timezone`: the interview session's zone by default, UTC for other documents. `IST` is printed for
+`Asia/Kolkata`. Every added and removed line carries, in square brackets, the time of the very
+change that added or removed it, to the second, in the same zone. "FINALIZED AT" is the time the
+interview session was completed or cancelled when it was, otherwise the time of the last recorded
+change; it is never the time of the request, so the same history always gives the same document.
+
+**Who.** "Edited By" is `Name (Role, e-mail)`: the role is Candidate, Interviewer, Admin, Member or
+Guest; the address is the account's, or the interview participant's as the session names it. A guest
+on an ordinary share link has no address: `Guest Amber Lynx (Guest)`. Names, roles and addresses come
+from the server's records of the authenticated connection, never from what a browser claims. The
+document therefore contains e-mail addresses; it is available only to people who manage the document
+and to API keys with the scope `documents:history:read`.
+
+**Action.** `Typed`, `Pasted`, `Deleted`, `Formatted`, `Restored`, `Initial`, or `Mixed` when a
+version contains more than one kind (formatting next to another kind does not count). The word comes
+from the classification stored with each history row (see "Paste labelling").
+
+**Images and files.** An image is the line `[IMAGE <id>] images/<file name>`; the id is the id of the
+uploaded file and the file name is `<id>.<extension>` from its stored content type. The version in
+which the id first appears lists `[IMAGE <id>] image pasted (images/<file name>)` under ADDED; when it
+disappears, `[IMAGE <id>] image removed` under REMOVED. An attached file is `[FILE <id>] <name>`, with
+`file attached` and `file removed`; attachments are not exported as images. An image stays
+downloadable after it was removed from the document, as long as the history that shows it is kept.
+
+**Endpoints.** For people who manage the document (a browser session):
+
+| Request                                                          | Answer                                                                                                                                                           |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/documents/:documentId/version-history`                 | `doc.txt` (`text/plain`, attachment). `?format=json` answers the same content as data. Also `timezone`, `gapSeconds` (1 to 3600), `maxSpanSeconds` (5 to 86400). |
+| `GET /api/documents/:documentId/version-history/images`          | `{ images: [{ id, fileName, mime, sizeBytes, sha256, firstVersion, lastVersion, url }] }`. `lastVersion` is `null` while the image is still in the document.     |
+| `GET /api/documents/:documentId/version-history/images/:imageId` | The image file. `404` for an id that never was an image of this document (an attachment, another document's file, a file that was uploaded but never placed).    |
+| `GET /api/documents/:documentId/version-history/archive`         | A zip: `docs/doc.txt`, `images/<file name>` for every image that ever appeared, `manifest.json` (the JSON form without the snapshots).                           |
+
+For API keys with `documents:history:read`, the same four exist under
+`/api/v1/documents/{documentId}/version-history…` and under
+`/api/v1/interview-sessions/{sessionId}/version-history…` (see
+[session-integration.md](session-integration.md)). Every export of the document or the archive is
+written to the audit trail as `history.exported`.
+
+The JSON form: `document {id, title, url}`, `session {id, candidate, company, round {number, name}}`
+or `null`, `trackingStartedAt`, `finalizedAt`, `timezone`, `versions[]`, `finalContent`, `images[]`,
+`truncated`. A version: `version`, `startedAt`, `startedAtText`, `editedAt`, `editedAtText`,
+`editedBy`, `editor {name, role, email, kind}`, `action`, `added[]` and `removed[]` (plain strings
+without the time), `addedDetail[]` and `removedDetail[]` (`{text, at, atText}`), `snapshot`,
+`images[]` (ids present).
+
+**Limits.** The history is replayed once per request, oldest row first. More than 200,000 recorded
+rows are refused (`payload_too_large`). The list of versions is cut after 2,000 versions or 32 MiB of
+snapshot text; the document then says so and `truncated` is true, while the final content stays
+complete. Exact per-line times are taken for the first 256 MiB of text looked at; in a history larger
+than that, later lines carry their version's time. History that was removed by retention, or made
+before the server recorded history, is not in the document.
 
 ## How it works
 

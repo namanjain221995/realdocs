@@ -1,0 +1,416 @@
+{
+ "scenario": "remote",
+ "title": "Stand-alone generator (this machine or another one)",
+ "topology": "A",
+ "startedAt": "2026-11-14T07:42:24.652Z",
+ "config": {
+  "generator": "10.100.184.2",
+  "origin": "http://10.100.184.1:4460",
+  "documents": 500,
+  "users": 1000,
+  "processes": 6,
+  "rate": 1,
+  "durationS": 120
+ },
+ "phases": [
+  {
+   "name": "remote generator",
+   "durationS": 168.64,
+   "latency": {
+    "ALL": {}
+   },
+   "counts": {},
+   "errors": {},
+   "closeCodes": {},
+   "generator": [
+    {
+     "pid": 181502,
+     "cpuPct": 0.20835836224931634,
+     "cpuSecondsTotal": 0.621524,
+     "rssMb": 76.33203125,
+     "lagP99Ms": 10.199039,
+     "lagMaxMs": 14.426111,
+     "clients": 0
+    },
+    {
+     "pid": 181510,
+     "cpuPct": 0.20975257433878342,
+     "cpuSecondsTotal": 0.608887,
+     "rssMb": 79.1875,
+     "lagP99Ms": 10.199039,
+     "lagMaxMs": 11.796479,
+     "clients": 0
+    },
+    {
+     "pid": 181537,
+     "cpuPct": 0.20692436173991424,
+     "cpuSecondsTotal": 0.621289,
+     "rssMb": 80.27734375,
+     "lagP99Ms": 10.199039,
+     "lagMaxMs": 12.812287,
+     "clients": 0
+    },
+    {
+     "pid": 181570,
+     "cpuPct": 0.21372881506019611,
+     "cpuSecondsTotal": 0.623719,
+     "rssMb": 79.87890625,
+     "lagP99Ms": 10.207231,
+     "lagMaxMs": 12.550143,
+     "clients": 0
+    },
+    {
+     "pid": 181579,
+     "cpuPct": 0.20514950848839444,
+     "cpuSecondsTotal": 0.570897,
+     "rssMb": 77.625,
+     "lagP99Ms": 10.199039,
+     "lagMaxMs": 14.344191,
+     "clients": 0
+    },
+    {
+     "pid": 181587,
+     "cpuPct": 0.20660883876592018,
+     "cpuSecondsTotal": 0.621647,
+     "rssMb": 80.58984375,
+     "lagP99Ms": 10.199039,
+     "lagMaxMs": 11.739135,
+     "clients": 0
+    },
+    {
+     "pid": 181595,
+     "cpuPct": 0.21192894753605954,
+     "cpuSecondsTotal": 0.62826,
+     "rssMb": 78.4375,
+     "lagP99Ms": 10.199039,
+     "lagMaxMs": 12.419071,
+     "clients": 0
+    },
+    {
+     "pid": 181603,
+     "cpuPct": 0.21142011880792977,
+     "cpuSecondsTotal": 0.61356,
+     "rssMb": 77.0546875,
+     "lagP99Ms": 10.199039,
+     "lagMaxMs": 13.271039,
+     "clients": 0
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 35,
+     "upSamples": 35,
+     "cpuPctAvg": 38.16580037200717,
+     "cpuPctMax": 51.75992801439705,
+     "rssMbMax": 586.671875,
+     "rssMbEnd": 510.2890625,
+     "heapMbMax": 341.63533782958984,
+     "wsMax": 1000,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 500,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 9,
+     "poolWaitingAvg": 0.4857142857142857,
+     "lagP99MaxMs": 27.197439,
+     "queueBytesMax": 182,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 135938,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 135887,
+       "meanMs": 3.1255683104270893,
+       "p95UpperMs": 5,
+       "p99UpperMs": 25
+      },
+      "compact": {
+       "count": 1000,
+       "meanMs": 9.01513144399958,
+       "p95UpperMs": 50,
+       "p99UpperMs": 50
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 2376,
+       "meanMs": 3.6532168379629857,
+       "p95UpperMs": 10
+      },
+      "/api/share/exchange": {
+       "count": 938,
+       "meanMs": 5.126424590618375,
+       "p95UpperMs": 10
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 938,
+       "meanMs": 1.9260421247334976,
+       "p95UpperMs": 5
+      },
+      "/api/documents/:documentId/export": {
+       "count": 500,
+       "meanMs": 4.129658855999994,
+       "p95UpperMs": 10
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 938
+     }
+    }
+   ],
+   "hostLoadMax": 4.62,
+   "extra": {
+    "system": {
+     "samples": 33,
+     "host": {
+      "load1Max": 4.6,
+      "availableMbMin": 29854.2,
+      "swapUsedMbMax": 17529.7
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 37.9,
+       "cpuPctMax": 53,
+       "rssMbMax": 589.2
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 97.2,
+      "cpuPctMax": 122.9,
+      "memMbMax": 200.5,
+      "commitsPerSecond": 1048.7,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 1692.1,
+      "walMbPerSecond": 1.2,
+      "blockReadMs": 0.3,
+      "blockWriteMs": 352.4,
+      "deadlocks": 0,
+      "backendsMax": 11,
+      "activeMax": 10,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  }
+ ],
+ "results": {
+  "link": "rtt min/avg/max/mdev = 0.285/0.493/0.819/0.193 ms",
+  "clients": 1000,
+  "firstAttempt": {
+   "ok": 1000
+  },
+  "readyAtEnd": 1000,
+  "editsPerSecond": 1000,
+  "editToRemoteVisibleMs": {
+   "n": 120006,
+   "p50Max": 0.757080078125,
+   "p95Max": 1.53076171875,
+   "p99Max": 7.52490234375,
+   "max": 68.608154296875,
+   "perProcess": [
+    {
+     "p50": 0.72,
+     "p95": 1.44,
+     "p99": 4.13
+    },
+    {
+     "p50": 0.74,
+     "p95": 1.47,
+     "p99": 3.46
+    },
+    {
+     "p50": 0.73,
+     "p95": 1.47,
+     "p99": 4.01
+    },
+    {
+     "p50": 0.76,
+     "p95": 1.53,
+     "p99": 7.52
+    },
+    {
+     "p50": 0.72,
+     "p95": 1.45,
+     "p99": 3.28
+    },
+    {
+     "p50": 0.75,
+     "p95": 1.52,
+     "p99": 6.67
+    }
+   ]
+  },
+  "editToSavedMs": {
+   "n": 120018,
+   "p50Max": 3.71875,
+   "p95Max": 5.501220703125,
+   "p99Max": 26.31005859375,
+   "max": 95.788330078125,
+   "perProcess": [
+    {
+     "p50": 3.65,
+     "p95": 5.31,
+     "p99": 19.74
+    },
+    {
+     "p50": 3.66,
+     "p95": 5.31,
+     "p99": 16.38
+    },
+    {
+     "p50": 3.66,
+     "p95": 5.35,
+     "p99": 17.82
+    },
+    {
+     "p50": 3.72,
+     "p95": 5.5,
+     "p99": 26.31
+    },
+    {
+     "p50": 3.64,
+     "p95": 5.33,
+     "p99": 16.49
+    },
+    {
+     "p50": 3.69,
+     "p95": 5.49,
+     "p99": 23.52
+    }
+   ]
+  },
+  "connectMs": {
+   "n": 0,
+   "p50Max": 0,
+   "p95Max": 0,
+   "p99Max": 0,
+   "max": 0,
+   "perProcess": [
+    {
+     "p50": null,
+     "p95": null,
+     "p99": null
+    },
+    {
+     "p50": null,
+     "p95": null,
+     "p99": null
+    },
+    {
+     "p50": null,
+     "p95": null,
+     "p99": null
+    },
+    {
+     "p50": null,
+     "p95": null,
+     "p99": null
+    },
+    {
+     "p50": null,
+     "p95": null,
+     "p99": null
+    },
+    {
+     "p50": null,
+     "p95": null,
+     "p99": null
+    }
+   ]
+  },
+  "generatorProcesses": [
+   {
+    "cpuPct": 7.3,
+    "rssMb": 130,
+    "eventLoopP99Ms": 11
+   },
+   {
+    "cpuPct": 7.6,
+    "rssMb": 128,
+    "eventLoopP99Ms": 11
+   },
+   {
+    "cpuPct": 7.2,
+    "rssMb": 130,
+    "eventLoopP99Ms": 11
+   },
+   {
+    "cpuPct": 7.4,
+    "rssMb": 129,
+    "eventLoopP99Ms": 11
+   },
+   {
+    "cpuPct": 7.6,
+    "rssMb": 128,
+    "eventLoopP99Ms": 11
+   },
+   {
+    "cpuPct": 7.6,
+    "rssMb": 127,
+    "eventLoopP99Ms": 11
+   }
+  ],
+  "errors": [
+   {},
+   {},
+   {},
+   {},
+   {},
+   {}
+  ],
+  "verification": {
+   "checked": 135000,
+   "missing": 0
+  },
+  "note": "Percentiles are per generator process; the table gives the worst process (p50Max, p95Max, p99Max), not a merged distribution.",
+  "systemWholeScenario": {
+   "samples": 34,
+   "host": {
+    "load1Max": 4.6,
+    "availableMbMin": 29854.2,
+    "swapUsedMbMax": 17529.7
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 37.9,
+     "cpuPctMax": 53,
+     "rssMbMax": 589.2
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 94.4,
+    "cpuPctMax": 122.9,
+    "memMbMax": 200.5,
+    "commitsPerSecond": 1066.4,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 1656.8,
+    "walMbPerSecond": 1.2,
+    "blockReadMs": 1.2,
+    "blockWriteMs": 355.9,
+    "deadlocks": 0,
+    "backendsMax": 11,
+    "activeMax": 10,
+    "waitingOnLocksMax": 0
+   }
+  }
+ },
+ "notes": [],
+ "status": "ok",
+ "endedAt": "2026-11-14T07:45:20.433Z"
+}

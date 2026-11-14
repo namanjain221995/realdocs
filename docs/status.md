@@ -9,6 +9,8 @@ _Since 2026-11-13 the site is sign-in first: anonymous visitors see only the sig
 
 _Web, 2026-11-13 (in the working tree, not deployed when this was written): a visitor sees only the sign-in page; the product page, downloads, guides and the developer portal need an account; `GET /api/openapi.json` needs an account session or an API key; administrators start at `/admin/users`, members on the product page, documents are at `/documents`; new animated sign-in page. See [security.md](security.md), "What a visitor without an account can reach"._
 
+_Server, 2026-11-14 (in the working tree, not deployed when this was written): the version history document (`doc.txt`, JSON, images, archive; cookie routes under `/api/documents/:id/version-history` and API-key routes under `/api/v1/documents|interview-sessions/{id}/version-history`), `round.number` as a string in the interview session API, and interviewers with an account becoming members of the session document (migration 0006). See [version-history.md](version-history.md) and [session-integration.md](session-integration.md). Integration suite 242 passed; the live smoke script was extended and has not been run against a server._
+
 ## How to resume
 
 1. `. scripts/dev-env.sh` (pinned Node 24.22.2 + pnpm 12.18.0 in `.toolchain/`), then

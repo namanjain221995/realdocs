@@ -16,6 +16,10 @@ import {
   SessionDocumentResponse,
   UpdateInterviewSessionRequest,
   UpdateWebhookRequest,
+  VersionHistoryGroupingQuery,
+  VersionHistoryImagesResponse,
+  VersionHistoryQuery,
+  VersionHistoryResponse,
   WebhookDeliveriesPage,
   WebhookDeliveryResponse,
   WebhookEndpointResponse,
@@ -23,6 +27,16 @@ import {
   WebhookEndpointsResponse,
 } from '@realtimedocs/contracts';
 import { z } from 'zod';
+import { tryAudit } from '../audit';
+import type { AppContext } from '../context';
+import {
+  versionHistoryArchive,
+  versionHistoryDocument,
+  versionHistoryImage,
+  versionHistoryImages,
+  type VersionHistoryTarget,
+} from '../history/version-history-responses';
+import { auditActorOf, type OperationActor } from './actor';
 import { route, type ServiceRoute } from './registry';
 import {
   addParticipant,
@@ -33,8 +47,10 @@ import {
   rotateLinks,
   sessionAuditTrail,
   sessionDocument,
+  sessionDocumentRef,
   transitionSession,
   updateSession,
+  workspaceDocumentRef,
 } from './sessions';
 import {
   exampleCreateRequest,
@@ -42,6 +58,7 @@ import {
   exampleDelivery,
   exampleIds,
   exampleSession,
+  exampleVersionHistory,
   exampleWebhookEndpoint,
 } from './v1-examples';
 import {
@@ -63,6 +80,150 @@ const DeliveryParam = z.object({ deliveryId: z.string().describe('Delivery ident
 
 const SESSIONS = 'Interview sessions';
 const WEBHOOKS = 'Webhooks';
+const HISTORY = 'Version history';
+
+const ImageParams = z.object({
+  id: z.string().describe('Identifier (UUID).'),
+  imageId: z.string().describe('Image identifier (UUID), as printed in `[IMAGE <id>]`.'),
+});
+
+const HISTORY_SCOPE = 'documents:history:read';
+const HISTORY_FORMAT =
+  'Numbered versions, each with the editor, the time, the lines added and removed and the whole text at that ' +
+  'point. A version is one stretch of work by one editor: a new one starts when the editor changes, after a pause ' +
+  'longer than `gapSeconds`, or when it would cover more than `maxSpanSeconds`. An image is a line ' +
+  '`[IMAGE <id>] images/<file name>`; fetch its bytes from the images endpoint or take the archive.';
+
+/** Where the version history of a document is reached, by its document id or by its session id. */
+const HISTORY_OWNERS = [
+  {
+    key: 'Document',
+    base: '/documents/:id',
+    what: 'a document',
+    resolve: (ctx: AppContext, id: string) => workspaceDocumentRef(ctx, id),
+    adminView: undefined,
+  },
+  {
+    key: 'InterviewSession',
+    base: '/interview-sessions/:id',
+    what: 'the document of an interview session',
+    resolve: (ctx: AppContext, id: string) => sessionDocumentRef(ctx, id),
+    adminView: 'document' as const,
+  },
+] as const;
+
+function versionHistoryRoutes(): ServiceRoute[] {
+  return HISTORY_OWNERS.flatMap((owner) => {
+    const target = async (
+      ctx: AppContext,
+      id: string,
+      admin: boolean,
+    ): Promise<VersionHistoryTarget> => ({
+      document: await owner.resolve(ctx, id),
+      imageUrlPrefix: `/api/${admin ? 'admin' : 'v1'}${owner.base.replace(':id', id)}/version-history/images/`,
+    });
+    const audit = (
+      ctx: AppContext,
+      actor: OperationActor,
+      documentId: string,
+      format: string,
+      requestId: string,
+    ) =>
+      tryAudit(ctx.db, ctx.logger, {
+        workspaceId: ctx.workspace.id,
+        actor: auditActorOf(actor),
+        action: 'history.exported',
+        targetType: 'document',
+        targetId: documentId,
+        details: { format },
+        requestId,
+      });
+    const common = {
+      method: 'get' as const,
+      scope: HISTORY_SCOPE,
+      tag: HISTORY,
+      status: 200,
+      admin: true,
+      ...(owner.adminView ? { adminView: owner.adminView } : {}),
+    } satisfies Partial<ServiceRoute>;
+    return [
+      route({
+        ...common,
+        id: `get${owner.key}VersionHistory`,
+        path: `${owner.base}/version-history`,
+        summary: `Version history of ${owner.what} (doc.txt or JSON)`,
+        description:
+          `${HISTORY_FORMAT} \`format=txt\` (the default) answers the text document \`doc.txt\`; ` +
+          '`format=json` answers the same content as data.',
+        params: IdParam,
+        query: VersionHistoryQuery,
+        response: VersionHistoryResponse,
+        media: [{ type: 'text/plain', description: 'the document `doc.txt` (`format=txt`).' }],
+        example: () => ({ response: exampleVersionHistory() }),
+        handler: async ({ ctx, actor, params, query, admin, requestId }) => {
+          const where = await target(ctx, params.id, admin);
+          const result = await versionHistoryDocument(ctx, where, query);
+          await audit(ctx, actor, where.document.id, `version-history-${query.format}`, requestId);
+          return result;
+        },
+      }),
+      route({
+        ...common,
+        id: `list${owner.key}VersionHistoryImages`,
+        path: `${owner.base}/version-history/images`,
+        summary: `Images in the version history of ${owner.what}`,
+        description:
+          'Every image that appeared in a listed version, with the version in which it first appeared, the last ' +
+          'version that still had it (`null` while it is in the document), its size, SHA-256 and the path of its bytes.',
+        params: IdParam,
+        query: VersionHistoryGroupingQuery,
+        response: VersionHistoryImagesResponse,
+        example: () => ({ response: { images: exampleVersionHistory().images } }),
+        handler: async ({ ctx, params, query, admin }) =>
+          versionHistoryImages(ctx, await target(ctx, params.id, admin), query),
+      }),
+      route({
+        ...common,
+        id: `get${owner.key}VersionHistoryImage`,
+        path: `${owner.base}/version-history/images/:imageId`,
+        summary: 'Download one image of the version history',
+        description:
+          'The image file as it was uploaded. `404` for an id that never was an image of this document.',
+        params: ImageParams,
+        response: null,
+        media: [{ type: 'image/*', description: 'the image file.', binary: true }],
+        handler: async ({ ctx, params }) => {
+          const document = await owner.resolve(ctx, params.id);
+          return versionHistoryImage(ctx, document.id, params.imageId);
+        },
+      }),
+      route({
+        ...common,
+        id: `get${owner.key}VersionHistoryArchive`,
+        path: `${owner.base}/version-history/archive`,
+        summary: `Version history of ${owner.what} with its images (zip)`,
+        description:
+          'A zip with `docs/doc.txt`, `images/<file name>` for every image that ever appeared, and `manifest.json` ' +
+          '(the JSON form without the snapshots).',
+        params: IdParam,
+        query: VersionHistoryGroupingQuery,
+        response: null,
+        media: [{ type: 'application/zip', description: 'the archive.', binary: true }],
+        handler: async ({ ctx, actor, params, query, admin, request, requestId }) => {
+          const where = await target(ctx, params.id, admin);
+          const archive = await versionHistoryArchive(ctx, where, query, (err) =>
+            request.log.error(
+              { err, documentId: where.document.id },
+              'version history archive failed',
+            ),
+          );
+          await audit(ctx, actor, where.document.id, 'version-history-archive', requestId);
+          return archive;
+        },
+      }),
+    ];
+  });
+}
 
 export const SERVICE_ROUTES: ServiceRoute[] = [
   route({
@@ -315,6 +476,9 @@ export const SERVICE_ROUTES: ServiceRoute[] = [
     }),
     handler: ({ ctx, params }) => sessionDocument(ctx, params.id),
   }),
+
+  // ── Version history document ─────────────────────────────────────────────
+  ...versionHistoryRoutes(),
 
   // ── Webhooks ──────────────────────────────────────────────────────────────
   route({

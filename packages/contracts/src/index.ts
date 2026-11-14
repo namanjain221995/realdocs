@@ -11,4 +11,5 @@ export * from './releases';
 export * from './history';
 export * from './collab';
 export * from './service';
+export * from './version-history';
 export * from './client';

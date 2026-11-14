@@ -124,10 +124,23 @@ export async function listDocumentEvents(
     actorName: string | null;
     actorKind: string;
   }>(
-    `SELECT id, at, action, actor_name AS "actorName", actor_kind AS "actorKind"
-       FROM audit_events
-      WHERE workspace_id = $1
-        AND (target_id::text = $2::text OR details->>'documentId' = $2::text)
+    // Two indexed lookups (migration 0005) instead of one scan of the workspace's audit log: an
+    // event is about the document when it targets it or names it in its details. UNION removes
+    // the events that do both.
+    `SELECT id, at, action, "actorName", "actorKind"
+       FROM (
+         (SELECT id, at, action, actor_name AS "actorName", actor_kind AS "actorKind"
+            FROM audit_events
+           WHERE workspace_id = $1 AND target_id = $2::text
+           ORDER BY at DESC, id
+           LIMIT $3)
+         UNION
+         (SELECT id, at, action, actor_name AS "actorName", actor_kind AS "actorKind"
+            FROM audit_events
+           WHERE workspace_id = $1 AND details ? 'documentId' AND details ->> 'documentId' = $2::text
+           ORDER BY at DESC, id
+           LIMIT $3)
+       ) AS events
       ORDER BY at DESC, id
       LIMIT $3`,
     [workspaceId, documentId, limit],

@@ -8,6 +8,7 @@ import {
   type DocumentResponse,
   type DocumentsResponse,
   type EffectiveRole,
+  type DocumentSummary,
 } from '@realtimedocs/contracts';
 import { collectAssetIds } from '@realtimedocs/editor/export';
 import { NODE_ATTACHMENT, NODE_IMAGE, type DocJSON } from '@realtimedocs/editor/schema';
@@ -114,6 +115,44 @@ export function registerDocumentRoutes(app: FastifyInstance, { ctx }: RouteDeps)
       rows = result.rows;
     }
 
+    // Interview session documents say so in the list (company, round, candidate, time).
+    const interviews = new Map<string, NonNullable<DocumentSummary['interview']>>();
+    if (rows.length > 0) {
+      const sessions = await db.query<{
+        documentId: string;
+        sessionId: string;
+        company: string;
+        roundNumber: number;
+        roundName: string | null;
+        candidate: string | null;
+        scheduledAt: Date;
+        timezone: string;
+        status: NonNullable<DocumentSummary['interview']>['status'];
+      }>(
+        `SELECT s.document_id AS "documentId", s.id AS "sessionId", s.company_name AS company,
+                s.round_number AS "roundNumber", s.round_name AS "roundName",
+                s.scheduled_at AS "scheduledAt", s.timezone, s.status,
+                (SELECT p.name FROM interview_participants p
+                  WHERE p.session_id = s.id AND p.role = 'candidate'
+                  ORDER BY p.removed_at IS NOT NULL, p.created_at
+                  LIMIT 1) AS candidate
+           FROM interview_sessions s
+          WHERE s.workspace_id = $1 AND s.document_id = ANY($2::uuid[])`,
+        [workspace.id, rows.map((row) => row.id)],
+      );
+      for (const row of sessions.rows) {
+        interviews.set(row.documentId, {
+          sessionId: row.sessionId,
+          company: row.company,
+          round: { number: String(row.roundNumber), name: row.roundName },
+          candidate: row.candidate,
+          scheduledAt: row.scheduledAt.toISOString(),
+          timezone: row.timezone,
+          status: row.status,
+        });
+      }
+    }
+
     const documents = rows.map((row) => {
       const granted: EffectiveRole = isAdmin ? 'admin' : (row.memberRole ?? 'viewer');
       const access: AccessInfo = {
@@ -123,7 +162,8 @@ export function registerDocumentRoutes(app: FastifyInstance, { ctx }: RouteDeps)
         expiresAt: session.expiresAt.toISOString(),
         accountId: user.id,
       };
-      return toDocumentSummary(row, access, trashDays);
+      const interview = interviews.get(row.id);
+      return { ...toDocumentSummary(row, access, trashDays), ...(interview ? { interview } : {}) };
     });
     return { documents };
   });

@@ -1,0 +1,5492 @@
+[
+ {
+  "t": 1794639007437,
+  "load1": 3.02,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 0,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 0,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 1,
+     "rd_db_pool_idle": 1,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021020671,
+     "rd_process_resident_memory_bytes": 235753472,
+     "rd_process_heap_used_bytes": 108821240,
+     "rd_process_cpu_seconds_total": 0.678506,
+     "rd_yjs_updates_total": 0,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639012446,
+  "load1": 2.78,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 64,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 50,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024592383,
+     "rd_process_resident_memory_bytes": 317181952,
+     "rd_process_heap_used_bytes": 159708664,
+     "rd_process_cpu_seconds_total": 1.591776,
+     "rd_yjs_updates_total": 63,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639017448,
+  "load1": 3.03,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 178,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 97,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020971519,
+     "rd_process_resident_memory_bytes": 324063232,
+     "rd_process_heap_used_bytes": 152668536,
+     "rd_process_cpu_seconds_total": 2.492349,
+     "rd_yjs_updates_total": 178,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639022450,
+  "load1": 2.95,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 26,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020987903,
+     "rd_process_resident_memory_bytes": 326356992,
+     "rd_process_heap_used_bytes": 125917864,
+     "rd_process_cpu_seconds_total": 3.322595,
+     "rd_yjs_updates_total": 938,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639027452,
+  "load1": 3.12,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021004287,
+     "rd_process_resident_memory_bytes": 328814592,
+     "rd_process_heap_used_bytes": 150652792,
+     "rd_process_cpu_seconds_total": 3.906454,
+     "rd_yjs_updates_total": 1750,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639032455,
+  "load1": 3.03,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021200895,
+     "rd_process_resident_memory_bytes": 328978432,
+     "rd_process_heap_used_bytes": 153299520,
+     "rd_process_cpu_seconds_total": 4.516569,
+     "rd_yjs_updates_total": 2499,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639037456,
+  "load1": 2.86,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021004287,
+     "rd_process_resident_memory_bytes": 329306112,
+     "rd_process_heap_used_bytes": 130069808,
+     "rd_process_cpu_seconds_total": 5.073354,
+     "rd_yjs_updates_total": 3250,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639042459,
+  "load1": 2.71,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020987903,
+     "rd_process_resident_memory_bytes": 330616832,
+     "rd_process_heap_used_bytes": 131521584,
+     "rd_process_cpu_seconds_total": 5.700535,
+     "rd_yjs_updates_total": 3974,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639047461,
+  "load1": 2.66,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021053439,
+     "rd_process_resident_memory_bytes": 330780672,
+     "rd_process_heap_used_bytes": 143238056,
+     "rd_process_cpu_seconds_total": 6.214287,
+     "rd_yjs_updates_total": 4781,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639052463,
+  "load1": 2.92,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020987903,
+     "rd_process_resident_memory_bytes": 331436032,
+     "rd_process_heap_used_bytes": 152175104,
+     "rd_process_cpu_seconds_total": 6.727313,
+     "rd_yjs_updates_total": 5544,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639057465,
+  "load1": 2.69,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020955135,
+     "rd_process_resident_memory_bytes": 331599872,
+     "rd_process_heap_used_bytes": 160548568,
+     "rd_process_cpu_seconds_total": 7.18188,
+     "rd_yjs_updates_total": 6298,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639062466,
+  "load1": 2.63,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020905983,
+     "rd_process_resident_memory_bytes": 333893632,
+     "rd_process_heap_used_bytes": 164946384,
+     "rd_process_cpu_seconds_total": 7.627284,
+     "rd_yjs_updates_total": 7016,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639067468,
+  "load1": 2.74,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020873215,
+     "rd_process_resident_memory_bytes": 333893632,
+     "rd_process_heap_used_bytes": 135182536,
+     "rd_process_cpu_seconds_total": 8.160855,
+     "rd_yjs_updates_total": 7822,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639072471,
+  "load1": 2.6,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021495807,
+     "rd_process_resident_memory_bytes": 334057472,
+     "rd_process_heap_used_bytes": 137879760,
+     "rd_process_cpu_seconds_total": 8.754945,
+     "rd_yjs_updates_total": 8601,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639077473,
+  "load1": 2.39,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021004287,
+     "rd_process_resident_memory_bytes": 334057472,
+     "rd_process_heap_used_bytes": 140169016,
+     "rd_process_cpu_seconds_total": 9.196959,
+     "rd_yjs_updates_total": 9275,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639082474,
+  "load1": 2.28,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020987903,
+     "rd_process_resident_memory_bytes": 334057472,
+     "rd_process_heap_used_bytes": 147449352,
+     "rd_process_cpu_seconds_total": 9.673931,
+     "rd_yjs_updates_total": 10022,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639087477,
+  "load1": 2.1,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020971519,
+     "rd_process_resident_memory_bytes": 334057472,
+     "rd_process_heap_used_bytes": 156528128,
+     "rd_process_cpu_seconds_total": 10.207616,
+     "rd_yjs_updates_total": 10804,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639089067,
+  "load1": 2.1,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 200,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 100,
+     "rd_persist_queue_bytes": 49,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021004287,
+     "rd_process_resident_memory_bytes": 334057472,
+     "rd_process_heap_used_bytes": 123706016,
+     "rd_process_cpu_seconds_total": 10.383061,
+     "rd_yjs_updates_total": 11059,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639092480,
+  "load1": 2.17,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 297,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 182,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020905983,
+     "rd_process_resident_memory_bytes": 338972672,
+     "rd_process_heap_used_bytes": 148298992,
+     "rd_process_cpu_seconds_total": 11.597453,
+     "rd_yjs_updates_total": 11662,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639097482,
+  "load1": 2.16,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 441,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 244,
+     "rd_persist_queue_bytes": 36,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021856255,
+     "rd_process_resident_memory_bytes": 339955712,
+     "rd_process_heap_used_bytes": 143364096,
+     "rd_process_cpu_seconds_total": 12.99023,
+     "rd_yjs_updates_total": 12535,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639102483,
+  "load1": 2.23,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 136,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021086207,
+     "rd_process_resident_memory_bytes": 343035904,
+     "rd_process_heap_used_bytes": 131774176,
+     "rd_process_cpu_seconds_total": 14.374543,
+     "rd_yjs_updates_total": 14425,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639107485,
+  "load1": 2.29,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020971519,
+     "rd_process_resident_memory_bytes": 344838144,
+     "rd_process_heap_used_bytes": 132742352,
+     "rd_process_cpu_seconds_total": 15.507393,
+     "rd_yjs_updates_total": 16460,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639112488,
+  "load1": 2.26,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020905983,
+     "rd_process_resident_memory_bytes": 345821184,
+     "rd_process_heap_used_bytes": 172665264,
+     "rd_process_cpu_seconds_total": 16.468423,
+     "rd_yjs_updates_total": 18396,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639117490,
+  "load1": 2.16,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020873215,
+     "rd_process_resident_memory_bytes": 347295744,
+     "rd_process_heap_used_bytes": 156552744,
+     "rd_process_cpu_seconds_total": 17.234646,
+     "rd_yjs_updates_total": 20300,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639122492,
+  "load1": 1.99,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020873215,
+     "rd_process_resident_memory_bytes": 349589504,
+     "rd_process_heap_used_bytes": 147933936,
+     "rd_process_cpu_seconds_total": 18.210534,
+     "rd_yjs_updates_total": 22226,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639127495,
+  "load1": 2.15,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020955135,
+     "rd_process_resident_memory_bytes": 350900224,
+     "rd_process_heap_used_bytes": 154740104,
+     "rd_process_cpu_seconds_total": 19.394439,
+     "rd_yjs_updates_total": 24096,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639132496,
+  "load1": 2.06,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021004287,
+     "rd_process_resident_memory_bytes": 351883264,
+     "rd_process_heap_used_bytes": 147091656,
+     "rd_process_cpu_seconds_total": 20.458244,
+     "rd_yjs_updates_total": 26004,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639137498,
+  "load1": 2.13,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020922367,
+     "rd_process_resident_memory_bytes": 352374784,
+     "rd_process_heap_used_bytes": 135416688,
+     "rd_process_cpu_seconds_total": 21.397371,
+     "rd_yjs_updates_total": 27902,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639142501,
+  "load1": 2.12,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 96,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020955135,
+     "rd_process_resident_memory_bytes": 352702464,
+     "rd_process_heap_used_bytes": 172242360,
+     "rd_process_cpu_seconds_total": 22.291751,
+     "rd_yjs_updates_total": 29775,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639147502,
+  "load1": 2.11,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020905983,
+     "rd_process_resident_memory_bytes": 353685504,
+     "rd_process_heap_used_bytes": 157475288,
+     "rd_process_cpu_seconds_total": 23.339589,
+     "rd_yjs_updates_total": 31609,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639152505,
+  "load1": 2.1,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 189,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 3,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021086207,
+     "rd_process_resident_memory_bytes": 355651584,
+     "rd_process_heap_used_bytes": 137633784,
+     "rd_process_cpu_seconds_total": 24.465199,
+     "rd_yjs_updates_total": 33579,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639157508,
+  "load1": 2.18,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021086207,
+     "rd_process_resident_memory_bytes": 355815424,
+     "rd_process_heap_used_bytes": 154413368,
+     "rd_process_cpu_seconds_total": 25.635719,
+     "rd_yjs_updates_total": 35436,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639162509,
+  "load1": 2.16,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021069823,
+     "rd_process_resident_memory_bytes": 355815424,
+     "rd_process_heap_used_bytes": 144282112,
+     "rd_process_cpu_seconds_total": 26.566884,
+     "rd_yjs_updates_total": 37325,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639167511,
+  "load1": 2.23,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020938751,
+     "rd_process_resident_memory_bytes": 355815424,
+     "rd_process_heap_used_bytes": 184828536,
+     "rd_process_cpu_seconds_total": 27.511855,
+     "rd_yjs_updates_total": 39220,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639169291,
+  "load1": 2.23,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 250,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020791295,
+     "rd_process_resident_memory_bytes": 355815424,
+     "rd_process_heap_used_bytes": 186323560,
+     "rd_process_cpu_seconds_total": 27.894112,
+     "rd_yjs_updates_total": 39926,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639172513,
+  "load1": 2.61,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 601,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 343,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021315583,
+     "rd_process_resident_memory_bytes": 361385984,
+     "rd_process_heap_used_bytes": 152420312,
+     "rd_process_cpu_seconds_total": 29.57924,
+     "rd_yjs_updates_total": 41235,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639177516,
+  "load1": 2.96,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 813,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 463,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021331967,
+     "rd_process_resident_memory_bytes": 389074944,
+     "rd_process_heap_used_bytes": 169164816,
+     "rd_process_cpu_seconds_total": 31.64938,
+     "rd_yjs_updates_total": 43282,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639182517,
+  "load1": 3.13,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 113,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021250047,
+     "rd_process_resident_memory_bytes": 416436224,
+     "rd_process_heap_used_bytes": 182000320,
+     "rd_process_cpu_seconds_total": 33.772538,
+     "rd_yjs_updates_total": 45621,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639187519,
+  "load1": 2.96,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 160,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021086207,
+     "rd_process_resident_memory_bytes": 439209984,
+     "rd_process_heap_used_bytes": 220021112,
+     "rd_process_cpu_seconds_total": 35.91757,
+     "rd_yjs_updates_total": 49947,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639192521,
+  "load1": 2.88,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 68,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020922367,
+     "rd_process_resident_memory_bytes": 453464064,
+     "rd_process_heap_used_bytes": 196880280,
+     "rd_process_cpu_seconds_total": 37.757855,
+     "rd_yjs_updates_total": 53708,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639197523,
+  "load1": 2.97,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020922367,
+     "rd_process_resident_memory_bytes": 459853824,
+     "rd_process_heap_used_bytes": 229518304,
+     "rd_process_cpu_seconds_total": 39.552132,
+     "rd_yjs_updates_total": 57581,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639202525,
+  "load1": 2.97,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 82,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021938175,
+     "rd_process_resident_memory_bytes": 468373504,
+     "rd_process_heap_used_bytes": 217672592,
+     "rd_process_cpu_seconds_total": 41.500446,
+     "rd_yjs_updates_total": 61437,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639207527,
+  "load1": 2.81,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021512191,
+     "rd_process_resident_memory_bytes": 474927104,
+     "rd_process_heap_used_bytes": 254666264,
+     "rd_process_cpu_seconds_total": 43.476115,
+     "rd_yjs_updates_total": 65311,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639212528,
+  "load1": 2.75,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021020671,
+     "rd_process_resident_memory_bytes": 482463744,
+     "rd_process_heap_used_bytes": 231597168,
+     "rd_process_cpu_seconds_total": 45.418445,
+     "rd_yjs_updates_total": 69042,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639217530,
+  "load1": 2.77,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020987903,
+     "rd_process_resident_memory_bytes": 494096384,
+     "rd_process_heap_used_bytes": 273000232,
+     "rd_process_cpu_seconds_total": 47.447563,
+     "rd_yjs_updates_total": 72828,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639222532,
+  "load1": 3.11,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 11,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020955135,
+     "rd_process_resident_memory_bytes": 508350464,
+     "rd_process_heap_used_bytes": 258197688,
+     "rd_process_cpu_seconds_total": 49.361693,
+     "rd_yjs_updates_total": 76599,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639227534,
+  "load1": 3.1,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020905983,
+     "rd_process_resident_memory_bytes": 515231744,
+     "rd_process_heap_used_bytes": 293876512,
+     "rd_process_cpu_seconds_total": 51.349808,
+     "rd_yjs_updates_total": 80453,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639232535,
+  "load1": 3.09,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 82,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020938751,
+     "rd_process_resident_memory_bytes": 523096064,
+     "rd_process_heap_used_bytes": 271948920,
+     "rd_process_cpu_seconds_total": 53.322961,
+     "rd_yjs_updates_total": 84264,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639237538,
+  "load1": 3.24,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 110,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021102591,
+     "rd_process_resident_memory_bytes": 530141184,
+     "rd_process_heap_used_bytes": 305888856,
+     "rd_process_cpu_seconds_total": 55.257307,
+     "rd_yjs_updates_total": 88039,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639242539,
+  "load1": 3.14,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 180,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021004287,
+     "rd_process_resident_memory_bytes": 538988544,
+     "rd_process_heap_used_bytes": 291831432,
+     "rd_process_cpu_seconds_total": 57.201325,
+     "rd_yjs_updates_total": 91901,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639247541,
+  "load1": 2.97,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 119,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020905983,
+     "rd_process_resident_memory_bytes": 552587264,
+     "rd_process_heap_used_bytes": 284574432,
+     "rd_process_cpu_seconds_total": 59.213054,
+     "rd_yjs_updates_total": 95713,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639252544,
+  "load1": 3.54,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021053439,
+     "rd_process_resident_memory_bytes": 558321664,
+     "rd_process_heap_used_bytes": 192715888,
+     "rd_process_cpu_seconds_total": 61.426198,
+     "rd_yjs_updates_total": 99472,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639252761,
+  "load1": 3.54,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 500,
+     "rd_persist_queue_bytes": 62,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021069823,
+     "rd_process_resident_memory_bytes": 558321664,
+     "rd_process_heap_used_bytes": 153626088,
+     "rd_process_cpu_seconds_total": 61.491986,
+     "rd_yjs_updates_total": 99623,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639257546,
+  "load1": 3.65,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1152,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 636,
+     "rd_persist_queue_bytes": 120,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021905407,
+     "rd_process_resident_memory_bytes": 558485504,
+     "rd_process_heap_used_bytes": 209108280,
+     "rd_process_cpu_seconds_total": 64.608631,
+     "rd_yjs_updates_total": 103392,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639262547,
+  "load1": 3.68,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1362,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 731,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022134783,
+     "rd_process_resident_memory_bytes": 563728384,
+     "rd_process_heap_used_bytes": 225700672,
+     "rd_process_cpu_seconds_total": 67.603989,
+     "rd_yjs_updates_total": 107458,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639267550,
+  "load1": 3.87,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 213,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022364159,
+     "rd_process_resident_memory_bytes": 563892224,
+     "rd_process_heap_used_bytes": 181478920,
+     "rd_process_cpu_seconds_total": 70.945619,
+     "rd_yjs_updates_total": 112519,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639272552,
+  "load1": 3.72,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 199,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022233087,
+     "rd_process_resident_memory_bytes": 563892224,
+     "rd_process_heap_used_bytes": 210786392,
+     "rd_process_cpu_seconds_total": 74.059553,
+     "rd_yjs_updates_total": 118501,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639277553,
+  "load1": 3.98,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 245,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 12,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021118975,
+     "rd_process_resident_memory_bytes": 564056064,
+     "rd_process_heap_used_bytes": 230517728,
+     "rd_process_cpu_seconds_total": 77.012612,
+     "rd_yjs_updates_total": 124397,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639282555,
+  "load1": 4.06,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 135,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021135359,
+     "rd_process_resident_memory_bytes": 564219904,
+     "rd_process_heap_used_bytes": 236399280,
+     "rd_process_cpu_seconds_total": 79.954443,
+     "rd_yjs_updates_total": 130233,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639287557,
+  "load1": 4.22,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023134207,
+     "rd_process_resident_memory_bytes": 564219904,
+     "rd_process_heap_used_bytes": 221489640,
+     "rd_process_cpu_seconds_total": 82.772588,
+     "rd_yjs_updates_total": 135898,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639292560,
+  "load1": 4.6,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1498,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 46,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020938751,
+     "rd_process_resident_memory_bytes": 564219904,
+     "rd_process_heap_used_bytes": 252591952,
+     "rd_process_cpu_seconds_total": 85.541114,
+     "rd_yjs_updates_total": 141650,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639297562,
+  "load1": 4.39,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021151743,
+     "rd_process_resident_memory_bytes": 564219904,
+     "rd_process_heap_used_bytes": 284381984,
+     "rd_process_cpu_seconds_total": 88.381847,
+     "rd_yjs_updates_total": 147329,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639302564,
+  "load1": 4.36,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 28,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021856255,
+     "rd_process_resident_memory_bytes": 564219904,
+     "rd_process_heap_used_bytes": 269627584,
+     "rd_process_cpu_seconds_total": 91.370813,
+     "rd_yjs_updates_total": 152999,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639307566,
+  "load1": 4.17,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 994,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 39,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021200895,
+     "rd_process_resident_memory_bytes": 568971264,
+     "rd_process_heap_used_bytes": 327055168,
+     "rd_process_cpu_seconds_total": 94.26023,
+     "rd_yjs_updates_total": 158703,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639312568,
+  "load1": 4.24,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1497,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 84,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020938751,
+     "rd_process_resident_memory_bytes": 590270464,
+     "rd_process_heap_used_bytes": 331138352,
+     "rd_process_cpu_seconds_total": 97.198579,
+     "rd_yjs_updates_total": 164509,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639317571,
+  "load1": 4.06,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 86,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022429695,
+     "rd_process_resident_memory_bytes": 606654464,
+     "rd_process_heap_used_bytes": 322402696,
+     "rd_process_cpu_seconds_total": 100.135751,
+     "rd_yjs_updates_total": 170251,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639322573,
+  "load1": 4.13,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 84,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021921791,
+     "rd_process_resident_memory_bytes": 621563904,
+     "rd_process_heap_used_bytes": 350771496,
+     "rd_process_cpu_seconds_total": 103.017418,
+     "rd_yjs_updates_total": 175855,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639327574,
+  "load1": 4.2,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1499,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 128,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021610495,
+     "rd_process_resident_memory_bytes": 635981824,
+     "rd_process_heap_used_bytes": 389102048,
+     "rd_process_cpu_seconds_total": 105.922411,
+     "rd_yjs_updates_total": 181686,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639332577,
+  "load1": 4.35,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 164,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021741567,
+     "rd_process_resident_memory_bytes": 652038144,
+     "rd_process_heap_used_bytes": 372046264,
+     "rd_process_cpu_seconds_total": 108.885508,
+     "rd_yjs_updates_total": 187361,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639336318,
+  "load1": 4.35,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1500,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 750,
+     "rd_persist_queue_bytes": 84,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021086207,
+     "rd_process_resident_memory_bytes": 663998464,
+     "rd_process_heap_used_bytes": 397171056,
+     "rd_process_cpu_seconds_total": 111.083051,
+     "rd_yjs_updates_total": 191638,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639337579,
+  "load1": 5.2,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1511,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 761,
+     "rd_persist_queue_bytes": 327,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 23,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022315007,
+     "rd_process_resident_memory_bytes": 678580224,
+     "rd_process_heap_used_bytes": 416483264,
+     "rd_process_cpu_seconds_total": 112.074323,
+     "rd_yjs_updates_total": 193069,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639342582,
+  "load1": 5.51,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1703,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 910,
+     "rd_persist_queue_bytes": 435,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 4,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024936447,
+     "rd_process_resident_memory_bytes": 702828544,
+     "rd_process_heap_used_bytes": 192210664,
+     "rd_process_cpu_seconds_total": 115.608915,
+     "rd_yjs_updates_total": 198900,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639347586,
+  "load1": 5.3,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1921,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 994,
+     "rd_persist_queue_bytes": 137,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 5,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021938175,
+     "rd_process_resident_memory_bytes": 702992384,
+     "rd_process_heap_used_bytes": 218552656,
+     "rd_process_cpu_seconds_total": 119.171568,
+     "rd_yjs_updates_total": 204731,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639352589,
+  "load1": 5.12,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 262,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 1,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023527423,
+     "rd_process_resident_memory_bytes": 702992384,
+     "rd_process_heap_used_bytes": 257487440,
+     "rd_process_cpu_seconds_total": 122.532647,
+     "rd_yjs_updates_total": 212217,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639357592,
+  "load1": 5.27,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 156,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 5,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022282239,
+     "rd_process_resident_memory_bytes": 702992384,
+     "rd_process_heap_used_bytes": 254968264,
+     "rd_process_cpu_seconds_total": 125.891006,
+     "rd_yjs_updates_total": 220023,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639362594,
+  "load1": 5.17,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 166,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021774335,
+     "rd_process_resident_memory_bytes": 702992384,
+     "rd_process_heap_used_bytes": 294701456,
+     "rd_process_cpu_seconds_total": 129.28629,
+     "rd_yjs_updates_total": 227729,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639367596,
+  "load1": 5.08,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 142,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 7,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021184511,
+     "rd_process_resident_memory_bytes": 702992384,
+     "rd_process_heap_used_bytes": 340422736,
+     "rd_process_cpu_seconds_total": 132.6789,
+     "rd_yjs_updates_total": 235293,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639372599,
+  "load1": 5.07,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 210,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 7,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022806527,
+     "rd_process_resident_memory_bytes": 704139264,
+     "rd_process_heap_used_bytes": 350405504,
+     "rd_process_cpu_seconds_total": 136.079277,
+     "rd_yjs_updates_total": 242963,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639377601,
+  "load1": 5.3,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 198,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022298623,
+     "rd_process_resident_memory_bytes": 704303104,
+     "rd_process_heap_used_bytes": 401051816,
+     "rd_process_cpu_seconds_total": 139.390388,
+     "rd_yjs_updates_total": 250786,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639382603,
+  "load1": 5.52,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 362,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022855679,
+     "rd_process_resident_memory_bytes": 704303104,
+     "rd_process_heap_used_bytes": 434972792,
+     "rd_process_cpu_seconds_total": 142.716109,
+     "rd_yjs_updates_total": 258373,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639387607,
+  "load1": 5.56,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021741567,
+     "rd_process_resident_memory_bytes": 709709824,
+     "rd_process_heap_used_bytes": 459917456,
+     "rd_process_cpu_seconds_total": 146.095893,
+     "rd_yjs_updates_total": 265851,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639392608,
+  "load1": 5.35,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 39,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022265855,
+     "rd_process_resident_memory_bytes": 737726464,
+     "rd_process_heap_used_bytes": 443801680,
+     "rd_process_cpu_seconds_total": 149.461334,
+     "rd_yjs_updates_total": 273334,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639397612,
+  "load1": 5.49,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 1159,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 41,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021610495,
+     "rd_process_resident_memory_bytes": 766726144,
+     "rd_process_heap_used_bytes": 509074208,
+     "rd_process_cpu_seconds_total": 152.860213,
+     "rd_yjs_updates_total": 281095,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639402613,
+  "load1": 5.45,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 168,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023642111,
+     "rd_process_resident_memory_bytes": 775901184,
+     "rd_process_heap_used_bytes": 240997480,
+     "rd_process_cpu_seconds_total": 156.545669,
+     "rd_yjs_updates_total": 288789,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639407615,
+  "load1": 5.65,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 152,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 5,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023756799,
+     "rd_process_resident_memory_bytes": 775901184,
+     "rd_process_heap_used_bytes": 275443896,
+     "rd_process_cpu_seconds_total": 159.872234,
+     "rd_yjs_updates_total": 296331,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639412618,
+  "load1": 5.6,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 1999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 115,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022495231,
+     "rd_process_resident_memory_bytes": 776228864,
+     "rd_process_heap_used_bytes": 310569848,
+     "rd_process_cpu_seconds_total": 163.278532,
+     "rd_yjs_updates_total": 303880,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639417619,
+  "load1": 5.63,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 214,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022970367,
+     "rd_process_resident_memory_bytes": 776392704,
+     "rd_process_heap_used_bytes": 301525776,
+     "rd_process_cpu_seconds_total": 166.623163,
+     "rd_yjs_updates_total": 311503,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639419705,
+  "load1": 5.63,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1000,
+     "rd_persist_queue_bytes": 56,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 8,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023101439,
+     "rd_process_resident_memory_bytes": 776392704,
+     "rd_process_heap_used_bytes": 346074008,
+     "rd_process_cpu_seconds_total": 168.048701,
+     "rd_yjs_updates_total": 314685,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639422622,
+  "load1": 5.74,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2068,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1066,
+     "rd_persist_queue_bytes": 112,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021594111,
+     "rd_process_resident_memory_bytes": 776392704,
+     "rd_process_heap_used_bytes": 365194768,
+     "rd_process_cpu_seconds_total": 170.380428,
+     "rd_yjs_updates_total": 319098,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639427623,
+  "load1": 5.36,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2262,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1232,
+     "rd_persist_queue_bytes": 620,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 31,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021495807,
+     "rd_process_resident_memory_bytes": 776392704,
+     "rd_process_heap_used_bytes": 434383720,
+     "rd_process_cpu_seconds_total": 173.641059,
+     "rd_yjs_updates_total": 326934,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639432625,
+  "load1": 5.65,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2461,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1366,
+     "rd_persist_queue_bytes": 58,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 9,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.025214975,
+     "rd_process_resident_memory_bytes": 780161024,
+     "rd_process_heap_used_bytes": 256996504,
+     "rd_process_cpu_seconds_total": 177.354951,
+     "rd_yjs_updates_total": 334615,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639437627,
+  "load1": 6,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2671,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1457,
+     "rd_persist_queue_bytes": 518,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 13,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023396351,
+     "rd_process_resident_memory_bytes": 780816384,
+     "rd_process_heap_used_bytes": 309054936,
+     "rd_process_cpu_seconds_total": 180.647326,
+     "rd_yjs_updates_total": 342533,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639442630,
+  "load1": 5.84,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2856,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1496,
+     "rd_persist_queue_bytes": 142,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026394623,
+     "rd_process_resident_memory_bytes": 783110144,
+     "rd_process_heap_used_bytes": 258166640,
+     "rd_process_cpu_seconds_total": 184.353987,
+     "rd_yjs_updates_total": 350207,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639447632,
+  "load1": 5.93,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 225,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023625727,
+     "rd_process_resident_memory_bytes": 787369984,
+     "rd_process_heap_used_bytes": 313118824,
+     "rd_process_cpu_seconds_total": 187.632306,
+     "rd_yjs_updates_total": 359936,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639452633,
+  "load1": 5.7,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 515,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 3,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023805951,
+     "rd_process_resident_memory_bytes": 797200384,
+     "rd_process_heap_used_bytes": 299431920,
+     "rd_process_cpu_seconds_total": 191.244282,
+     "rd_yjs_updates_total": 371898,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639457637,
+  "load1": 5.8,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 1062,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 49,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022839295,
+     "rd_process_resident_memory_bytes": 797200384,
+     "rd_process_heap_used_bytes": 309501760,
+     "rd_process_cpu_seconds_total": 194.439598,
+     "rd_yjs_updates_total": 383536,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639462639,
+  "load1": 6.14,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 293,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022659071,
+     "rd_process_resident_memory_bytes": 797200384,
+     "rd_process_heap_used_bytes": 406324448,
+     "rd_process_cpu_seconds_total": 197.670966,
+     "rd_yjs_updates_total": 395061,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639467640,
+  "load1": 5.97,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 411,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 4,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023429119,
+     "rd_process_resident_memory_bytes": 797528064,
+     "rd_process_heap_used_bytes": 467489056,
+     "rd_process_cpu_seconds_total": 200.873542,
+     "rd_yjs_updates_total": 406477,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639472642,
+  "load1": 5.97,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 369,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022134783,
+     "rd_process_resident_memory_bytes": 797528064,
+     "rd_process_heap_used_bytes": 521638808,
+     "rd_process_cpu_seconds_total": 204.041893,
+     "rd_yjs_updates_total": 417902,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639477643,
+  "load1": 6.29,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 260,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022577151,
+     "rd_process_resident_memory_bytes": 846352384,
+     "rd_process_heap_used_bytes": 572885928,
+     "rd_process_cpu_seconds_total": 207.219095,
+     "rd_yjs_updates_total": 429317,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639482645,
+  "load1": 6.03,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 164,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 4,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023281663,
+     "rd_process_resident_memory_bytes": 901074944,
+     "rd_process_heap_used_bytes": 595965792,
+     "rd_process_cpu_seconds_total": 210.364237,
+     "rd_yjs_updates_total": 440894,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639487648,
+  "load1": 6.43,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 7196,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 204,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024887295,
+     "rd_process_resident_memory_bytes": 958418944,
+     "rd_process_heap_used_bytes": 245585024,
+     "rd_process_cpu_seconds_total": 214.019145,
+     "rd_yjs_updates_total": 452394,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639492665,
+  "load1": 6.39,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 97,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022642687,
+     "rd_process_resident_memory_bytes": 959074304,
+     "rd_process_heap_used_bytes": 321000168,
+     "rd_process_cpu_seconds_total": 217.394361,
+     "rd_yjs_updates_total": 463869,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639497666,
+  "load1": 6.2,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 233,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 3,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024084479,
+     "rd_process_resident_memory_bytes": 959074304,
+     "rd_process_heap_used_bytes": 387073128,
+     "rd_process_cpu_seconds_total": 220.596274,
+     "rd_yjs_updates_total": 475374,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639502669,
+  "load1": 6.1,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 204,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 2,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021725183,
+     "rd_process_resident_memory_bytes": 959074304,
+     "rd_process_heap_used_bytes": 453380592,
+     "rd_process_cpu_seconds_total": 223.808682,
+     "rd_yjs_updates_total": 486920,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639507671,
+  "load1": 6.34,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 194,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 5,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023887871,
+     "rd_process_resident_memory_bytes": 959074304,
+     "rd_process_heap_used_bytes": 501189040,
+     "rd_process_cpu_seconds_total": 226.978705,
+     "rd_yjs_updates_total": 498350,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639512673,
+  "load1": 6.63,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 76,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 6,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022052863,
+     "rd_process_resident_memory_bytes": 959238144,
+     "rd_process_heap_used_bytes": 523610544,
+     "rd_process_cpu_seconds_total": 230.163894,
+     "rd_yjs_updates_total": 509940,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639516675,
+  "load1": 6.63,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 415,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 2,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024150015,
+     "rd_process_resident_memory_bytes": 959401984,
+     "rd_process_heap_used_bytes": 594734448,
+     "rd_process_cpu_seconds_total": 232.688027,
+     "rd_yjs_updates_total": 519103,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639517675,
+  "load1": 7.3,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 2999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1500,
+     "rd_persist_queue_bytes": 2606,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 119,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023248895,
+     "rd_process_resident_memory_bytes": 959401984,
+     "rd_process_heap_used_bytes": 606076656,
+     "rd_process_cpu_seconds_total": 233.460779,
+     "rd_yjs_updates_total": 521383,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639522677,
+  "load1": 7.84,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3049,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1548,
+     "rd_persist_queue_bytes": 311,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 24,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026099711,
+     "rd_process_resident_memory_bytes": 960876544,
+     "rd_process_heap_used_bytes": 335706096,
+     "rd_process_cpu_seconds_total": 238.062491,
+     "rd_yjs_updates_total": 532869,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639527679,
+  "load1": 7.77,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3247,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1712,
+     "rd_persist_queue_bytes": 288,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.028409855,
+     "rd_process_resident_memory_bytes": 966119424,
+     "rd_process_heap_used_bytes": 322213832,
+     "rd_process_cpu_seconds_total": 242.087755,
+     "rd_yjs_updates_total": 544604,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639532681,
+  "load1": 8.19,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3450,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1850,
+     "rd_persist_queue_bytes": 455,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 9,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023166975,
+     "rd_process_resident_memory_bytes": 966283264,
+     "rd_process_heap_used_bytes": 398228056,
+     "rd_process_cpu_seconds_total": 245.441004,
+     "rd_yjs_updates_total": 556068,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639537684,
+  "load1": 8.09,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3651,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1936,
+     "rd_persist_queue_bytes": 500,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 9,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.034045951,
+     "rd_process_resident_memory_bytes": 977588224,
+     "rd_process_heap_used_bytes": 312119888,
+     "rd_process_cpu_seconds_total": 249.355947,
+     "rd_yjs_updates_total": 567600,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639542685,
+  "load1": 8.25,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3856,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 1986,
+     "rd_persist_queue_bytes": 320,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 2,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022183935,
+     "rd_process_resident_memory_bytes": 977752064,
+     "rd_process_heap_used_bytes": 408676424,
+     "rd_process_cpu_seconds_total": 252.782953,
+     "rd_yjs_updates_total": 579380,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639547687,
+  "load1": 8.39,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 20851,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 514,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026771455,
+     "rd_process_resident_memory_bytes": 977915904,
+     "rd_process_heap_used_bytes": 341064144,
+     "rd_process_cpu_seconds_total": 256.719023,
+     "rd_yjs_updates_total": 592788,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639552689,
+  "load1": 8.12,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 9166,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 284,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024608767,
+     "rd_process_resident_memory_bytes": 977915904,
+     "rd_process_heap_used_bytes": 444254184,
+     "rd_process_cpu_seconds_total": 260.227013,
+     "rd_yjs_updates_total": 608428,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639557690,
+  "load1": 8.51,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 3010,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 91,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023707647,
+     "rd_process_resident_memory_bytes": 979390464,
+     "rd_process_heap_used_bytes": 522112416,
+     "rd_process_cpu_seconds_total": 263.741563,
+     "rd_yjs_updates_total": 623770,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639562691,
+  "load1": 8.63,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 7779,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 267,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022642687,
+     "rd_process_resident_memory_bytes": 981520384,
+     "rd_process_heap_used_bytes": 367096928,
+     "rd_process_cpu_seconds_total": 267.86861,
+     "rd_yjs_updates_total": 638914,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639567694,
+  "load1": 8.18,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3996,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 2711,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 98,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024068095,
+     "rd_process_resident_memory_bytes": 981520384,
+     "rd_process_heap_used_bytes": 480534008,
+     "rd_process_cpu_seconds_total": 271.357273,
+     "rd_yjs_updates_total": 654043,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639572695,
+  "load1": 8.08,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3992,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 11050,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 376,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.034996223,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 348661840,
+     "rd_process_cpu_seconds_total": 275.481163,
+     "rd_yjs_updates_total": 669503,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639577696,
+  "load1": 8.08,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3996,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 10002,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 335,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023298047,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 432991056,
+     "rd_process_cpu_seconds_total": 279.057032,
+     "rd_yjs_updates_total": 684852,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639582698,
+  "load1": 8.31,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3994,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 11959,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 390,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022331391,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 486812920,
+     "rd_process_cpu_seconds_total": 282.625617,
+     "rd_yjs_updates_total": 700309,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639587699,
+  "load1": 8.37,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3997,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 3490,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 126,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023265279,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 580240392,
+     "rd_process_cpu_seconds_total": 286.170761,
+     "rd_yjs_updates_total": 715645,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639592700,
+  "load1": 8.5,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3995,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 12701,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 402,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.036241407,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 371382616,
+     "rd_process_cpu_seconds_total": 290.300815,
+     "rd_yjs_updates_total": 730862,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639597702,
+  "load1": 8.54,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 6716,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 230,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023035903,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 414876312,
+     "rd_process_cpu_seconds_total": 293.906563,
+     "rd_yjs_updates_total": 746204,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639602705,
+  "load1": 8.81,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 1900,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 72,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021348351,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 536543480,
+     "rd_process_cpu_seconds_total": 297.444122,
+     "rd_yjs_updates_total": 761450,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639607707,
+  "load1": 8.75,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3994,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 18133,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 572,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.037257215,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 331388824,
+     "rd_process_cpu_seconds_total": 301.623873,
+     "rd_yjs_updates_total": 776563,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639612709,
+  "load1": 8.85,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3997,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 330,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023068671,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 435362792,
+     "rd_process_cpu_seconds_total": 305.081614,
+     "rd_yjs_updates_total": 791692,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639617711,
+  "load1": 8.86,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 1250,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 33,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023461887,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 518573552,
+     "rd_process_cpu_seconds_total": 308.519124,
+     "rd_yjs_updates_total": 806932,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639618499,
+  "load1": 8.86,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 1704,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 53,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021413887,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 515852632,
+     "rd_process_cpu_seconds_total": 309.096526,
+     "rd_yjs_updates_total": 809417,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639622713,
+  "load1": 8.39,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3998,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 8136,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 308,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023330815,
+     "rd_process_resident_memory_bytes": 981684224,
+     "rd_process_heap_used_bytes": 593918904,
+     "rd_process_cpu_seconds_total": 312.186268,
+     "rd_yjs_updates_total": 822345,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639627714,
+  "load1": 8.6,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3997,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 9827,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 319,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023592959,
+     "rd_process_resident_memory_bytes": 1002983424,
+     "rd_process_heap_used_bytes": 681904792,
+     "rd_process_cpu_seconds_total": 315.892077,
+     "rd_yjs_updates_total": 837698,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639632716,
+  "load1": 8.63,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3999,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 8633,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 305,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023363583,
+     "rd_process_resident_memory_bytes": 1088016384,
+     "rd_process_heap_used_bytes": 776240768,
+     "rd_process_cpu_seconds_total": 319.61814,
+     "rd_yjs_updates_total": 852993,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639637717,
+  "load1": 8.5,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 13674,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 475,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024920063,
+     "rd_process_resident_memory_bytes": 1167314944,
+     "rd_process_heap_used_bytes": 366935008,
+     "rd_process_cpu_seconds_total": 324.038524,
+     "rd_yjs_updates_total": 868177,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639642720,
+  "load1": 8.78,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 16052,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 533,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023691263,
+     "rd_process_resident_memory_bytes": 1167478784,
+     "rd_process_heap_used_bytes": 465890312,
+     "rd_process_cpu_seconds_total": 327.78871,
+     "rd_yjs_updates_total": 883596,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639647722,
+  "load1": 9.04,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 3996,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2000,
+     "rd_persist_queue_bytes": 22336,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 698,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023822335,
+     "rd_process_resident_memory_bytes": 1167642624,
+     "rd_process_heap_used_bytes": 526568648,
+     "rd_process_cpu_seconds_total": 331.602009,
+     "rd_yjs_updates_total": 899008,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639652723,
+  "load1": 9.28,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4181,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2129,
+     "rd_persist_queue_bytes": 36300,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1140,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024510463,
+     "rd_process_resident_memory_bytes": 1174687744,
+     "rd_process_heap_used_bytes": 708851280,
+     "rd_process_cpu_seconds_total": 336.015979,
+     "rd_yjs_updates_total": 914504,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639657724,
+  "load1": 9.58,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4365,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2255,
+     "rd_persist_queue_bytes": 40820,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1282,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.043220991,
+     "rd_process_resident_memory_bytes": 1176326144,
+     "rd_process_heap_used_bytes": 548835320,
+     "rd_process_cpu_seconds_total": 341.125634,
+     "rd_yjs_updates_total": 929827,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639662727,
+  "load1": 10.01,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4531,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2376,
+     "rd_persist_queue_bytes": 46679,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1342,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026771455,
+     "rd_process_resident_memory_bytes": 1179439104,
+     "rd_process_heap_used_bytes": 424771288,
+     "rd_process_cpu_seconds_total": 346.410862,
+     "rd_yjs_updates_total": 945472,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639667728,
+  "load1": 10.17,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4723,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2453,
+     "rd_persist_queue_bytes": 37935,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1249,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026034175,
+     "rd_process_resident_memory_bytes": 1179439104,
+     "rd_process_heap_used_bytes": 592310792,
+     "rd_process_cpu_seconds_total": 350.942784,
+     "rd_yjs_updates_total": 960755,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639672730,
+  "load1": 10.32,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4918,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2493,
+     "rd_persist_queue_bytes": 43029,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1203,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.049872895,
+     "rd_process_resident_memory_bytes": 1180258304,
+     "rd_process_heap_used_bytes": 444106304,
+     "rd_process_cpu_seconds_total": 356.080566,
+     "rd_yjs_updates_total": 976181,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639677732,
+  "load1": 10.69,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4991,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 95768,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1717,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.029605887,
+     "rd_process_resident_memory_bytes": 1180258304,
+     "rd_process_heap_used_bytes": 650724736,
+     "rd_process_cpu_seconds_total": 360.41919,
+     "rd_yjs_updates_total": 994464,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639682734,
+  "load1": 10.56,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4992,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 85062,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1679,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.025116671,
+     "rd_process_resident_memory_bytes": 1180422144,
+     "rd_process_heap_used_bytes": 855412624,
+     "rd_process_cpu_seconds_total": 364.755515,
+     "rd_yjs_updates_total": 1013892,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639687736,
+  "load1": 10.43,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4993,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 104810,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1883,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026492927,
+     "rd_process_resident_memory_bytes": 1381781504,
+     "rd_process_heap_used_bytes": 1057164864,
+     "rd_process_cpu_seconds_total": 369.219268,
+     "rd_yjs_updates_total": 1033329,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639692737,
+  "load1": 10.32,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4991,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 94214,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1793,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.027328511,
+     "rd_process_resident_memory_bytes": 1584123904,
+     "rd_process_heap_used_bytes": 1245623920,
+     "rd_process_cpu_seconds_total": 373.74449,
+     "rd_yjs_updates_total": 1052273,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639697739,
+  "load1": 10.13,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4991,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 104430,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1890,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.035291135,
+     "rd_process_resident_memory_bytes": 1691766784,
+     "rd_process_heap_used_bytes": 496252712,
+     "rd_process_cpu_seconds_total": 379.003855,
+     "rd_yjs_updates_total": 1071336,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639702740,
+  "load1": 10.28,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4989,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 89122,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1732,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026771455,
+     "rd_process_resident_memory_bytes": 1692094464,
+     "rd_process_heap_used_bytes": 688910216,
+     "rd_process_cpu_seconds_total": 383.503566,
+     "rd_yjs_updates_total": 1090459,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639707741,
+  "load1": 10.02,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4992,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 86183,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1694,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026378239,
+     "rd_process_resident_memory_bytes": 1692094464,
+     "rd_process_heap_used_bytes": 884563544,
+     "rd_process_cpu_seconds_total": 387.983111,
+     "rd_yjs_updates_total": 1109529,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639712742,
+  "load1": 10.18,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4994,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 85008,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1730,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.027066367,
+     "rd_process_resident_memory_bytes": 1692094464,
+     "rd_process_heap_used_bytes": 1080090200,
+     "rd_process_cpu_seconds_total": 392.484098,
+     "rd_yjs_updates_total": 1128522,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639717744,
+  "load1": 10.08,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4993,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 84587,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1695,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024952831,
+     "rd_process_resident_memory_bytes": 1692094464,
+     "rd_process_heap_used_bytes": 1310297400,
+     "rd_process_cpu_seconds_total": 396.905873,
+     "rd_yjs_updates_total": 1147435,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639722745,
+  "load1": 10.08,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4980,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 138902,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 2102,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.088145919,
+     "rd_process_resident_memory_bytes": 1773809664,
+     "rd_process_heap_used_bytes": 442981776,
+     "rd_process_cpu_seconds_total": 402.525909,
+     "rd_yjs_updates_total": 1166589,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639727751,
+  "load1": 9.91,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4990,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 95071,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1778,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026427391,
+     "rd_process_resident_memory_bytes": 1773809664,
+     "rd_process_heap_used_bytes": 642166088,
+     "rd_process_cpu_seconds_total": 407.157197,
+     "rd_yjs_updates_total": 1185677,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639732760,
+  "load1": 10.08,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4985,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 87751,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1780,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.025329663,
+     "rd_process_resident_memory_bytes": 1774137344,
+     "rd_process_heap_used_bytes": 850643048,
+     "rd_process_cpu_seconds_total": 411.708827,
+     "rd_yjs_updates_total": 1204914,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639737762,
+  "load1": 9.91,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4989,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 89124,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1775,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026460159,
+     "rd_process_resident_memory_bytes": 1774137344,
+     "rd_process_heap_used_bytes": 1063783232,
+     "rd_process_cpu_seconds_total": 416.266453,
+     "rd_yjs_updates_total": 1224101,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639742763,
+  "load1": 9.52,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4992,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 91247,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1748,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026968063,
+     "rd_process_resident_memory_bytes": 1774465024,
+     "rd_process_heap_used_bytes": 1293175352,
+     "rd_process_cpu_seconds_total": 420.777097,
+     "rd_yjs_updates_total": 1243084,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639747765,
+  "load1": 9.39,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4991,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 93478,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1708,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.027574271,
+     "rd_process_resident_memory_bytes": 1822433280,
+     "rd_process_heap_used_bytes": 404897984,
+     "rd_process_cpu_seconds_total": 426.174134,
+     "rd_yjs_updates_total": 1262080,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639752908,
+  "load1": 9.36,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4990,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 101195,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1859,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.028180479,
+     "rd_process_resident_memory_bytes": 1822924800,
+     "rd_process_heap_used_bytes": 618483752,
+     "rd_process_cpu_seconds_total": 430.942379,
+     "rd_yjs_updates_total": 1281737,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639755698,
+  "load1": 9.36,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 4990,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 98439,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 1836,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.027148287,
+     "rd_process_resident_memory_bytes": 1822924800,
+     "rd_process_heap_used_bytes": 723637480,
+     "rd_process_cpu_seconds_total": 433.54775,
+     "rd_yjs_updates_total": 1292445,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639757910,
+  "load1": 9.17,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022478847,
+     "rd_process_resident_memory_bytes": 1823088640,
+     "rd_process_heap_used_bytes": 760523104,
+     "rd_process_cpu_seconds_total": 434.727457,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639762912,
+  "load1": 8.52,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021708799,
+     "rd_process_resident_memory_bytes": 1823088640,
+     "rd_process_heap_used_bytes": 745461904,
+     "rd_process_cpu_seconds_total": 435.041155,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639767915,
+  "load1": 7.92,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021856255,
+     "rd_process_resident_memory_bytes": 1823088640,
+     "rd_process_heap_used_bytes": 767460456,
+     "rd_process_cpu_seconds_total": 435.49237,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639772917,
+  "load1": 7.36,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.037683199,
+     "rd_process_resident_memory_bytes": 1823088640,
+     "rd_process_heap_used_bytes": 749095528,
+     "rd_process_cpu_seconds_total": 436.105855,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639777919,
+  "load1": 6.85,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021020671,
+     "rd_process_resident_memory_bytes": 1823088640,
+     "rd_process_heap_used_bytes": 734627160,
+     "rd_process_cpu_seconds_total": 436.39406,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639782929,
+  "load1": 6.3,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026820607,
+     "rd_process_resident_memory_bytes": 1823088640,
+     "rd_process_heap_used_bytes": 759967544,
+     "rd_process_cpu_seconds_total": 436.861958,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639787932,
+  "load1": 6.12,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 5,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.038010879,
+     "rd_process_resident_memory_bytes": 1823449088,
+     "rd_process_heap_used_bytes": 751827480,
+     "rd_process_cpu_seconds_total": 437.816875,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639792936,
+  "load1": 5.79,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021020671,
+     "rd_process_resident_memory_bytes": 1836720128,
+     "rd_process_heap_used_bytes": 783183480,
+     "rd_process_cpu_seconds_total": 438.408551,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639797938,
+  "load1": 5.49,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021315583,
+     "rd_process_resident_memory_bytes": 1840816128,
+     "rd_process_heap_used_bytes": 752415000,
+     "rd_process_cpu_seconds_total": 438.744308,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639802948,
+  "load1": 5.13,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022151167,
+     "rd_process_resident_memory_bytes": 1840816128,
+     "rd_process_heap_used_bytes": 783705656,
+     "rd_process_cpu_seconds_total": 439.113268,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639807950,
+  "load1": 4.88,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020971519,
+     "rd_process_resident_memory_bytes": 1840816128,
+     "rd_process_heap_used_bytes": 766327824,
+     "rd_process_cpu_seconds_total": 439.355489,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639812959,
+  "load1": 4.56,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.028180479,
+     "rd_process_resident_memory_bytes": 1840816128,
+     "rd_process_heap_used_bytes": 785398248,
+     "rd_process_cpu_seconds_total": 439.850713,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639817962,
+  "load1": 4.44,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 4,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.054820863,
+     "rd_process_resident_memory_bytes": 1845075968,
+     "rd_process_heap_used_bytes": 396322920,
+     "rd_process_cpu_seconds_total": 441.659444,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639822963,
+  "load1": 4.24,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021053439,
+     "rd_process_resident_memory_bytes": 1845075968,
+     "rd_process_heap_used_bytes": 422145312,
+     "rd_process_cpu_seconds_total": 442.268051,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639827965,
+  "load1": 4.06,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023298047,
+     "rd_process_resident_memory_bytes": 1845075968,
+     "rd_process_heap_used_bytes": 392026888,
+     "rd_process_cpu_seconds_total": 442.6622,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639832971,
+  "load1": 3.82,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021397503,
+     "rd_process_resident_memory_bytes": 1845075968,
+     "rd_process_heap_used_bytes": 421400920,
+     "rd_process_cpu_seconds_total": 443.027601,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639837974,
+  "load1": 3.59,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.021397503,
+     "rd_process_resident_memory_bytes": 1845075968,
+     "rd_process_heap_used_bytes": 404479528,
+     "rd_process_cpu_seconds_total": 443.329719,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639842980,
+  "load1": 3.54,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020955135,
+     "rd_process_resident_memory_bytes": 1845075968,
+     "rd_process_heap_used_bytes": 423823776,
+     "rd_process_cpu_seconds_total": 443.599284,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639847982,
+  "load1": 3.34,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 2,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.035586047,
+     "rd_process_resident_memory_bytes": 1845100544,
+     "rd_process_heap_used_bytes": 402119000,
+     "rd_process_cpu_seconds_total": 444.601488,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639852985,
+  "load1": 3.23,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.020905983,
+     "rd_process_resident_memory_bytes": 1845100544,
+     "rd_process_heap_used_bytes": 441095352,
+     "rd_process_cpu_seconds_total": 445.107258,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639857987,
+  "load1": 3.21,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.026623999,
+     "rd_process_resident_memory_bytes": 1845100544,
+     "rd_process_heap_used_bytes": 407585456,
+     "rd_process_cpu_seconds_total": 445.542547,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639862997,
+  "load1": 3.12,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.023871487,
+     "rd_process_resident_memory_bytes": 1845100544,
+     "rd_process_heap_used_bytes": 438253672,
+     "rd_process_cpu_seconds_total": 446.008094,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639868000,
+  "load1": 2.95,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.022134783,
+     "rd_process_resident_memory_bytes": 1845100544,
+     "rd_process_heap_used_bytes": 421708888,
+     "rd_process_cpu_seconds_total": 446.282957,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639873005,
+  "load1": 2.87,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2500,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 10,
+     "rd_db_pool_waiting": 0,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.024182783,
+     "rd_process_resident_memory_bytes": 1845100544,
+     "rd_process_heap_used_bytes": 440539704,
+     "rd_process_cpu_seconds_total": 446.63973,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ },
+ {
+  "t": 1794639878007,
+  "load1": 3.36,
+  "inst": [
+   {
+    "port": 4450,
+    "up": true,
+    "m": {
+     "rd_ws_connections": 5000,
+     "rd_ws_forwarded_connections": 0,
+     "rd_documents_loaded": 2412,
+     "rd_persist_queue_bytes": 0,
+     "rd_db_pool_connections": 10,
+     "rd_db_pool_idle": 0,
+     "rd_db_pool_waiting": 231,
+     "rd_db_pool_max": 10,
+     "rd_event_loop_lag_p99_seconds": 0.025706495,
+     "rd_process_resident_memory_bytes": 1846722560,
+     "rd_process_heap_used_bytes": 505079712,
+     "rd_process_cpu_seconds_total": 449.192337,
+     "rd_yjs_updates_total": 1293602,
+     "rd_redis_ping_seconds": 0,
+     "rd_redis_up": 1,
+     "rd_persist_failures_total": 0,
+     "rd_redis_errors_total": 0,
+     "rd_uploads_total": 0
+    }
+   }
+  ]
+ }
+]

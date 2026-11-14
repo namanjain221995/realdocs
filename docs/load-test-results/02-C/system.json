@@ -1,0 +1,2004 @@
+[
+ {
+  "t": 1794636086020,
+  "load1": 2.77,
+  "availableMb": 29931.17578125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": null,
+    "rssMb": 342.97265625
+   }
+  },
+  "pg": {
+   "cpuPct": 14.05,
+   "memMb": 58.75,
+   "commits": 5602,
+   "rollbacks": 0,
+   "tupInserted": 4511,
+   "blkReadMs": 2.401,
+   "blkWriteMs": 2.952,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 12194855
+  }
+ },
+ {
+  "t": 1794636091021,
+  "load1": 2.63,
+  "availableMb": 29953.6015625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 10.799712988987546,
+    "rssMb": 342.97265625
+   }
+  },
+  "pg": {
+   "cpuPct": 9.56,
+   "memMb": 59.94,
+   "commits": 10193,
+   "rollbacks": 0,
+   "tupInserted": 5933,
+   "blkReadMs": 2.861,
+   "blkWriteMs": 4.73,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 13023071
+  }
+ },
+ {
+  "t": 1794636096020,
+  "load1": 2.58,
+  "availableMb": 30140.67578125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 13.595715750682361,
+    "rssMb": 344.06640625
+   }
+  },
+  "pg": {
+   "cpuPct": 11.34,
+   "memMb": 59.68,
+   "commits": 11554,
+   "rollbacks": 0,
+   "tupInserted": 6281,
+   "blkReadMs": 2.861,
+   "blkWriteMs": 5.261,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 13282848
+  }
+ },
+ {
+  "t": 1794636101021,
+  "load1": 2.45,
+  "availableMb": 30168.12109375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 12.000014479217475,
+    "rssMb": 344.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 10.63,
+   "memMb": 60.34,
+   "commits": 13165,
+   "rollbacks": 0,
+   "tupInserted": 6709,
+   "blkReadMs": 2.861,
+   "blkWriteMs": 5.952,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 13599459
+  }
+ },
+ {
+  "t": 1794636106020,
+  "load1": 2.42,
+  "availableMb": 30062.42578125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 11.397680291677707,
+    "rssMb": 344.84765625
+   }
+  },
+  "pg": {
+   "cpuPct": 16.36,
+   "memMb": 60.58,
+   "commits": 14277,
+   "rollbacks": 0,
+   "tupInserted": 6998,
+   "blkReadMs": 2.861,
+   "blkWriteMs": 6.53,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 13820188
+  }
+ },
+ {
+  "t": 1794636111019,
+  "load1": 2.46,
+  "availableMb": 30082.73046875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 17.198686821785614,
+    "rssMb": 345.31640625
+   }
+  },
+  "pg": {
+   "cpuPct": 12.29,
+   "memMb": 64.36,
+   "commits": 16753,
+   "rollbacks": 0,
+   "tupInserted": 7538,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 7.562,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 14453021
+  }
+ },
+ {
+  "t": 1794636116022,
+  "load1": 2.27,
+  "availableMb": 30105.92578125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 13.59569026951181,
+    "rssMb": 363.75390625
+   }
+  },
+  "pg": {
+   "cpuPct": 13.19,
+   "memMb": 64.42,
+   "commits": 19125,
+   "rollbacks": 0,
+   "tupInserted": 7945,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 8.229,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 14738587
+  }
+ },
+ {
+  "t": 1794636121022,
+  "load1": 2.25,
+  "availableMb": 29947.296875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 9.798309501581027,
+    "rssMb": 366.41015625
+   }
+  },
+  "pg": {
+   "cpuPct": 10.64,
+   "memMb": 65.43,
+   "commits": 20514,
+   "rollbacks": 0,
+   "tupInserted": 8312,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 9.082,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 15015033
+  }
+ },
+ {
+  "t": 1794636126021,
+  "load1": 2.06,
+  "availableMb": 29861.4765625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 8.599238176291486,
+    "rssMb": 367.97265625
+   }
+  },
+  "pg": {
+   "cpuPct": 9.83,
+   "memMb": 67.06,
+   "commits": 21666,
+   "rollbacks": 0,
+   "tupInserted": 8602,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 9.763,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 15231432
+  }
+ },
+ {
+  "t": 1794636131025,
+  "load1": 1.9,
+  "availableMb": 29921.62890625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 13.398339090972597,
+    "rssMb": 370.47265625
+   }
+  },
+  "pg": {
+   "cpuPct": 13.54,
+   "memMb": 68.87,
+   "commits": 23041,
+   "rollbacks": 0,
+   "tupInserted": 8975,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 10.457,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 15771955
+  }
+ },
+ {
+  "t": 1794636136024,
+  "load1": 1.75,
+  "availableMb": 30050.48046875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 9.799343730110916,
+    "rssMb": 370.47265625
+   }
+  },
+  "pg": {
+   "cpuPct": 9.1,
+   "memMb": 68.94,
+   "commits": 24395,
+   "rollbacks": 0,
+   "tupInserted": 9330,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 11.071,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 16029403
+  }
+ },
+ {
+  "t": 1794636141020,
+  "load1": 1.69,
+  "availableMb": 29937.59765625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 14.202218500147474,
+    "rssMb": 370.47265625
+   }
+  },
+  "pg": {
+   "cpuPct": 11.72,
+   "memMb": 67.44,
+   "commits": 28217,
+   "rollbacks": 0,
+   "tupInserted": 9760,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 11.846,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 16338026
+  }
+ },
+ {
+  "t": 1794636146022,
+  "load1": 1.63,
+  "availableMb": 29960.671875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 22.997857091873144,
+    "rssMb": 384.69140625
+   }
+  },
+  "pg": {
+   "cpuPct": 116.94,
+   "memMb": 74.28,
+   "commits": 31627,
+   "rollbacks": 0,
+   "tupInserted": 12667,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 16.018,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 18475063
+  }
+ },
+ {
+  "t": 1794636151022,
+  "load1": 1.66,
+  "availableMb": 29885.4609375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 52.79591513780909,
+    "rssMb": 399.06640625
+   }
+  },
+  "pg": {
+   "cpuPct": 103.45,
+   "memMb": 79.23,
+   "commits": 36499,
+   "rollbacks": 0,
+   "tupInserted": 22250,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 29.677,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 25470769
+  }
+ },
+ {
+  "t": 1794636156027,
+  "load1": 1.85,
+  "availableMb": 29957.85546875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 50.593597410603884,
+    "rssMb": 411.41015625
+   }
+  },
+  "pg": {
+   "cpuPct": 105.7,
+   "memMb": 83.91,
+   "commits": 41366,
+   "rollbacks": 0,
+   "tupInserted": 31888,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 41.938,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 32358159
+  }
+ },
+ {
+  "t": 1794636161024,
+  "load1": 2.02,
+  "availableMb": 29975.3203125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.60127194502542,
+    "rssMb": 419.84765625
+   }
+  },
+  "pg": {
+   "cpuPct": 101.24,
+   "memMb": 89.62,
+   "commits": 45909,
+   "rollbacks": 0,
+   "tupInserted": 40928,
+   "blkReadMs": 3.198,
+   "blkWriteMs": 55.875,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 5,
+   "waitingOnLocks": 0,
+   "walBytes": 39019948
+  }
+ },
+ {
+  "t": 1794636166026,
+  "load1": 2.18,
+  "availableMb": 30053.859375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 42.99696623725499,
+    "rssMb": 430.78515625
+   }
+  },
+  "pg": {
+   "cpuPct": 98.96,
+   "memMb": 93.27,
+   "commits": 50406,
+   "rollbacks": 0,
+   "tupInserted": 50020,
+   "blkReadMs": 3.455,
+   "blkWriteMs": 67.03,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 45452455
+  }
+ },
+ {
+  "t": 1794636171023,
+  "load1": 2.57,
+  "availableMb": 29811.29296875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.603812113862276,
+    "rssMb": 448.59765625
+   }
+  },
+  "pg": {
+   "cpuPct": 104.04,
+   "memMb": 97.96,
+   "commits": 58757,
+   "rollbacks": 0,
+   "tupInserted": 59434,
+   "blkReadMs": 3.455,
+   "blkWriteMs": 81.504,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 52754823
+  }
+ },
+ {
+  "t": 1794636176026,
+  "load1": 2.44,
+  "availableMb": 29865.25,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.79448423361194,
+    "rssMb": 460.62890625
+   }
+  },
+  "pg": {
+   "cpuPct": 96.89,
+   "memMb": 102.4,
+   "commits": 63764,
+   "rollbacks": 0,
+   "tupInserted": 68504,
+   "blkReadMs": 3.455,
+   "blkWriteMs": 94.335,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 59221690
+  }
+ },
+ {
+  "t": 1794636181025,
+  "load1": 2.33,
+  "availableMb": 29835.29296875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.393621240381066,
+    "rssMb": 469.69140625
+   }
+  },
+  "pg": {
+   "cpuPct": 103.32,
+   "memMb": 108.1,
+   "commits": 68329,
+   "rollbacks": 0,
+   "tupInserted": 77514,
+   "blkReadMs": 3.455,
+   "blkWriteMs": 106.203,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 65637071
+  }
+ },
+ {
+  "t": 1794636186022,
+  "load1": 2.7,
+  "availableMb": 29869.5625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.203337891291525,
+    "rssMb": 478.28515625
+   }
+  },
+  "pg": {
+   "cpuPct": 102.56,
+   "memMb": 111.2,
+   "commits": 73018,
+   "rollbacks": 0,
+   "tupInserted": 86818,
+   "blkReadMs": 3.455,
+   "blkWriteMs": 118.113,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 72175477
+  }
+ },
+ {
+  "t": 1794636191026,
+  "load1": 2.72,
+  "availableMb": 29934.08984375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.59690015576641,
+    "rssMb": 488.44140625
+   }
+  },
+  "pg": {
+   "cpuPct": 107.34,
+   "memMb": 114.9,
+   "commits": 77634,
+   "rollbacks": 0,
+   "tupInserted": 95928,
+   "blkReadMs": 3.455,
+   "blkWriteMs": 130.02,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 78665381
+  }
+ },
+ {
+  "t": 1794636196027,
+  "load1": 2.67,
+  "availableMb": 29960.06640625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.00227893082849,
+    "rssMb": 497.81640625
+   }
+  },
+  "pg": {
+   "cpuPct": 99.07,
+   "memMb": 120.3,
+   "commits": 82114,
+   "rollbacks": 0,
+   "tupInserted": 104823,
+   "blkReadMs": 3.455,
+   "blkWriteMs": 142.285,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 85086413
+  }
+ },
+ {
+  "t": 1794636201028,
+  "load1": 2.61,
+  "availableMb": 29971.92578125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.59504139536366,
+    "rssMb": 516.87890625
+   }
+  },
+  "pg": {
+   "cpuPct": 104.59,
+   "memMb": 127.3,
+   "commits": 90865,
+   "rollbacks": 0,
+   "tupInserted": 114281,
+   "blkReadMs": 3.482,
+   "blkWriteMs": 155.286,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 5,
+   "waitingOnLocks": 0,
+   "walBytes": 92712825
+  }
+ },
+ {
+  "t": 1794636206024,
+  "load1": 2.64,
+  "availableMb": 29880.01953125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.19683792234917,
+    "rssMb": 525.62890625
+   }
+  },
+  "pg": {
+   "cpuPct": 103.92,
+   "memMb": 130.8,
+   "commits": 95323,
+   "rollbacks": 0,
+   "tupInserted": 123142,
+   "blkReadMs": 3.482,
+   "blkWriteMs": 167.49,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 99425938
+  }
+ },
+ {
+  "t": 1794636211028,
+  "load1": 2.59,
+  "availableMb": 29884.2109375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.39596452573339,
+    "rssMb": 535.47265625
+   }
+  },
+  "pg": {
+   "cpuPct": 100.1,
+   "memMb": 136,
+   "commits": 100128,
+   "rollbacks": 0,
+   "tupInserted": 132630,
+   "blkReadMs": 3.482,
+   "blkWriteMs": 180.383,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 107953640
+  }
+ },
+ {
+  "t": 1794636216028,
+  "load1": 2.62,
+  "availableMb": 29888.37109375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.19963045686124,
+    "rssMb": 544.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 106.45,
+   "memMb": 140.6,
+   "commits": 104394,
+   "rollbacks": 0,
+   "tupInserted": 141018,
+   "blkReadMs": 3.482,
+   "blkWriteMs": 191.534,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 4,
+   "waitingOnLocks": 0,
+   "walBytes": 114433099
+  }
+ },
+ {
+  "t": 1794636221028,
+  "load1": 2.73,
+  "availableMb": 29850.33984375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 48.99870278874297,
+    "rssMb": 549.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 108.11,
+   "memMb": 144.5,
+   "commits": 109261,
+   "rollbacks": 0,
+   "tupInserted": 150621,
+   "blkReadMs": 3.482,
+   "blkWriteMs": 204.683,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 121344358
+  }
+ },
+ {
+  "t": 1794636226026,
+  "load1": 2.92,
+  "availableMb": 29713.4453125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 47.998555627464015,
+    "rssMb": 549.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 109.41,
+   "memMb": 149.2,
+   "commits": 113936,
+   "rollbacks": 0,
+   "tupInserted": 159883,
+   "blkReadMs": 3.482,
+   "blkWriteMs": 217.234,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 127987498
+  }
+ },
+ {
+  "t": 1794636231025,
+  "load1": 2.84,
+  "availableMb": 29325.34765625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.79863891025044,
+    "rssMb": 549.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 87.53,
+   "memMb": 152.9,
+   "commits": 122034,
+   "rollbacks": 0,
+   "tupInserted": 168750,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 228.198,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 135128272
+  }
+ },
+ {
+  "t": 1794636236029,
+  "load1": 3.02,
+  "availableMb": 29386.609375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 42.593392504058116,
+    "rssMb": 549.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 97.89,
+   "memMb": 156.2,
+   "commits": 126998,
+   "rollbacks": 0,
+   "tupInserted": 177872,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 237.733,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 141486140
+  }
+ },
+ {
+  "t": 1794636241030,
+  "load1": 2.85,
+  "availableMb": 29417.140625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.39196224552064,
+    "rssMb": 549.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 107.86,
+   "memMb": 159.9,
+   "commits": 131514,
+   "rollbacks": 0,
+   "tupInserted": 186864,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 247.898,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 147896415
+  }
+ },
+ {
+  "t": 1794636246031,
+  "load1": 3.03,
+  "availableMb": 29327.26953125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.194801920258875,
+    "rssMb": 549.53515625
+   }
+  },
+  "pg": {
+   "cpuPct": 106.93,
+   "memMb": 164.2,
+   "commits": 136074,
+   "rollbacks": 0,
+   "tupInserted": 195874,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 258.155,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 154326128
+  }
+ },
+ {
+  "t": 1794636251030,
+  "load1": 3.26,
+  "availableMb": 29361.0078125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 48.80413890332559,
+    "rssMb": 549.328125
+   }
+  },
+  "pg": {
+   "cpuPct": 107.76,
+   "memMb": 166.8,
+   "commits": 140904,
+   "rollbacks": 0,
+   "tupInserted": 205391,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 268.292,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 161127687
+  }
+ },
+ {
+  "t": 1794636256027,
+  "load1": 3.08,
+  "availableMb": 29428.09375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.79850937439889,
+    "rssMb": 549.328125
+   }
+  },
+  "pg": {
+   "cpuPct": 100.33,
+   "memMb": 171.1,
+   "commits": 145608,
+   "rollbacks": 0,
+   "tupInserted": 214642,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 278.271,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 167644929
+  }
+ },
+ {
+  "t": 1794636261028,
+  "load1": 3.32,
+  "availableMb": 29495.80859375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 48.794769493478945,
+    "rssMb": 549.328125
+   }
+  },
+  "pg": {
+   "cpuPct": 106.91,
+   "memMb": 174.3,
+   "commits": 154273,
+   "rollbacks": 0,
+   "tupInserted": 223892,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 289.449,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 174821865
+  }
+ },
+ {
+  "t": 1794636266032,
+  "load1": 3.21,
+  "availableMb": 29377.546875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.40713270918164,
+    "rssMb": 549.328125
+   }
+  },
+  "pg": {
+   "cpuPct": 105.78,
+   "memMb": 178.2,
+   "commits": 158662,
+   "rollbacks": 0,
+   "tupInserted": 232535,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 298.659,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 6,
+   "waitingOnLocks": 0,
+   "walBytes": 181627274
+  }
+ },
+ {
+  "t": 1794636271032,
+  "load1": 3.43,
+  "availableMb": 29454.34765625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.19202177705904,
+    "rssMb": 549.328125
+   }
+  },
+  "pg": {
+   "cpuPct": 103.65,
+   "memMb": 182.2,
+   "commits": 163502,
+   "rollbacks": 0,
+   "tupInserted": 242216,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 310.095,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 4,
+   "waitingOnLocks": 0,
+   "walBytes": 189253979
+  }
+ },
+ {
+  "t": 1794636276028,
+  "load1": 3.43,
+  "availableMb": 29442.33203125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.39429484477522,
+    "rssMb": 549.328125
+   }
+  },
+  "pg": {
+   "cpuPct": 105.82,
+   "memMb": 186.5,
+   "commits": 167897,
+   "rollbacks": 0,
+   "tupInserted": 251030,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 321.052,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 196599349
+  }
+ },
+ {
+  "t": 1794636281032,
+  "load1": 3.75,
+  "availableMb": 29331.7734375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 46.00296130262493,
+    "rssMb": 549.328125
+   }
+  },
+  "pg": {
+   "cpuPct": 102.44,
+   "memMb": 191.3,
+   "commits": 172563,
+   "rollbacks": 0,
+   "tupInserted": 260333,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 333.528,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 203802704
+  }
+ },
+ {
+  "t": 1794636286032,
+  "load1": 3.69,
+  "availableMb": 29481.9609375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 47.59551560763399,
+    "rssMb": 527.4921875
+   }
+  },
+  "pg": {
+   "cpuPct": 100.43,
+   "memMb": 195.1,
+   "commits": 177232,
+   "rollbacks": 0,
+   "tupInserted": 269575,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 345.335,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 210654631
+  }
+ },
+ {
+  "t": 1794636291032,
+  "load1": 3.63,
+  "availableMb": 29570.76171875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 46.804614326512485,
+    "rssMb": 527.4921875
+   }
+  },
+  "pg": {
+   "cpuPct": 96.07,
+   "memMb": 198.7,
+   "commits": 186008,
+   "rollbacks": 0,
+   "tupInserted": 278955,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 356.61,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 218477868
+  }
+ },
+ {
+  "t": 1794636296033,
+  "load1": 3.9,
+  "availableMb": 29629.3828125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 42.796562948114655,
+    "rssMb": 527.4921875
+   }
+  },
+  "pg": {
+   "cpuPct": 105.86,
+   "memMb": 202.5,
+   "commits": 190526,
+   "rollbacks": 0,
+   "tupInserted": 287892,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 365.902,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 224773687
+  }
+ },
+ {
+  "t": 1794636301029,
+  "load1": 3.9,
+  "availableMb": 29436.078125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 46.20371156263132,
+    "rssMb": 527.4921875
+   }
+  },
+  "pg": {
+   "cpuPct": 99.96,
+   "memMb": 203.7,
+   "commits": 195135,
+   "rollbacks": 0,
+   "tupInserted": 296995,
+   "blkReadMs": 3.533,
+   "blkWriteMs": 376.225,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 231127859
+  }
+ },
+ {
+  "t": 1794636306030,
+  "load1": 3.91,
+  "availableMb": 29434.06640625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.19305260760165,
+    "rssMb": 527.4921875
+   }
+  },
+  "pg": {
+   "cpuPct": 104.13,
+   "memMb": 204.5,
+   "commits": 199688,
+   "rollbacks": 0,
+   "tupInserted": 306024,
+   "blkReadMs": 3.569,
+   "blkWriteMs": 386.721,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 237518903
+  }
+ },
+ {
+  "t": 1794636311030,
+  "load1": 3.92,
+  "availableMb": 29542.58203125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.19828018142983,
+    "rssMb": 527.4921875
+   }
+  },
+  "pg": {
+   "cpuPct": 103.26,
+   "memMb": 203.9,
+   "commits": 204408,
+   "rollbacks": 0,
+   "tupInserted": 315433,
+   "blkReadMs": 3.627,
+   "blkWriteMs": 398.06,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 244163197
+  }
+ },
+ {
+  "t": 1794636316030,
+  "load1": 4.57,
+  "availableMb": 29440.8046875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 51.59172546111185,
+    "rssMb": 527.4921875
+   }
+  },
+  "pg": {
+   "cpuPct": 106.55,
+   "memMb": 204.2,
+   "commits": 209102,
+   "rollbacks": 0,
+   "tupInserted": 324699,
+   "blkReadMs": 4.088,
+   "blkWriteMs": 409.636,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 4,
+   "waitingOnLocks": 0,
+   "walBytes": 250909839
+  }
+ },
+ {
+  "t": 1794636321034,
+  "load1": 4.28,
+  "availableMb": 29564.66015625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 49.39395132538728,
+    "rssMb": 532.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 104.77,
+   "memMb": 204.5,
+   "commits": 217245,
+   "rollbacks": 0,
+   "tupInserted": 333709,
+   "blkReadMs": 4.369,
+   "blkWriteMs": 419.757,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 257492289
+  }
+ },
+ {
+  "t": 1794636326035,
+  "load1": 4.26,
+  "availableMb": 29576.66015625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.59960880791145,
+    "rssMb": 532.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 104.59,
+   "memMb": 205.1,
+   "commits": 222272,
+   "rollbacks": 0,
+   "tupInserted": 343099,
+   "blkReadMs": 4.575,
+   "blkWriteMs": 430.928,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 265063495
+  }
+ },
+ {
+  "t": 1794636331031,
+  "load1": 4.32,
+  "availableMb": 29628.0703125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 42.00020322218323,
+    "rssMb": 532.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 101.16,
+   "memMb": 205.5,
+   "commits": 226642,
+   "rollbacks": 0,
+   "tupInserted": 351901,
+   "blkReadMs": 4.642,
+   "blkWriteMs": 440.98,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 4,
+   "waitingOnLocks": 0,
+   "walBytes": 272075754
+  }
+ },
+ {
+  "t": 1794636336035,
+  "load1": 4.37,
+  "availableMb": 29684.6015625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.397375448245576,
+    "rssMb": 532.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 108.56,
+   "memMb": 206.8,
+   "commits": 231160,
+   "rollbacks": 0,
+   "tupInserted": 361096,
+   "blkReadMs": 4.766,
+   "blkWriteMs": 454.006,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 279655793
+  }
+ },
+ {
+  "t": 1794636341032,
+  "load1": 4.5,
+  "availableMb": 29714.41015625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.993575718273085,
+    "rssMb": 532.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 99.32,
+   "memMb": 206.2,
+   "commits": 236015,
+   "rollbacks": 0,
+   "tupInserted": 371100,
+   "blkReadMs": 4.78,
+   "blkWriteMs": 469.922,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 288018602
+  }
+ },
+ {
+  "t": 1794636346032,
+  "load1": 4.38,
+  "availableMb": 29685.73046875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.60443997948084,
+    "rssMb": 532.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 109.13,
+   "memMb": 207.2,
+   "commits": 240819,
+   "rollbacks": 0,
+   "tupInserted": 380862,
+   "blkReadMs": 4.82,
+   "blkWriteMs": 485.254,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 296092006
+  }
+ },
+ {
+  "t": 1794636351034,
+  "load1": 4.43,
+  "availableMb": 29722.98828125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.193160738212555,
+    "rssMb": 537.1796875
+   }
+  },
+  "pg": {
+   "cpuPct": 106.13,
+   "memMb": 207.3,
+   "commits": 248728,
+   "rollbacks": 0,
+   "tupInserted": 389533,
+   "blkReadMs": 9.418,
+   "blkWriteMs": 496.669,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 5,
+   "waitingOnLocks": 0,
+   "walBytes": 304669858
+  }
+ },
+ {
+  "t": 1794636356033,
+  "load1": 4.4,
+  "availableMb": 29722.15625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 49.001887778126,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 108.41,
+   "memMb": 207.2,
+   "commits": 253879,
+   "rollbacks": 0,
+   "tupInserted": 399008,
+   "blkReadMs": 9.422,
+   "blkWriteMs": 507.41,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 4,
+   "waitingOnLocks": 0,
+   "walBytes": 311677047
+  }
+ },
+ {
+  "t": 1794636361032,
+  "load1": 4.2,
+  "availableMb": 29694.91015625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.00067226504312,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 102.19,
+   "memMb": 207.7,
+   "commits": 258482,
+   "rollbacks": 0,
+   "tupInserted": 408177,
+   "blkReadMs": 9.502,
+   "blkWriteMs": 517.81,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 318623598
+  }
+ },
+ {
+  "t": 1794636366033,
+  "load1": 4.03,
+  "availableMb": 29691.59375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.40197514194041,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 105.97,
+   "memMb": 208.5,
+   "commits": 263307,
+   "rollbacks": 0,
+   "tupInserted": 417749,
+   "blkReadMs": 9.556,
+   "blkWriteMs": 528.703,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 325633337
+  }
+ },
+ {
+  "t": 1794636371034,
+  "load1": 3.95,
+  "availableMb": 29590.08203125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.19795274065152,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 106.56,
+   "memMb": 207.6,
+   "commits": 267708,
+   "rollbacks": 0,
+   "tupInserted": 426466,
+   "blkReadMs": 9.676,
+   "blkWriteMs": 539.391,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 332140706
+  }
+ },
+ {
+  "t": 1794636376035,
+  "load1": 3.95,
+  "availableMb": 29680.171875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.39787980588849,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 102.23,
+   "memMb": 208.1,
+   "commits": 272555,
+   "rollbacks": 0,
+   "tupInserted": 436074,
+   "blkReadMs": 9.693,
+   "blkWriteMs": 550.814,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 339267341
+  }
+ },
+ {
+  "t": 1794636381035,
+  "load1": 3.79,
+  "availableMb": 29712.8125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.799311627186405,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 108.56,
+   "memMb": 209.8,
+   "commits": 281054,
+   "rollbacks": 0,
+   "tupInserted": 445072,
+   "blkReadMs": 9.735,
+   "blkWriteMs": 561.147,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 358643681
+  }
+ },
+ {
+  "t": 1794636386036,
+  "load1": 4.37,
+  "availableMb": 29717.3203125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 48.99231334119987,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 104.19,
+   "memMb": 210.3,
+   "commits": 285871,
+   "rollbacks": 0,
+   "tupInserted": 454592,
+   "blkReadMs": 9.803,
+   "blkWriteMs": 572.07,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 366949831
+  }
+ },
+ {
+  "t": 1794636391033,
+  "load1": 4.5,
+  "availableMb": 29685.15234375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.80411733210712,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 100.05,
+   "memMb": 210.1,
+   "commits": 290322,
+   "rollbacks": 0,
+   "tupInserted": 463499,
+   "blkReadMs": 10.101,
+   "blkWriteMs": 582.083,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 4,
+   "waitingOnLocks": 0,
+   "walBytes": 374797623
+  }
+ },
+ {
+  "t": 1794636396032,
+  "load1": 4.22,
+  "availableMb": 29703,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 47.99429376643683,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 109.3,
+   "memMb": 211.8,
+   "commits": 294650,
+   "rollbacks": 0,
+   "tupInserted": 472111,
+   "blkReadMs": 10.356,
+   "blkWriteMs": 592.308,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 381967591
+  }
+ },
+ {
+  "t": 1794636401032,
+  "load1": 4.2,
+  "availableMb": 29686.66796875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 46.20213532408861,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 97.02,
+   "memMb": 210.7,
+   "commits": 299556,
+   "rollbacks": 0,
+   "tupInserted": 481957,
+   "blkReadMs": 10.38,
+   "blkWriteMs": 604.057,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 390490179
+  }
+ },
+ {
+  "t": 1794636406036,
+  "load1": 4.19,
+  "availableMb": 29625.30859375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 47.19788398670667,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 94.94,
+   "memMb": 211.5,
+   "commits": 304386,
+   "rollbacks": 0,
+   "tupInserted": 491561,
+   "blkReadMs": 10.426,
+   "blkWriteMs": 616.659,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 398497223
+  }
+ },
+ {
+  "t": 1794636411032,
+  "load1": 4.17,
+  "availableMb": 29672.43359375,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 46.201634253447274,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 91.16,
+   "memMb": 211.8,
+   "commits": 312900,
+   "rollbacks": 0,
+   "tupInserted": 500570,
+   "blkReadMs": 23.678,
+   "blkWriteMs": 628.402,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 407504413
+  }
+ },
+ {
+  "t": 1794636416036,
+  "load1": 4,
+  "availableMb": 29672.53125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.400119229792985,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 109.72,
+   "memMb": 212.7,
+   "commits": 317523,
+   "rollbacks": 0,
+   "tupInserted": 509765,
+   "blkReadMs": 23.697,
+   "blkWriteMs": 638.614,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 414521918
+  }
+ },
+ {
+  "t": 1794636421033,
+  "load1": 4,
+  "availableMb": 29658.1328125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.20503196488038,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 95.01,
+   "memMb": 211.9,
+   "commits": 322129,
+   "rollbacks": 0,
+   "tupInserted": 518894,
+   "blkReadMs": 23.717,
+   "blkWriteMs": 648.82,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 421143356
+  }
+ },
+ {
+  "t": 1794636426033,
+  "load1": 4.16,
+  "availableMb": 29684.73046875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 42.99719606685016,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 105.25,
+   "memMb": 212.6,
+   "commits": 326691,
+   "rollbacks": 0,
+   "tupInserted": 527957,
+   "blkReadMs": 23.753,
+   "blkWriteMs": 658.952,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 427543034
+  }
+ },
+ {
+  "t": 1794636431036,
+  "load1": 3.98,
+  "availableMb": 29596.84765625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.60204312657902,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 104.14,
+   "memMb": 212.9,
+   "commits": 331264,
+   "rollbacks": 0,
+   "tupInserted": 537056,
+   "blkReadMs": 23.772,
+   "blkWriteMs": 668.872,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 433957536
+  }
+ },
+ {
+  "t": 1794636436034,
+  "load1": 3.75,
+  "availableMb": 29551.03125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.99653570651814,
+    "rssMb": 537.8046875
+   }
+  },
+  "pg": {
+   "cpuPct": 100.92,
+   "memMb": 213.1,
+   "commits": 335831,
+   "rollbacks": 0,
+   "tupInserted": 546110,
+   "blkReadMs": 23.801,
+   "blkWriteMs": 679.072,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 2,
+   "waitingOnLocks": 0,
+   "walBytes": 440458456
+  }
+ },
+ {
+  "t": 1794636441035,
+  "load1": 3.77,
+  "availableMb": 29502.0390625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 50.603763361398414,
+    "rssMb": 539.0546875
+   }
+  },
+  "pg": {
+   "cpuPct": 97.19,
+   "memMb": 213.4,
+   "commits": 344389,
+   "rollbacks": 0,
+   "tupInserted": 555220,
+   "blkReadMs": 23.812,
+   "blkWriteMs": 688.892,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 447491713
+  }
+ },
+ {
+  "t": 1794636446036,
+  "load1": 3.95,
+  "availableMb": 29455.9921875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 44.99652941768591,
+    "rssMb": 539.0546875
+   }
+  },
+  "pg": {
+   "cpuPct": 98.79,
+   "memMb": 213.4,
+   "commits": 348929,
+   "rollbacks": 0,
+   "tupInserted": 564304,
+   "blkReadMs": 23.856,
+   "blkWriteMs": 699.4,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 454191789
+  }
+ },
+ {
+  "t": 1794636451033,
+  "load1": 3.87,
+  "availableMb": 29402.578125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 45.20366627047535,
+    "rssMb": 539.0546875
+   }
+  },
+  "pg": {
+   "cpuPct": 106.37,
+   "memMb": 214,
+   "commits": 353339,
+   "rollbacks": 0,
+   "tupInserted": 573145,
+   "blkReadMs": 23.927,
+   "blkWriteMs": 708.948,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 3,
+   "waitingOnLocks": 0,
+   "walBytes": 460828904
+  }
+ },
+ {
+  "t": 1794636456033,
+  "load1": 3.72,
+  "availableMb": 29384.55078125,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 49.40070376242582,
+    "rssMb": 539.0546875
+   }
+  },
+  "pg": {
+   "cpuPct": 95.04,
+   "memMb": 214.1,
+   "commits": 358263,
+   "rollbacks": 0,
+   "tupInserted": 582951,
+   "blkReadMs": 24.023,
+   "blkWriteMs": 720,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 468578198
+  }
+ },
+ {
+  "t": 1794636461034,
+  "load1": 3.66,
+  "availableMb": 29293.8046875,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 46.2003796932002,
+    "rssMb": 539.0546875
+   }
+  },
+  "pg": {
+   "cpuPct": 96.17,
+   "memMb": 214.7,
+   "commits": 362908,
+   "rollbacks": 0,
+   "tupInserted": 592351,
+   "blkReadMs": 24.194,
+   "blkWriteMs": 730.156,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 1,
+   "waitingOnLocks": 0,
+   "walBytes": 475808630
+  }
+ },
+ {
+  "t": 1794636466035,
+  "load1": 3.77,
+  "availableMb": 29095.890625,
+  "swapUsedMb": 17514.8984375,
+  "server": {
+   "4450": {
+    "cpuPct": 43.79066572182507,
+    "rssMb": 539.2109375
+   }
+  },
+  "pg": {
+   "cpuPct": 68.58,
+   "memMb": 213.7,
+   "commits": 367671,
+   "rollbacks": 0,
+   "tupInserted": 600808,
+   "blkReadMs": 24.693,
+   "blkWriteMs": 740.314,
+   "deadlocks": 0,
+   "backends": 11,
+   "active": 0,
+   "waitingOnLocks": 0,
+   "walBytes": 482469807
+  }
+ }
+]

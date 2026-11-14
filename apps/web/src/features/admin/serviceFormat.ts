@@ -149,8 +149,9 @@ export function toSessionQuery(form: SessionFilterForm): SessionListFilters {
 }
 
 /** "Round 2 — System design" or "Round 2". */
-export function roundLabel(round: { number: number; name: string | null }): string {
-  return round.name ? `Round ${round.number} — ${round.name}` : `Round ${round.number}`;
+export function roundLabel(round: { number: number | string; name: string | null }): string {
+  const number = String(round.number);
+  return round.name ? `Round ${number} — ${round.name}` : `Round ${number}`;
 }
 
 export const LINK_STATE_LABEL = {

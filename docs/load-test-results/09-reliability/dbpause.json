@@ -1,0 +1,375 @@
+{
+ "scenario": "dbpause",
+ "title": "Reliability: database unavailable for a while",
+ "topology": "C",
+ "startedAt": "2026-11-14T07:29:57.611Z",
+ "config": {
+  "docs": 100,
+  "clients": 400,
+  "typingRate": 1,
+  "pauseS": 10
+ },
+ "phases": [
+  {
+   "name": "database paused for 10 s during typing",
+   "durationS": 60.078,
+   "latency": {
+    "u": {
+     "remote": {
+      "n": 24028,
+      "min": 0.094482421875,
+      "p50": 0.63916015625,
+      "p95": 1.11279296875,
+      "p99": 1.39794921875,
+      "mean": 0.6745217839116083,
+      "max": 17.74169921875
+     },
+     "ack": {
+      "n": 24029,
+      "min": 1.68603515625,
+      "p50": 3.506103515625,
+      "p95": 7081.986572265625,
+      "p99": 9499.5380859375,
+      "mean": 851.731901243517,
+      "max": 10066.001708984375
+     }
+    },
+    "ALL": {
+     "remote": {
+      "n": 24028,
+      "min": 0.094482421875,
+      "p50": 0.63916015625,
+      "p95": 1.11279296875,
+      "p99": 1.39794921875,
+      "mean": 0.6745217839116083,
+      "max": 17.74169921875
+     },
+     "ack": {
+      "n": 24029,
+      "min": 1.68603515625,
+      "p50": 3.506103515625,
+      "p95": 7081.986572265625,
+      "p99": 9499.5380859375,
+      "mean": 851.731901243517,
+      "max": 10066.001708984375
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "edits": 24027,
+     "save_error_storage_unavailable": 1889,
+     "persistence_degraded": 320,
+     "persistence_ok": 320
+    }
+   },
+   "errors": {},
+   "closeCodes": {},
+   "generator": [
+    {
+     "pid": 91830,
+     "cpuPct": 2.777224397520702,
+     "cpuSecondsTotal": 7.558678,
+     "rssMb": 166.4375,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.108351,
+     "clients": 52
+    },
+    {
+     "pid": 91877,
+     "cpuPct": 2.357827504357385,
+     "cpuSecondsTotal": 7.339177,
+     "rssMb": 160.88671875,
+     "lagP99Ms": 10.903551,
+     "lagMaxMs": 11.419647,
+     "clients": 52
+    },
+    {
+     "pid": 91893,
+     "cpuPct": 2.581116730351437,
+     "cpuSecondsTotal": 7.640713,
+     "rssMb": 168.7109375,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.239423,
+     "clients": 52
+    },
+    {
+     "pid": 91901,
+     "cpuPct": 2.7828810992216835,
+     "cpuSecondsTotal": 7.812698,
+     "rssMb": 168.89453125,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.337727,
+     "clients": 52
+    },
+    {
+     "pid": 91928,
+     "cpuPct": 2.3883957849559714,
+     "cpuSecondsTotal": 7.20032,
+     "rssMb": 158.8359375,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 11.673599,
+     "clients": 48
+    },
+    {
+     "pid": 91954,
+     "cpuPct": 2.857385513566834,
+     "cpuSecondsTotal": 7.662568,
+     "rssMb": 125.07421875,
+     "lagP99Ms": 10.911743,
+     "lagMaxMs": 14.622719,
+     "clients": 48
+    },
+    {
+     "pid": 91968,
+     "cpuPct": 2.37865586473666,
+     "cpuSecondsTotal": 7.308899,
+     "rssMb": 156.9921875,
+     "lagP99Ms": 10.919935,
+     "lagMaxMs": 11.771903,
+     "clients": 48
+    },
+    {
+     "pid": 91976,
+     "cpuPct": 2.4364809818081956,
+     "cpuSecondsTotal": 7.303102,
+     "rssMb": 156.421875,
+     "lagP99Ms": 10.903551,
+     "lagMaxMs": 12.255231,
+     "clients": 48
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 14,
+     "upSamples": 14,
+     "cpuPctAvg": 13.100989652332856,
+     "cpuPctMax": 17.684690618762524,
+     "rssMbMax": 416.0390625,
+     "rssMbEnd": 416.0390625,
+     "heapMbMax": 166.7069854736328,
+     "wsMax": 204,
+     "wsForwardedMax": 76,
+     "docsLoadedMax": 51,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 42,
+     "poolWaitingAvg": 6,
+     "lagP99MaxMs": 21.053439,
+     "queueBytesMax": 47338,
+     "redisPingMaxMs": 6.033162000006996,
+     "yjsUpdates": 12261,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 10299,
+       "meanMs": 31.150248172832253,
+       "p95UpperMs": 5,
+       "p99UpperMs": 25
+      },
+      "compact": {
+       "count": 51,
+       "meanMs": 2.7502826666699005,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "forwarded": 0,
+      "accepted": 0
+     }
+    },
+    {
+     "port": 4451,
+     "samples": 14,
+     "upSamples": 14,
+     "cpuPctAvg": 13.898191203148906,
+     "cpuPctMax": 17.897445109780424,
+     "rssMbMax": 322.796875,
+     "rssMbEnd": 322.796875,
+     "heapMbMax": 159.56151580810547,
+     "wsMax": 196,
+     "wsForwardedMax": 80,
+     "docsLoadedMax": 49,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 48,
+     "poolWaitingAvg": 6.357142857142857,
+     "lagP99MaxMs": 21.020671,
+     "queueBytesMax": 47776,
+     "redisPingMaxMs": 0.8036879999999655,
+     "yjsUpdates": 11774,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 9906,
+       "meanMs": 31.05822533192002,
+       "p95UpperMs": 5,
+       "p99UpperMs": 25
+      },
+      "compact": {
+       "count": 49,
+       "meanMs": 3.0000123265318153,
+       "p95UpperMs": 5,
+       "p99UpperMs": 10
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "forwarded": 0,
+      "accepted": 0
+     }
+    }
+   ],
+   "hostLoadMax": 2.68,
+   "extra": {
+    "pausedAt": "2026-11-14T07:30:52.797Z",
+    "resumedAt": "2026-11-14T07:31:02.835Z"
+   }
+  }
+ ],
+ "results": {
+  "quiesce": {
+   "ok": true,
+   "unacked": 0,
+   "waitedMs": 1
+  },
+  "verification": {
+   "docs": 100,
+   "checked": 36052,
+   "missing": 0,
+   "missingSamples": [],
+   "unackedAtEnd": 0,
+   "exportErrors": 0
+  },
+  "system": {
+   "samples": 22,
+   "host": {
+    "load1Max": 3.4,
+    "availableMbMin": 29242.8,
+    "swapUsedMbMax": 17529.7
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 13.2,
+     "cpuPctMax": 17.4,
+     "rssMbMax": 416
+    },
+    "4451": {
+     "cpuPctAvg": 13,
+     "cpuPctMax": 18,
+     "rssMbMax": 322.8
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 41.3,
+    "cpuPctMax": 97.4,
+    "memMbMax": 189.8,
+    "commitsPerSecond": 404.6,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 603.1,
+    "walMbPerSecond": 0.4,
+    "blockReadMs": 0,
+    "blockWriteMs": 78.4,
+    "deadlocks": 0,
+    "backendsMax": 21,
+    "activeMax": 3,
+    "waitingOnLocksMax": 0
+   }
+  },
+  "systemWholeScenario": {
+   "samples": 22,
+   "host": {
+    "load1Max": 3.4,
+    "availableMbMin": 29242.8,
+    "swapUsedMbMax": 17529.7
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 13.2,
+     "cpuPctMax": 17.4,
+     "rssMbMax": 416
+    },
+    "4451": {
+     "cpuPctAvg": 13,
+     "cpuPctMax": 18,
+     "rssMbMax": 322.8
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 41.3,
+    "cpuPctMax": 97.4,
+    "memMbMax": 189.8,
+    "commitsPerSecond": 404.6,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 603.1,
+    "walMbPerSecond": 0.4,
+    "blockReadMs": 0,
+    "blockWriteMs": 78.4,
+    "deadlocks": 0,
+    "backendsMax": 21,
+    "activeMax": 3,
+    "waitingOnLocksMax": 0
+   }
+  }
+ },
+ "notes": [
+  "Scenario s12 of tests/load/src/scenarios.ts, run by the performance framework."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-14T07:31:47.997Z"
+}

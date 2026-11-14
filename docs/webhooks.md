@@ -7,7 +7,7 @@ so recreate endpoints after such a rotation).
 
 ## Events
 
-`session.created`, `participant.joined` (first join of each participant, `role` is `candidate` or
+`session.created` (its `roundNumber` is a string of digits, like `round.number` in the API), `participant.joined` (first join of each participant, `role` is `candidate` or
 `interviewer`), `document.first_edited`, `session.started`, `session.completed`, `session.cancelled`,
 `access.revoked` (`reason`: `participant_removed`, `links_rotated`, `session_completed`, `session_cancelled`,
 `session_archived`).

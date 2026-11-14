@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "typeRoots": ["../../node_modules/@types", "../load/node_modules/@types"],
+    "noEmit": true,
+    "allowJs": false
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,0 +1,394 @@
+{
+ "scenario": "access",
+ "title": "Reliability: revoked and expired links",
+ "topology": "C",
+ "startedAt": "2026-11-14T07:31:50.002Z",
+ "config": {
+  "revokedLinks": 50,
+  "guests": 200,
+  "expiringLinks": 25,
+  "expiringGuests": 100,
+  "revokedThroughInstance": 2,
+  "collabSweepIntervalS": "server default 30",
+  "expiresInS": 150
+ },
+ "phases": [
+  {
+   "name": "revoke 50 links through the other instance",
+   "durationS": 20.303,
+   "latency": {
+    "ALL": {}
+   },
+   "counts": {
+    "revoke": {
+     "access_revoked": 200
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "4403 access_revoked": 200
+   },
+   "generator": [
+    {
+     "pid": 91830,
+     "cpuPct": 0.5887592303987644,
+     "cpuSecondsTotal": 7.925051,
+     "rssMb": 166.59375,
+     "lagP99Ms": 10.436607,
+     "lagMaxMs": 11.321343,
+     "clients": 44
+    },
+    {
+     "pid": 91877,
+     "cpuPct": 0.4394256691037539,
+     "cpuSecondsTotal": 7.71295,
+     "rssMb": 112.4453125,
+     "lagP99Ms": 10.551295,
+     "lagMaxMs": 11.083775,
+     "clients": 40
+    },
+    {
+     "pid": 91893,
+     "cpuPct": 0.3877735924918769,
+     "cpuSecondsTotal": 7.915454,
+     "rssMb": 168.7109375,
+     "lagP99Ms": 10.452991,
+     "lagMaxMs": 12.042239,
+     "clients": 36
+    },
+    {
+     "pid": 91901,
+     "cpuPct": 0.416954419400295,
+     "cpuSecondsTotal": 8.09118,
+     "rssMb": 168.89453125,
+     "lagP99Ms": 10.461183,
+     "lagMaxMs": 11.132927,
+     "clients": 36
+    },
+    {
+     "pid": 91928,
+     "cpuPct": 0.42556643778475484,
+     "cpuSecondsTotal": 7.586098,
+     "rssMb": 114.078125,
+     "lagP99Ms": 10.461183,
+     "lagMaxMs": 11.206655,
+     "clients": 36
+    },
+    {
+     "pid": 91954,
+     "cpuPct": 0.3969539566820646,
+     "cpuSecondsTotal": 7.954703,
+     "rssMb": 126.01171875,
+     "lagP99Ms": 10.510335,
+     "lagMaxMs": 10.944511,
+     "clients": 36
+    },
+    {
+     "pid": 91968,
+     "cpuPct": 0.43301552229631207,
+     "cpuSecondsTotal": 7.629424,
+     "rssMb": 156.90234375,
+     "lagP99Ms": 10.452991,
+     "lagMaxMs": 10.690559,
+     "clients": 36
+    },
+    {
+     "pid": 91976,
+     "cpuPct": 0.43336242471380293,
+     "cpuSecondsTotal": 7.667122,
+     "rssMb": 112.2578125,
+     "lagP99Ms": 10.502143,
+     "lagMaxMs": 10.723327,
+     "clients": 36
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 6,
+     "upSamples": 6,
+     "cpuPctAvg": 2.603169904040654,
+     "cpuPctMax": 8.007159624413147,
+     "rssMbMax": 416.6640625,
+     "rssMbEnd": 416.6640625,
+     "heapMbMax": 140.52945709228516,
+     "wsMax": 132,
+     "wsForwardedMax": 63,
+     "docsLoadedMax": 33,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 20.889598999999997,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0.6900049999821931,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 22,
+       "meanMs": 8.12760986363256,
+       "p95UpperMs": 25,
+       "p99UpperMs": 25
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 110,
+       "meanMs": 2.9180033545459665,
+       "p95UpperMs": 10
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 100,
+       "meanMs": 3.059106130000746,
+       "p95UpperMs": 10
+      },
+      "/api/share/exchange": {
+       "count": 10,
+       "meanMs": 1.5069755999981727,
+       "p95UpperMs": 5
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "forwarded": 0,
+      "accepted": 0
+     }
+    },
+    {
+     "port": 4451,
+     "samples": 6,
+     "upSamples": 6,
+     "cpuPctAvg": 3.206801323395972,
+     "cpuPctMax": 9.545653761869971,
+     "rssMbMax": 325.0546875,
+     "rssMbEnd": 325.0546875,
+     "heapMbMax": 160.1123046875,
+     "wsMax": 168,
+     "wsForwardedMax": 46,
+     "docsLoadedMax": 42,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 20.971519,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0.5375559999956749,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 28,
+       "meanMs": 12.496919428572129,
+       "p95UpperMs": 25,
+       "p99UpperMs": 25
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 160,
+       "meanMs": 28.02054411249937,
+       "p95UpperMs": 100
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 100,
+       "meanMs": 3.1317783300005226,
+       "p95UpperMs": 10
+      },
+      "/api/documents/:documentId/shares/:shareId/revoke": {
+       "count": 50,
+       "meanMs": 83.08006089999748,
+       "p95UpperMs": 250
+      },
+      "/api/share/exchange": {
+       "count": 10,
+       "meanMs": 1.6106179999973547,
+       "p95UpperMs": 5
+      },
+      "/api/documents/:documentId/export": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "forwarded": 0,
+      "accepted": 0
+     }
+    }
+   ],
+   "hostLoadMax": 2.25,
+   "extra": {
+    "revokeApiStatus": {
+     "200": 50
+    },
+    "revokeApiMs": 131.699951171875,
+    "socketsToCloseAfterRevoke": 200,
+    "closeLatencyMs": {
+     "n": 200,
+     "min": 47.439453125,
+     "p50": 105.4755859375,
+     "p95": 129.90771484375,
+     "p99": 132.5712890625,
+     "mean": 104.0702197265625,
+     "max": 132.881591796875
+    },
+    "socketsClosed": 200,
+    "socketsStillOpen": 0,
+    "closeCodes": {
+     "4403 access_revoked": 200
+    },
+    "ticketAfterRevokeStatusCounts": {
+     "410": 200
+    },
+    "exchangeAfterRevokeStatusCounts": {
+     "410": 20
+    }
+   }
+  }
+ ],
+ "results": {
+  "expiry": {
+   "guests": 100,
+   "closedAfterExpiryMs": {
+    "n": 100,
+    "min": 58.918701171875,
+    "p50": 72.355712890625,
+    "p95": 97.267822265625,
+    "p99": 101.31396484375,
+    "mean": 75.74417236328125,
+    "max": 101.60009765625
+   },
+   "stillOpen": 0,
+   "exchangeAfterExpiryStatus": 410
+  },
+  "revocation": {
+   "closeLatencyMs": {
+    "n": 200,
+    "min": 47.439453125,
+    "p50": 105.4755859375,
+    "p95": 129.90771484375,
+    "p99": 132.5712890625,
+    "mean": 104.0702197265625,
+    "max": 132.881591796875
+   },
+   "stillOpen": 0
+  },
+  "system": {
+   "samples": 45,
+   "host": {
+    "load1Max": 3.4,
+    "availableMbMin": 29318.6,
+    "swapUsedMbMax": 17529.7
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 1.1,
+     "cpuPctMax": 8.6,
+     "rssMbMax": 416.7
+    },
+    "4451": {
+     "cpuPctAvg": 1.2,
+     "cpuPctMax": 8.8,
+     "rssMbMax": 325.1
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 3.8,
+    "cpuPctMax": 30,
+    "memMbMax": 199.6,
+    "commitsPerSecond": 43.3,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 5.8,
+    "walMbPerSecond": 0,
+    "blockReadMs": 0,
+    "blockWriteMs": 1.3,
+    "deadlocks": 0,
+    "backendsMax": 21,
+    "activeMax": 1,
+    "waitingOnLocksMax": 0
+   }
+  },
+  "systemWholeScenario": {
+   "samples": 45,
+   "host": {
+    "load1Max": 3.4,
+    "availableMbMin": 29318.6,
+    "swapUsedMbMax": 17529.7
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 1.1,
+     "cpuPctMax": 8.6,
+     "rssMbMax": 416.7
+    },
+    "4451": {
+     "cpuPctAvg": 1.2,
+     "cpuPctMax": 8.8,
+     "rssMbMax": 325.1
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 3.8,
+    "cpuPctMax": 30,
+    "memMbMax": 199.6,
+    "commitsPerSecond": 43.3,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 5.8,
+    "walMbPerSecond": 0,
+    "blockReadMs": 0,
+    "blockWriteMs": 1.3,
+    "deadlocks": 0,
+    "backendsMax": 21,
+    "activeMax": 1,
+    "waitingOnLocksMax": 0
+   }
+  }
+ },
+ "notes": [
+  "Scenario s14 of tests/load/src/scenarios.ts, run by the performance framework."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-14T07:35:35.117Z"
+}

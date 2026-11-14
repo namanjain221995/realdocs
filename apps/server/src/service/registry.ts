@@ -49,6 +49,11 @@ export interface ServiceRoute {
   /** Success status. */
   status: number;
   response: z.ZodType | null;
+  /**
+   * Answers that are not JSON (text, a file, an archive): the handler returns a `RawResponse`
+   * and the OpenAPI document lists these media types next to the JSON one, if any.
+   */
+  media?: readonly { type: string; description: string; binary?: boolean }[];
   /** Honours the `Idempotency-Key` header. */
   idempotent?: boolean;
   /** Also served to signed-in administrators under `/api/admin`. */

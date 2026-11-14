@@ -12,3 +12,5 @@ data
 *.min.js
 RealtimeDocs_Claude_Code_Master_Prompt.txt
 tests/load/results
+# Generated result files of the performance framework (tests/performance).
+docs/load-test-results/

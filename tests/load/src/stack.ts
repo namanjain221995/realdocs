@@ -268,7 +268,13 @@ export async function up(options: UpOptions): Promise<StackState> {
     'POSTGRES_USER=rd',
     '-e',
     'POSTGRES_DB=realtimedocs_load',
+    // Optional bounds and statement statistics for the performance framework (tests/performance).
+    ...(process.env.RD_LOAD_PG_CPUS ? ['--cpus', process.env.RD_LOAD_PG_CPUS] : []),
+    ...(process.env.RD_LOAD_PG_MEMORY ? ['--memory', process.env.RD_LOAD_PG_MEMORY] : []),
     'postgres:17.11-alpine',
+    ...(process.env.RD_LOAD_PG_STATEMENTS === '1'
+      ? ['-c', 'shared_preload_libraries=pg_stat_statements', '-c', 'track_io_timing=on']
+      : []),
   );
   if (options.redis) {
     log('starting Redis container rd-load-redis');

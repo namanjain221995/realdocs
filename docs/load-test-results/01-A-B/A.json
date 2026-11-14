@@ -1,0 +1,477 @@
+{
+ "scenario": "A",
+ "title": "A. Two people editing one document",
+ "topology": "A",
+ "startedAt": "2026-11-14T05:51:35.743Z",
+ "config": {
+  "documents": 1,
+  "users": 2,
+  "rounds": 100,
+  "workers": "one process, one clock"
+ },
+ "phases": [
+  {
+   "name": "pair session",
+   "durationS": 17.807,
+   "latency": {
+    "pair": {
+     "ticketMs": {
+      "n": 3,
+      "min": 4.529296875,
+      "p50": 6.109375,
+      "p95": 9.1015625,
+      "p99": 9.1015625,
+      "mean": 6.580078125,
+      "max": 9.1015625
+     },
+     "connect": {
+      "n": 2,
+      "min": 37.7783203125,
+      "p50": 37.7783203125,
+      "p95": 95.291748046875,
+      "p99": 95.291748046875,
+      "mean": 66.5350341796875,
+      "max": 95.291748046875
+     },
+     "reconnect": {
+      "n": 1,
+      "min": 288.42724609375,
+      "p50": 288.42724609375,
+      "p95": 288.42724609375,
+      "p99": 288.42724609375,
+      "mean": 288.42724609375,
+      "max": 288.42724609375
+     }
+    },
+    "ALL": {
+     "ticketMs": {
+      "n": 3,
+      "min": 4.529296875,
+      "p50": 6.109375,
+      "p95": 9.1015625,
+      "p99": 9.1015625,
+      "mean": 6.580078125,
+      "max": 9.1015625
+     },
+     "connect": {
+      "n": 2,
+      "min": 37.7783203125,
+      "p50": 37.7783203125,
+      "p95": 95.291748046875,
+      "p99": 95.291748046875,
+      "mean": 66.5350341796875,
+      "max": 95.291748046875
+     },
+     "reconnect": {
+      "n": 1,
+      "min": 288.42724609375,
+      "p50": 288.42724609375,
+      "p95": 288.42724609375,
+      "p99": 288.42724609375,
+      "mean": 288.42724609375,
+      "max": 288.42724609375
+     }
+    }
+   },
+   "counts": {
+    "pair": {
+     "drops": 1,
+     "reconnects": 1
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1005": 1
+   },
+   "generator": [
+    {
+     "pid": 3628287,
+     "cpuPct": 25.77027513108571,
+     "cpuSecondsTotal": 5.231284,
+     "rssMb": 163.046875,
+     "lagP99Ms": 11.034623,
+     "lagMaxMs": 300.941311,
+     "clients": 2
+    },
+    {
+     "pid": 3628306,
+     "cpuPct": 0.24021197824138477,
+     "cpuSecondsTotal": 0.293932,
+     "rssMb": 97.015625,
+     "lagP99Ms": 10.264575,
+     "lagMaxMs": 11.124735,
+     "clients": 0
+    },
+    {
+     "pid": 3628314,
+     "cpuPct": 0.28634543302623755,
+     "cpuSecondsTotal": 0.317628,
+     "rssMb": 94.328125,
+     "lagP99Ms": 10.231807,
+     "lagMaxMs": 10.534911,
+     "clients": 0
+    },
+    {
+     "pid": 3628322,
+     "cpuPct": 0.2589830822740202,
+     "cpuSecondsTotal": 0.262987,
+     "rssMb": 94.875,
+     "lagP99Ms": 10.272767,
+     "lagMaxMs": 10.567679,
+     "clients": 0
+    },
+    {
+     "pid": 3628330,
+     "cpuPct": 0.23903461592696523,
+     "cpuSecondsTotal": 0.272806,
+     "rssMb": 95.80859375,
+     "lagP99Ms": 10.239999,
+     "lagMaxMs": 10.477567,
+     "clients": 0
+    },
+    {
+     "pid": 3628405,
+     "cpuPct": 0.28723009576536845,
+     "cpuSecondsTotal": 0.278369,
+     "rssMb": 94.55078125,
+     "lagP99Ms": 10.338303,
+     "lagMaxMs": 10.526719,
+     "clients": 0
+    },
+    {
+     "pid": 3628508,
+     "cpuPct": 0.2801207546281354,
+     "cpuSecondsTotal": 0.292868,
+     "rssMb": 94.609375,
+     "lagP99Ms": 10.248191,
+     "lagMaxMs": 10.805247,
+     "clients": 0
+    },
+    {
+     "pid": 3628535,
+     "cpuPct": 0.2521910363506515,
+     "cpuSecondsTotal": 0.317226,
+     "rssMb": 98.48046875,
+     "lagP99Ms": 10.248191,
+     "lagMaxMs": 10.616831,
+     "clients": 0
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 4,
+     "upSamples": 4,
+     "cpuPctAvg": 8.357547346047193,
+     "cpuPctMax": 12.421391443422632,
+     "rssMbMax": 300.9296875,
+     "rssMbEnd": 300.9296875,
+     "heapMbMax": 149.6422348022461,
+     "wsMax": 2,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 1,
+     "poolMax": 10,
+     "poolConnectionsMax": 3,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.282815,
+     "queueBytesMax": 31,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 1514,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 1252,
+       "meanMs": 2.6292150686900904,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      },
+      "compact": {
+       "count": 1,
+       "meanMs": 9.15787199999977,
+       "p95UpperMs": 10,
+       "p99UpperMs": 10
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 1,
+       "meanMs": 4.128978000000644,
+       "p95UpperMs": 5
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 1,
+       "meanMs": 4.128978000000644,
+       "p95UpperMs": 5
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 1
+     }
+    }
+   ],
+   "hostLoadMax": 2.99,
+   "extra": {
+    "firstAttempt": {
+     "ok": 2
+    },
+    "system": {
+     "samples": 3,
+     "host": {
+      "load1Max": 2.8,
+      "availableMbMin": 30321.5,
+      "swapUsedMbMax": 17515.5
+     },
+     "server": {
+      "4450": {
+       "cpuPctAvg": 9.6,
+       "cpuPctMax": 11.2,
+       "rssMbMax": 300.8
+      }
+     },
+     "postgres": {
+      "cpuPctAvg": 15.5,
+      "cpuPctMax": 23.1,
+      "memMbMax": 39.9,
+      "commitsPerSecond": 84.2,
+      "rollbacksPerSecond": 0,
+      "rowsInsertedPerSecond": 187.2,
+      "walMbPerSecond": 0.1,
+      "blockReadMs": 0.7,
+      "blockWriteMs": 3.6,
+      "deadlocks": 0,
+      "backendsMax": 4,
+      "activeMax": 1,
+      "waitingOnLocksMax": 0
+     }
+    }
+   }
+  }
+ ],
+ "results": {
+  "operationLatencyMs": {
+   "typing:remote": {
+    "n": 400,
+    "min": 0.23393899999973655,
+    "p50": 0.794025999999576,
+    "p95": 1.2743839999998272,
+    "p99": 1.571299000000181,
+    "mean": 0.8127365224999943,
+    "max": 3.0562459999998737
+   },
+   "typing:ack": {
+    "n": 400,
+    "min": 1.7494290000004185,
+    "p50": 3.243271999999706,
+    "p95": 4.419575000000805,
+    "p99": 5.25339299999996,
+    "mean": 3.263885702499976,
+    "max": 6.241070000000036
+   },
+   "deletion:remote": {
+    "n": 200,
+    "min": 0.17651400000022477,
+    "p50": 0.713369000000057,
+    "p95": 1.155678999999509,
+    "p99": 1.4044169999997393,
+    "mean": 0.7471826949999786,
+    "max": 2.1669710000001032
+   },
+   "deletion:ack": {
+    "n": 200,
+    "min": 1.749478000000181,
+    "p50": 3.000836999999592,
+    "p95": 4.187426999999843,
+    "p99": 4.7025549999998475,
+    "mean": 3.110786024999986,
+    "max": 5.160224000000198
+   },
+   "formatting:remote": {
+    "n": 200,
+    "min": 0.26313900000013746,
+    "p50": 0.7721700000001874,
+    "p95": 1.2745750000003682,
+    "p99": 1.6894609999999375,
+    "mean": 0.8024950450000449,
+    "max": 2.0959300000004077
+   },
+   "formatting:ack": {
+    "n": 200,
+    "min": 1.6914290000004257,
+    "p50": 3.068822000000182,
+    "p95": 4.139732000000095,
+    "p99": 5.045326999999816,
+    "mean": 3.1130299450000085,
+    "max": 5.2467370000001665
+   },
+   "paragraph:remote": {
+    "n": 200,
+    "min": 0.13102600000001985,
+    "p50": 0.490629999999328,
+    "p95": 0.8526179999998931,
+    "p99": 1.0112759999997252,
+    "mean": 0.5048826900000074,
+    "max": 1.4158099999995102
+   },
+   "paragraph:ack": {
+    "n": 200,
+    "min": 1.7277169999997568,
+    "p50": 2.918836000000283,
+    "p95": 3.9648489999999583,
+    "p99": 4.764282999999978,
+    "mean": 2.967650664999986,
+    "max": 4.936877000000095
+   },
+   "paste2kB:remote": {
+    "n": 200,
+    "min": 0.20504200000004857,
+    "p50": 0.7671299999997245,
+    "p95": 1.1687339999998585,
+    "p99": 1.311087999999927,
+    "mean": 0.7657182900000157,
+    "max": 1.918199999999615
+   },
+   "paste2kB:ack": {
+    "n": 200,
+    "min": 1.692613000000165,
+    "p50": 2.982212999999774,
+    "p95": 4.170851999999968,
+    "p99": 4.731082999999899,
+    "mean": 3.0422088399999927,
+    "max": 5.039038000000346
+   },
+   "cursor:remote": {
+    "n": 200,
+    "min": 0.46434099999987666,
+    "p50": 11.104777999999897,
+    "p95": 16.934514000000036,
+    "p99": 18.744488000000274,
+    "mean": 10.925675049999965,
+    "max": 19.04550100000006
+   },
+   "reconnect:caughtUp": {
+    "n": 1,
+    "min": 290.78042600000117,
+    "p50": 290.78042600000117,
+    "p95": 290.78042600000117,
+    "p99": 290.78042600000117,
+    "mean": 290.78042600000117,
+    "max": 290.78042600000117
+   }
+  },
+  "timeoutsPerOperation": {
+   "typing:remote": 0,
+   "typing:ack": 0,
+   "deletion:remote": 0,
+   "deletion:ack": 0,
+   "formatting:remote": 0,
+   "formatting:ack": 0,
+   "paragraph:remote": 0,
+   "paragraph:ack": 0,
+   "paste2kB:remote": 0,
+   "paste2kB:ack": 0,
+   "cursor:remote": 0,
+   "reconnect:caughtUp": 0
+  },
+  "editToRemoteVisibleAllOperations": {
+   "n": 1200,
+   "min": 0.13102600000001985,
+   "p50": 0.7226810000001933,
+   "p95": 1.1909579999992275,
+   "p99": 1.5387069999997038,
+   "mean": 0.7409586275000059,
+   "max": 3.0562459999998737
+  },
+  "editToSavedAcknowledgement": {
+   "n": 1200,
+   "min": 1.6914290000004257,
+   "p50": 3.0593340000000353,
+   "p95": 4.262741000000005,
+   "p99": 4.992062000000033,
+   "mean": 3.126907813333322,
+   "max": 6.241070000000036
+  },
+  "simultaneousTyping": {
+   "tokensTyped": 1000,
+   "missingAfterMerge": 0,
+   "inServerExport": 1000
+  },
+  "convergedBetweenTheTwoClients": true,
+  "reloadByFreshClient": [
+   {
+    "ms": 28.44189453125,
+    "stateBytes": 455020,
+    "blocks": 203
+   },
+   {
+    "ms": 38.626953125,
+    "stateBytes": 455020,
+    "blocks": 203
+   },
+   {
+    "ms": 39.6142578125,
+    "stateBytes": 455020,
+    "blocks": 203
+   }
+  ],
+  "serverExportStatus": 200,
+  "documentStateBytes": 455020,
+  "verdict": {
+   "stable": true,
+   "reasons": []
+  },
+  "systemWholeScenario": {
+   "samples": 3,
+   "host": {
+    "load1Max": 2.8,
+    "availableMbMin": 30321.5,
+    "swapUsedMbMax": 17515.5
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 9.6,
+     "cpuPctMax": 11.2,
+     "rssMbMax": 300.8
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 15.5,
+    "cpuPctMax": 23.1,
+    "memMbMax": 39.9,
+    "commitsPerSecond": 84.2,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 187.2,
+    "walMbPerSecond": 0.1,
+    "blockReadMs": 0.7,
+    "blockWriteMs": 3.6,
+    "deadlocks": 0,
+    "backendsMax": 4,
+    "activeMax": 1,
+    "waitingOnLocksMax": 0
+   }
+  }
+ },
+ "notes": [],
+ "status": "ok",
+ "endedAt": "2026-11-14T05:51:55.639Z"
+}

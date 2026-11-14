@@ -16,6 +16,17 @@ Migrations `0002_service_api`, `0003_history` and `0004_releases`. They only add
 No existing row is changed and nothing is dropped. On a copy of the production database of 2026-11-12
 (4 documents, 76 assets) the three migrations took 0.15 s.
 
+Since 2026-11-14 there is also `0005_audit_document_indexes`: two partial indexes on `audit_events`
+for the events list of the version history. It adds no table or column. Not applied to the live
+deployment yet; `deploy/up.sh` applies it. Going back to an image that knows four migrations uses the
+parking script below with `keep=4`; the indexes are harmless to the older version.
+
+Since 2026-11-14 there is also `0006_interviewer_memberships`: a nullable column
+`document_members.interview_participant_id` with a partial index, and `users.address_confirmed`
+(boolean, default true; set to false for existing members who did not accept an invitation issued
+for their address). Additive; an older version ignores both columns. Not applied to the live
+deployment yet. Going back to an image that knows five migrations: `keep=5`.
+
 ## Before upgrading
 
 1. **Rehearse on a copy.** Take a backup and run the rehearsal against it. It restores the backup into a

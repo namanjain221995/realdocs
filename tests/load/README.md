@@ -5,6 +5,10 @@ exchange, single-use collaboration ticket, Hocuspocus provider, the `mark`/`save
 protocol, reconnect with a new ticket and capped exponential backoff. Results of the runs made so far and
 their interpretation: `docs/load-test-report.md`.
 
+The capacity tests of 2026-11-14 (two people up to 5,000, activity profiles, API benchmark, second machine as
+the generator) are in `tests/performance`, which imports this harness; their report is
+`docs/REALDOCS_LOAD_TEST_REPORT.md`.
+
 ## What it starts (all bound to 127.0.0.1)
 
 | Resource                            | Name / port                                                                                |

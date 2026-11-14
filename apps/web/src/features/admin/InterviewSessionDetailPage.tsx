@@ -2,6 +2,7 @@
  * One interview session (administrators): details, participants, links, state changes and audit.
  * Links returned by "add interviewer" and "rotate links" are shown once, from component state.
  */
+import { browserTimeZone, versionsTxtUrl, versionsZipUrl } from '../history/versionsModel';
 import './admin.css';
 import './service.css';
 import type { InterviewSession, SessionParticipant } from '@realtimedocs/contracts';
@@ -284,6 +285,20 @@ function Detail({ session }: { session: InterviewSession }) {
           <Link to={documentPath(session.documentId)} data-testid="session-document-link">
             Open the document
           </Link>
+        </p>
+        <p className="service-downloads" data-testid="session-version-downloads">
+          Version history document:{' '}
+          <a
+            href={versionsTxtUrl(session.documentId, browserTimeZone())}
+            download="doc.txt"
+            data-testid="session-versions-txt"
+          >
+            Download doc.txt
+          </a>
+          {' · '}
+          <a href={versionsZipUrl(session.documentId)} download data-testid="session-versions-zip">
+            Download with images (.zip)
+          </a>
         </p>
 
         <div className="service-actions" role="group" aria-label="Session actions">

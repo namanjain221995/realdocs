@@ -1,6 +1,6 @@
 # Database schema
 
-The schema after migrations 0001 to 0004, as read from `apps/server/migrations/*.sql` and the code that
+The schema after migrations 0001 to 0006 (0005 adds two indexes on `audit_events` and nothing else; 0006 adds `document_members.interview_participant_id` and `users.address_confirmed`), as read from `apps/server/migrations/*.sql` and the code that
 uses it. PostgreSQL 17. Every statement here was checked against the migration files or the named source
 file. Query plans were not measured (no `EXPLAIN` was run for this document), so index rationale says which
 query an index is meant for, not that the planner picks it.
@@ -122,19 +122,25 @@ restore (`generation`), cleanup (purge). Retention: trashed documents are delete
 
 ### document_members
 
-| Column         | Type        | Notes                      |
-| -------------- | ----------- | -------------------------- |
-| `document_id`  | uuid        | FK `documents` CASCADE     |
-| `user_id`      | uuid        | FK `users` CASCADE         |
-| `workspace_id` | uuid        | FK `workspaces` CASCADE    |
-| `role`         | text        | CHECK `viewer` or `editor` |
-| `granted_by`   | uuid        | FK `users` SET NULL        |
-| `granted_at`   | timestamptz | default `now()`            |
+| Column                     | Type        | Notes                                                                                                                                                                                                                                                                                   |
+| -------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document_id`              | uuid        | FK `documents` CASCADE                                                                                                                                                                                                                                                                  |
+| `user_id`                  | uuid        | FK `users` CASCADE                                                                                                                                                                                                                                                                      |
+| `workspace_id`             | uuid        | FK `workspaces` CASCADE                                                                                                                                                                                                                                                                 |
+| `role`                     | text        | CHECK `viewer` or `editor`                                                                                                                                                                                                                                                              |
+| `granted_by`               | uuid        | FK `users` SET NULL                                                                                                                                                                                                                                                                     |
+| `granted_at`               | timestamptz | default `now()`                                                                                                                                                                                                                                                                         |
+| `interview_participant_id` | uuid        | nullable, FK `interview_participants` SET NULL (migration 0006). Set when the server created the membership for an interviewer who has an account; NULL for a membership an administrator added. Only memberships with a value are changed or removed by the interview session service. |
 
 Keys: PK `(document_id, user_id)`. Composite FKs `(workspace_id, document_id)` to `documents (workspace_id, id)`
 and `(workspace_id, user_id)` to `users (workspace_id, id)`, both CASCADE, so both sides of a membership must
-live in the membership's workspace. Index `document_members_user_idx (user_id)`.
-Written by: member routes. Retention: none besides cascades.
+live in the membership's workspace. Indexes `document_members_user_idx (user_id)` and, partial,
+`document_members_participant_idx (interview_participant_id)`.
+Written by: member routes, and the interview session service for interviewers with an account
+(`service/interviewer-accounts.ts`). `users.address_confirmed` (boolean, default true, migration 0006) says
+whether an administrator fixed the account's address (an invitation issued for it, or the first
+administrator); false for self sign-up and for invitations without an address. Only confirmed accounts
+are linked to interview sessions by their address. Retention: none besides cascades.
 
 ### share_grants
 

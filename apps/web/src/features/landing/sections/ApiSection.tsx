@@ -10,7 +10,7 @@ const REQUEST = `curl -sS https://docs.example.com/api/v1/interview-sessions \\
     "candidate": {"name": "Aarav Sharma", "email": "aarav@example.com"},
     "interviewers": [{"name": "Naman Jain", "email": "naman@acme.example"}],
     "companyName": "Acme Corp",
-    "round": {"number": 2, "name": "System design"},
+    "round": {"number": "2", "name": "System design"},
     "scheduledAt": "2030-03-14T15:30:00+05:30",
     "timezone": "Asia/Kolkata",
     "expiresAt": "2030-03-21T00:00:00Z",

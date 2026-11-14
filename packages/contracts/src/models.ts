@@ -66,6 +66,21 @@ export const DocumentSummary = z.object({
   purgeAfter: IsoDate.nullable(),
   createdByName: z.string().nullable(),
   access: AccessInfo,
+  /**
+   * Present in the documents list when the document belongs to an interview session: what the
+   * list needs to show it as one. Absent for ordinary documents.
+   */
+  interview: z
+    .object({
+      sessionId: Id,
+      company: z.string(),
+      round: z.object({ number: z.string(), name: z.string().nullable() }),
+      candidate: z.string().nullable(),
+      scheduledAt: IsoDate,
+      timezone: z.string(),
+      status: z.enum(['scheduled', 'in_progress', 'completed', 'cancelled', 'archived']),
+    })
+    .optional(),
 });
 export type DocumentSummary = z.infer<typeof DocumentSummary>;
 

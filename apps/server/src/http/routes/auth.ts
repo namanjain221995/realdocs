@@ -113,8 +113,11 @@ export function registerAuthRoutes(app: FastifyInstance, { ctx, limits }: RouteD
       outcome = await db.tx(async (tx) => {
         const userId = newId();
         const inserted = await tx.query<UserRow>(
-          `INSERT INTO users (id, workspace_id, email, display_name, password_hash, role)
-           VALUES ($1, $2, $3, $4, $5, 'member')
+          // The address is the person's own claim: such an account is never linked to interview
+          // sessions by its address (service/interviewer-accounts.ts).
+          `INSERT INTO users
+             (id, workspace_id, email, display_name, password_hash, role, address_confirmed)
+           VALUES ($1, $2, $3, $4, $5, 'member', false)
            RETURNING ${USER_COLUMNS}`,
           [userId, workspace.id, email, body.displayName, passwordHash],
         );

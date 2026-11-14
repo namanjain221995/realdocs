@@ -217,7 +217,10 @@ function CreatingSessions() {
           [<code key="a">candidate</code>, 'Name and email of the candidate.'],
           [<code key="b">interviewers</code>, '1 to 20 people with name and email.'],
           [<code key="c">companyName</code>, 'Used in the document title.'],
-          [<code key="d">round</code>, '{ number: 1-99, name?: string }.'],
+          [
+            <code key="d">round</code>,
+            '{ number: "1"-"99" (a string), name?: string }. A number is still accepted on input; responses always carry a string.',
+          ],
           [<code key="e">scheduledAt</code>, 'ISO 8601 date-time with offset.'],
           [
             <code key="f">timezone</code>,
@@ -234,6 +237,11 @@ function CreatingSessions() {
           ],
         ]}
       />
+      <p>
+        An interviewer whose e-mail address belongs to an existing member account is given access to
+        the document in their own account automatically; the response marks that participant with{' '}
+        <Code>accountLinked: true</Code>.
+      </p>
       <h3>Document title</h3>
       <p>
         The document is named{' '}
@@ -301,13 +309,123 @@ function createSnippetBody(): string {
   "candidate": { "name": "Aarav Sharma", "email": "aarav@example.com" },
   "interviewers": [{ "name": "Meera Iyer", "email": "meera@acme.example" }],
   "companyName": "Acme Corp",
-  "round": { "number": 2, "name": "System design" },
+  "round": { "number": "2", "name": "System design" },
   "scheduledAt": "2030-03-14T15:30:00+05:30",
   "timezone": "Asia/Kolkata",
   "expiresAt": "2030-03-28T15:30:00+05:30",
   "permissions": { "candidateCanEdit": true, "interviewerCanEdit": true },
   "metadata": { "externalInterviewId": "int_84721" }
 }`;
+}
+
+const DOC_LAYOUT = `==================================================
+VERSION 1
+Edited At: 2026-06-30 02:21:18 AM IST
+Edited By: Aarav Sharma (Candidate, aarav@example.com)
+Action: Pasted
+
+ADDED:
+- [02:21:18 AM] First line of the answer
+- [02:21:18 AM] [IMAGE 3f6c…] image pasted (images/3f6c….png)
+
+REMOVED:
+- (nothing removed)
+
+CURRENT SNAPSHOT:
+First line of the answer
+[IMAGE 3f6c…] images/3f6c….png`;
+
+function VersionHistoryDocument() {
+  const o = origin();
+  return (
+    <>
+      <p>
+        The version history document is a text file, <Code>doc.txt</Code>, that lists every version
+        of a document with who edited it and when, the lines added and removed, and the current
+        snapshot. The images pasted into the document come with it. All endpoints are read-only and
+        need a key with the scope <Code>documents:history:read</Code>.
+      </p>
+      <h3>Endpoints</h3>
+      <DataTable
+        caption="Version history endpoints"
+        head={['Endpoint', 'Returns']}
+        rows={[
+          [
+            <code key="1">GET /api/v1/documents/&#123;documentId&#125;/version-history</code>,
+            <>
+              <Code>?format=txt</Code> (default) is <Code>doc.txt</Code> as <Code>text/plain</Code>;{' '}
+              <Code>?format=json</Code> is the same data as JSON. Optional{' '}
+              <Code>timezone=&lt;IANA name&gt;</Code> for the times.
+            </>,
+          ],
+          [
+            <code key="2">
+              GET /api/v1/documents/&#123;documentId&#125;/version-history/images
+            </code>,
+            <>
+              The list of images: <Code>id</Code>, <Code>fileName</Code>, <Code>mime</Code>,{' '}
+              <Code>sizeBytes</Code>, <Code>sha256</Code>, <Code>firstVersion</Code>,{' '}
+              <Code>lastVersion</Code> and <Code>url</Code>.
+            </>,
+          ],
+          [
+            <code key="3">
+              GET
+              /api/v1/documents/&#123;documentId&#125;/version-history/images/&#123;imageId&#125;
+            </code>,
+            'The bytes of one image.',
+          ],
+          [
+            <code key="4">
+              GET /api/v1/documents/&#123;documentId&#125;/version-history/archive
+            </code>,
+            <>
+              A zip with <Code>docs/doc.txt</Code>, <Code>images/&lt;fileName&gt;</Code> and{' '}
+              <Code>manifest.json</Code>.
+            </>,
+          ],
+          [
+            <code key="5">
+              GET /api/v1/interview-sessions/&#123;sessionId&#125;/version-history
+            </code>,
+            <>
+              The same three endpoints (and <Code>/images</Code>,{' '}
+              <Code>/images/&#123;imageId&#125;</Code>, <Code>/archive</Code>) for the document of
+              an interview session.
+            </>,
+          ],
+        ]}
+      />
+      <h3>Examples</h3>
+      <CodeBlock
+        label="Download doc.txt"
+        code={`curl -sS -o doc.txt \\
+  -H "Authorization: Bearer $RD_API_KEY" \\
+  '${o}/api/v1/documents/<documentId>/version-history?format=txt&timezone=Asia/Kolkata'`}
+      />
+      <CodeBlock
+        label="List the images"
+        code={`curl -sS \\
+  -H "Authorization: Bearer $RD_API_KEY" \\
+  '${o}/api/v1/documents/<documentId>/version-history/images'`}
+      />
+      <CodeBlock
+        label="Download one image"
+        code={`curl -sS -o image.png \\
+  -H "Authorization: Bearer $RD_API_KEY" \\
+  '${o}/api/v1/documents/<documentId>/version-history/images/<imageId>'`}
+      />
+      <h3>Document layout</h3>
+      <CodeBlock label="doc.txt" code={DOC_LAYOUT} />
+      <p>
+        Every version has its own block with a number, the time and the person, then the lines{' '}
+        <Code>ADDED</Code> and <Code>REMOVED</Code> in that version and the{' '}
+        <Code>CURRENT SNAPSHOT</Code> of the whole document at that point. A pasted image appears as
+        a line that starts with <Code>[IMAGE &lt;id&gt;]</Code> and the file is in{' '}
+        <Code>images/</Code> of the archive.
+      </p>
+    </>
+  );
 }
 
 function AccessFlow() {
@@ -674,6 +792,12 @@ export const PORTAL_SECTIONS: readonly PortalSection[] = [
     title: 'Creating a session',
     summary: 'Request, response, title format, permissions, limits.',
     Component: CreatingSessions,
+  },
+  {
+    id: 'version-history',
+    title: 'Version history document',
+    summary: 'doc.txt, images and the archive for a document or a session.',
+    Component: VersionHistoryDocument,
   },
   {
     id: 'access',

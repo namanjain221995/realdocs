@@ -170,8 +170,23 @@ export const SessionMetadata = z
   .refine((value) => Object.keys(value).length <= 20, { message: 'At most 20 keys.' });
 export type SessionMetadata = z.infer<typeof SessionMetadata>;
 
+/**
+ * A round number as the API takes it: a string of digits ("2"). A JSON number is still accepted
+ * for callers written against the first version of the API. Stored as an integer from 1 to 99.
+ */
+export const RoundNumberInput = z
+  .union([
+    z
+      .string()
+      .trim()
+      .regex(/^[0-9]{1,2}$/, { message: 'Must be a whole number from 1 to 99, as a string.' }),
+    z.number().int(),
+  ])
+  .transform((value) => Number(value))
+  .pipe(z.number().int().min(1).max(99));
+
 export const RoundInput = z.object({
-  number: z.number().int().min(1).max(99),
+  number: RoundNumberInput,
   name: z.string().trim().min(1).max(120).optional(),
 });
 
@@ -207,6 +222,12 @@ export const SessionParticipant = z.object({
   linkState: z.enum(['active', 'revoked', 'expired', 'none']),
   /** The state of the document room right now: how many of this person's connections are open. */
   liveConnections: z.number().int().min(0),
+  /**
+   * True for an interviewer whose address is an account of the workspace that was made a member
+   * of the document, so it appears in that person's own documents list. Always false for the
+   * candidate.
+   */
+  accountLinked: z.boolean().optional(),
 });
 export type SessionParticipant = z.infer<typeof SessionParticipant>;
 
@@ -216,6 +237,8 @@ export const ParticipantWithAccess = z.object({
   name: z.string(),
   email: z.string(),
   access: AccessLink,
+  /** See `SessionParticipant.accountLinked`. */
+  accountLinked: z.boolean().optional(),
 });
 export type ParticipantWithAccess = z.infer<typeof ParticipantWithAccess>;
 
@@ -226,7 +249,8 @@ export const InterviewSession = z.object({
   generatedTitle: z.string(),
   status: InterviewStatus,
   companyName: z.string(),
-  round: z.object({ number: z.number().int(), name: z.string().nullable() }),
+  /** `number` is a string of digits ("2"), like every value the create request takes. */
+  round: z.object({ number: z.string(), name: z.string().nullable() }),
   scheduledAt: IsoDate,
   timezone: z.string(),
   expiresAt: IsoDate,
@@ -265,7 +289,7 @@ export const UpdateInterviewSessionRequest = z
     permissions: SessionPermissions.partial(),
     companyName: z.string().trim().min(1).max(120),
     round: z.object({
-      number: z.number().int().min(1).max(99).optional(),
+      number: RoundNumberInput.optional(),
       name: z.string().trim().min(1).max(120).nullable().optional(),
     }),
     /** Replaces the metadata object as a whole. */

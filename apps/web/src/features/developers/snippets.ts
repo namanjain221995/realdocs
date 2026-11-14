@@ -15,7 +15,7 @@ export const CREATE_BODY = `{
   "candidate": { "name": "Aarav Sharma", "email": "aarav@example.com" },
   "interviewers": [{ "name": "Meera Iyer", "email": "meera@acme.example" }],
   "companyName": "Acme Corp",
-  "round": { "number": 2, "name": "System design" },
+  "round": { "number": "2", "name": "System design" },
   "scheduledAt": "2030-03-14T15:30:00+05:30",
   "timezone": "Asia/Kolkata",
   "expiresAt": "2030-03-28T15:30:00+05:30",

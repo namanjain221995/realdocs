@@ -21,19 +21,22 @@ import {
 } from '@realtimedocs/ui';
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Download, FileDown, History } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router';
 import { ErrorView } from '../../components/ErrorScreen';
 import { RouterLinkButton } from '../../components/links';
 import { api } from '../../lib/api';
 import { useDebouncedValue, useDocumentTitle, useMediaQuery } from '../../lib/hooks';
 import { documentPath } from '../../lib/navigation';
+import { accessFlags } from '../../lib/accessCapabilities';
 import { documentCapabilities } from '../../lib/permissions';
 import { queryKeys } from '../../lib/queryKeys';
 import { useSession } from '../../lib/session';
 import { dayBoundsIso, groupTimeline, interleave, OPERATION_OPTIONS, timeZoneName } from './model';
 import { historyKey, RevisionDetail } from './RevisionDetail';
 import { Timeline } from './Timeline';
+import { VersionActions } from './VersionActions';
+import { VersionsPanel } from './VersionsPanel';
 
 const PAGE_SIZE = 50;
 
@@ -52,6 +55,9 @@ function HistoryScreen({ document }: { document: DocumentSummary }) {
   const [params, setParams] = useSearchParams();
   const narrow = useMediaQuery('(max-width: 768px)');
   const timelineRef = useRef<HTMLDivElement>(null);
+  const [versionsOpen, setVersionsOpen] = useState(false);
+  const versionsPanelId = useId();
+  const canViewVersions = accessFlags(document.access).canViewHistory;
 
   const revisionParam = params.get('rev');
   const selected =
@@ -235,6 +241,28 @@ function HistoryScreen({ document }: { document: DocumentSummary }) {
           it.
         </Banner>
       )}
+
+      {canViewVersions ? (
+        <>
+          <VersionActions
+            documentId={documentId}
+            open={versionsOpen}
+            panelId={versionsPanelId}
+            onToggle={() => setVersionsOpen((value) => !value)}
+          />
+          <section
+            id={versionsPanelId}
+            className="vers-panel"
+            aria-labelledby="vers-actions-title"
+            hidden={!versionsOpen}
+            data-testid="history-versions-panel"
+          >
+            {versionsOpen ? (
+              <VersionsPanel documentId={documentId} headingId="vers-actions-title" />
+            ) : null}
+          </section>
+        </>
+      ) : null}
 
       <div className="hist-layout" data-detail={selected !== null ? 'open' : 'closed'}>
         <section

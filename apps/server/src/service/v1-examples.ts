@@ -12,7 +12,7 @@ export function exampleCreateRequest() {
     candidate: { name: 'Aarav Sharma', email: 'aarav@example.com' },
     interviewers: [{ name: 'Meera Iyer', email: 'meera@acme.example' }],
     companyName: 'Acme Corp',
-    round: { number: 2, name: 'System design' },
+    round: { number: '2', name: 'System design' },
     scheduledAt: '2030-03-14T15:30:00+05:30',
     timezone: 'Asia/Kolkata',
     expiresAt: new Date(Date.now() + 14 * DAY).toISOString(),
@@ -70,7 +70,7 @@ export function exampleSession() {
     generatedTitle: 'Aarav_Sharma_Acme_Corp_Round_2_2030-03-14_15-30',
     status: 'scheduled' as const,
     companyName: 'Acme Corp',
-    round: { number: 2, name: 'System design' as string | null },
+    round: { number: '2', name: 'System design' as string | null },
     scheduledAt: '2030-03-14T10:00:00.000Z',
     timezone: 'Asia/Kolkata',
     expiresAt: new Date(Date.now() + 14 * DAY).toISOString(),
@@ -125,5 +125,94 @@ export function exampleDelivery() {
     lastError: null,
     createdAt: new Date().toISOString(),
     deliveredAt: new Date().toISOString(),
+  };
+}
+
+/** A two-version history with one pasted image, in the JSON form of the version history document. */
+export function exampleVersionHistory() {
+  const imageId = '5a4b3c2d-0000-4000-8000-0000000000a1';
+  const fileName = `${imageId}.png`;
+  const first = 'Design a URL shortener.';
+  const second = 'Start with the API: POST /shorten and GET /{code}.';
+  return {
+    document: {
+      id: documentId,
+      title: 'Aarav_Sharma_Acme_Corp_Round_2_2030-03-14_15-30',
+      url: `${EXAMPLE_ORIGIN}/d/${documentId}`,
+    },
+    session: {
+      id: sessionId,
+      candidate: 'Aarav Sharma' as string | null,
+      company: 'Acme Corp',
+      round: { number: '2', name: 'System design' as string | null },
+    },
+    trackingStartedAt: '2030-03-14T10:00:05.120Z' as string | null,
+    finalizedAt: '2030-03-14T10:02:41.007Z' as string | null,
+    timezone: 'Asia/Kolkata',
+    versions: [
+      {
+        version: 1,
+        startedAt: '2030-03-14T10:00:05.120Z',
+        startedAtText: '2030-03-14 03:30:05 PM IST',
+        editedAt: '2030-03-14T10:00:21.480Z',
+        editedAtText: '2030-03-14 03:30:21 PM IST',
+        editedBy: 'Meera Iyer (Interviewer, meera@acme.example)',
+        editor: {
+          name: 'Meera Iyer',
+          role: 'Interviewer',
+          email: 'meera@acme.example' as string | null,
+          kind: 'guest' as const,
+        },
+        action: 'Typed' as const,
+        added: [first],
+        removed: [] as string[],
+        addedDetail: [{ text: first, at: '2030-03-14T10:00:21.480Z', atText: '03:30:21 PM' }],
+        removedDetail: [] as { text: string; at: string; atText: string }[],
+        snapshot: first,
+        images: [] as string[],
+      },
+      {
+        version: 2,
+        startedAt: '2030-03-14T10:02:41.007Z',
+        startedAtText: '2030-03-14 03:32:41 PM IST',
+        editedAt: '2030-03-14T10:02:41.007Z',
+        editedAtText: '2030-03-14 03:32:41 PM IST',
+        editedBy: 'Aarav Sharma (Candidate, aarav@example.com)',
+        editor: {
+          name: 'Aarav Sharma',
+          role: 'Candidate',
+          email: 'aarav@example.com' as string | null,
+          kind: 'guest' as const,
+        },
+        action: 'Pasted' as const,
+        added: [second, `[IMAGE ${imageId}] image pasted (images/${fileName})`],
+        removed: [] as string[],
+        addedDetail: [
+          { text: second, at: '2030-03-14T10:02:41.007Z', atText: '03:32:41 PM' },
+          {
+            text: `[IMAGE ${imageId}] image pasted (images/${fileName})`,
+            at: '2030-03-14T10:02:41.007Z',
+            atText: '03:32:41 PM',
+          },
+        ],
+        removedDetail: [] as { text: string; at: string; atText: string }[],
+        snapshot: `${first}\n${second}\n[IMAGE ${imageId}] images/${fileName}`,
+        images: [imageId],
+      },
+    ],
+    finalContent: `${first}\n${second}\n[IMAGE ${imageId}] images/${fileName}`,
+    images: [
+      {
+        id: imageId,
+        fileName,
+        mime: 'image/png',
+        sizeBytes: 48213,
+        sha256: '9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08',
+        firstVersion: 2,
+        lastVersion: null as number | null,
+        url: `/api/v1/documents/${documentId}/version-history/images/${imageId}`,
+      },
+    ],
+    truncated: false,
   };
 }

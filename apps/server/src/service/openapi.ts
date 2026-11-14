@@ -84,15 +84,24 @@ export function buildOpenApi(routes: readonly ServiceRoute[], origin: string): J
   for (const route of routes) {
     const example = route.example?.();
     const responses: Record<string, Json> = {};
-    if (route.response) {
+    if (route.response || route.media) {
+      const content: Record<string, Json> = {};
+      if (route.response) {
+        content['application/json'] = {
+          schema: schemaOf(route.response, 'output'),
+          ...(example?.response !== undefined ? { example: example.response } : {}),
+        };
+      }
+      for (const media of route.media ?? []) {
+        content[media.type] = {
+          schema: media.binary ? { type: 'string', format: 'binary' } : { type: 'string' },
+        };
+      }
       responses[String(route.status)] = {
-        description: 'Success.',
-        content: {
-          'application/json': {
-            schema: schemaOf(route.response, 'output'),
-            ...(example?.response !== undefined ? { example: example.response } : {}),
-          },
-        },
+        description: route.media
+          ? `Success. ${route.media.map((media) => `\`${media.type}\`: ${media.description}`).join(' ')}`
+          : 'Success.',
+        content,
       };
     } else {
       responses[String(route.status)] = { description: 'Success. No content.' };

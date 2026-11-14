@@ -348,3 +348,244 @@
     position: static;
   }
 }
+
+/* ------------------------------------------------- version history document */
+.vers-actions {
+  margin-bottom: var(--rd-space-4);
+  padding: var(--rd-space-4);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-surface-1, var(--rd-surface-2));
+}
+
+.vers-actions__title,
+.vers-panel__title {
+  margin: 0 0 var(--rd-space-1);
+  font-size: var(--rd-text-md);
+}
+
+.vers-actions__note {
+  margin: 0 0 var(--rd-space-3);
+}
+
+.vers-actions__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+}
+
+.vers-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  min-height: 36px;
+  padding: 0 var(--rd-space-3);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-surface-2);
+  color: var(--rd-text);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.vers-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+.vers-action:hover,
+.vers-action[aria-expanded='true'] {
+  border-color: var(--rd-text-muted);
+}
+
+.vers-action:focus-visible,
+.vers-toggle:focus-visible {
+  outline: 2px solid var(--rd-focus-ring, currentColor);
+  outline-offset: 2px;
+}
+
+.vers-panel {
+  margin-bottom: var(--rd-space-4);
+  min-width: 0;
+}
+
+.vers-items {
+  margin: var(--rd-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vers-version {
+  margin-bottom: var(--rd-space-4);
+  padding: var(--rd-space-4);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  min-width: 0;
+}
+
+.vers-title {
+  margin: 0 0 var(--rd-space-2);
+  font-size: var(--rd-text-md);
+}
+
+.vers-subtitle {
+  margin: var(--rd-space-3) 0 var(--rd-space-1);
+  font-size: var(--rd-text-sm);
+  color: var(--rd-text-muted);
+}
+
+.vers-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-1) var(--rd-space-5);
+  margin: 0;
+}
+
+.vers-meta dt {
+  display: inline;
+  color: var(--rd-text-muted);
+}
+
+.vers-meta dt::after {
+  content: ': ';
+}
+
+.vers-meta dd {
+  display: inline;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.vers-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--rd-font-mono);
+  font-size: var(--rd-text-sm);
+}
+
+.vers-line {
+  display: grid;
+  grid-template-columns: 2ch minmax(0, 1fr);
+  gap: var(--rd-space-2);
+  padding: 2px var(--rd-space-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--rd-text);
+}
+
+.vers-line[data-kind='added'] {
+  background: var(--rd-success-soft);
+}
+
+.vers-line[data-kind='added'] .vers-mark {
+  color: var(--rd-success);
+}
+
+.vers-line[data-kind='removed'] {
+  background: var(--rd-danger-soft);
+}
+
+.vers-line[data-kind='removed'] .vers-mark {
+  color: var(--rd-danger);
+}
+
+.vers-mark {
+  font-weight: 700;
+}
+
+.vers-none {
+  margin: 0;
+}
+
+.vers-imageid {
+  font-family: var(--rd-font-mono);
+  overflow-wrap: anywhere;
+}
+
+.vers-thumb {
+  display: block;
+  max-width: 120px;
+  max-height: 80px;
+  margin-top: var(--rd-space-1);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-sm, 4px);
+  background: #fff;
+  object-fit: contain;
+}
+
+.vers-imagelist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vers-image {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rd-space-2);
+  min-width: 0;
+}
+
+.vers-image .vers-thumb {
+  margin-top: 0;
+}
+
+.vers-imagemeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 220px;
+  font-size: var(--rd-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.vers-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rd-space-1);
+  margin-top: var(--rd-space-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rd-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vers-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.vers-pre {
+  margin: var(--rd-space-2) 0 0;
+  padding: var(--rd-space-3);
+  border: 1px solid var(--rd-border);
+  border-radius: var(--rd-radius-md);
+  font-family: var(--rd-font-mono);
+  font-size: var(--rd-text-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 24rem;
+  overflow: auto;
+}
+
+.vers-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rd-space-2);
+}
+
+.vers-at {
+  color: var(--rd-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

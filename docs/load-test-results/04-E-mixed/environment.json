@@ -1,0 +1,76 @@
+{
+ "host": {
+  "hostname": "spark-0e68",
+  "cpus": 20,
+  "arch": "arm64",
+  "loadavgAtStart": [
+   2.1,
+   4.05,
+   3.16
+  ],
+  "totalMemMb": 124608,
+  "node": "v24.22.2",
+  "kernel": "7.0.0-1025-nvidia"
+ },
+ "limits": {
+  "watchdog": {
+   "maxLoad1": 18,
+   "minAvailableMb": 10240,
+   "maxSwapGrowthMb": 2048
+  },
+  "postgresCpus": "4",
+  "postgresMemory": "6g"
+ },
+ "stack": {
+  "startedAt": "2026-11-14T06:36:31.494Z",
+  "topology": "A",
+  "instances": [
+   {
+    "index": 0,
+    "port": 4450,
+    "pid": 3931466,
+    "logFile": "/home/techsphere/Documents/project/realtimedocs/tests/load/.stage/server-0.log"
+   }
+  ],
+  "lbPid": 3931525,
+  "origin": "http://127.0.0.1:4459",
+  "settings": {
+   "NODE_ENV": "production",
+   "RD_HOST": "127.0.0.1",
+   "RD_PORT": "4450",
+   "PUBLIC_ORIGIN": "http://127.0.0.1:4459",
+   "ALLOWED_ORIGINS": "http://127.0.0.1:4459,http://127.0.0.1:4450",
+   "ASSET_DIR": "/home/techsphere/Documents/project/realtimedocs/tests/load/.stage/assets",
+   "LOG_LEVEL": "info",
+   "CLEANUP_INTERVAL_MINUTES": "0",
+   "METRICS_TOKEN": "<masked>",
+   "DATABASE_URL": "<masked>",
+   "SESSION_SECRET": "<masked>",
+   "DB_POOL_MAX": "10",
+   "COLLAB_MAX_CONNECTIONS": "12000",
+   "RATE_API_PER_MINUTE": "10000000",
+   "RATE_LOGIN_PER_IP": "1000000",
+   "RATE_SHARE_EXCHANGE_PER_IP": "1000000",
+   "RATE_SHARE_EXCHANGE_PER_GRANT": "1000000",
+   "RATE_INVITE_PER_IP": "1000000",
+   "RATE_SIGNUP_PER_IP": "1000000",
+   "RATE_DESKTOP_REDEEM_PER_IP": "1000000",
+   "RATE_DOWNLOAD_PER_IP": "1000000",
+   "RATE_WS_UPGRADE_PER_MINUTE": "1000000"
+  },
+  "adminEmail": "load@example.test",
+  "extraEnv": {
+   "COLLAB_MAX_CONNECTIONS": "12000"
+  },
+  "redis": false
+ },
+ "argv": [
+  "E",
+  "--env",
+  "COLLAB_MAX_CONNECTIONS=12000",
+  "--workers",
+  "10",
+  "--out",
+  "04-E-mixed"
+ ]
+}

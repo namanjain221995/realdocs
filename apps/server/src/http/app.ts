@@ -43,6 +43,7 @@ import { registerMetaRoutes } from './routes/meta';
 import { registerReleaseRoutes } from './routes/releases';
 import { registerShareRoutes } from './routes/shares';
 import { registerHistoryRoutes } from './routes/history';
+import { registerVersionHistoryRoutes } from './routes/version-history';
 import { registerSnapshotRoutes } from './routes/snapshots';
 import { registerUserRoutes } from './routes/users';
 import { registerV1Routes } from './routes/v1';
@@ -314,6 +315,7 @@ export async function buildApp(ctx: AppContext): Promise<FastifyInstance> {
   registerExportRoutes(app, deps);
   registerSnapshotRoutes(app, deps);
   registerHistoryRoutes(app, deps);
+  registerVersionHistoryRoutes(app, deps);
   registerDesktopRoutes(app, deps);
   registerAuditRoutes(app, deps);
   registerDownloadRoutes(app, deps);

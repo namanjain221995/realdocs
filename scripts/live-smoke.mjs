@@ -353,7 +353,8 @@ try {
     candidate: { name: 'Smoke Candidate', email: 'candidate@smoke.invalid' },
     interviewers: [{ name: 'Smoke Interviewer', email: 'interviewer@smoke.invalid' }],
     companyName: 'ZZ live smoke',
-    round: { number: 1, name: 'Smoke' },
+    // The API takes strings: the round number is "1", not 1.
+    round: { number: '1', name: 'Smoke' },
     scheduledAt: new Date(Date.now() + 3_600_000)
       .toISOString()
       .replace('.000Z', '+00:00')
@@ -385,7 +386,7 @@ try {
       throw new Error(`a key without sessions:create got HTTP ${denied.status}`);
     const full = await api(page, 'POST', '/api/admin/api-keys', {
       name: `live smoke ${stamp} create`,
-      scopes: ['sessions:create', 'sessions:read', 'sessions:close'],
+      scopes: ['sessions:create', 'sessions:read', 'sessions:close', 'documents:history:read'],
     });
     if (full.status >= 300) throw new Error(`HTTP ${full.status}`);
     key = full.body.secret;
@@ -393,6 +394,7 @@ try {
     return 'a key without the scope is refused with 403';
   });
   let candidateUrl = '';
+  let sessionId = '';
   await step('interview session created through the API (201), idempotent', async () => {
     const headers = { authorization: `Bearer ${key}`, 'idempotency-key': `smoke-${stamp}` };
     const first = await api(page, 'POST', '/api/v1/interview-sessions', sessionBody, headers);
@@ -403,6 +405,12 @@ try {
       throw new Error('the repeat created another session');
     created.push(first.body.documentId);
     candidateUrl = first.body.candidateAccess.url;
+    sessionId = first.body.sessionId;
+    const read = await api(page, 'GET', `/api/v1/interview-sessions/${sessionId}`, undefined, {
+      authorization: `Bearer ${key}`,
+    });
+    if (read.body?.round?.number !== '1')
+      throw new Error(`round.number is ${JSON.stringify(read.body?.round?.number)}, not "1"`);
     return first.body.title;
   });
   await step('candidate page: editor works, no desktop download controls', async () => {
@@ -421,6 +429,85 @@ try {
     await candidateContext.close();
     if (controls > 0 || /download the desktop app|open in desktop/i.test(words))
       throw new Error(`${controls} download/desktop control(s) on the candidate page`);
+  });
+  await step(
+    'version history document through the API: doc.txt, image list, image bytes',
+    async () => {
+      const auth = { authorization: `Bearer ${key}` };
+      const root = `/api/v1/documents/${documentId}/version-history`;
+      const text = await api(page, 'GET', root, undefined, auth);
+      if (text.status !== 200 || typeof text.body !== 'string')
+        throw new Error(`doc.txt: HTTP ${text.status}`);
+      if (!text.body.startsWith('DOCUMENT VERSION HISTORY\n'))
+        throw new Error('not a version history document');
+      if (!text.body.includes('\nVERSION 1\n')) throw new Error('no VERSION 1');
+      if (
+        !/\n- \[\d\d:\d\d:\d\d (AM|PM)\] \[IMAGE [0-9a-f-]{36}\] image pasted \(images\//.test(
+          text.body,
+        )
+      )
+        throw new Error('no "[IMAGE <id>] image pasted" line');
+      if (!/\nEdited By: .+ \((Admin|Member|Guest)/.test(text.body))
+        throw new Error('no editor with a role');
+      const list = await api(page, 'GET', `${root}/images`, undefined, auth);
+      const images = list.body?.images ?? [];
+      if (list.status !== 200 || images.length !== 1)
+        throw new Error(`image list: HTTP ${list.status}, ${images.length} image(s)`);
+      const bytes = await page.evaluate(
+        async ({ url, authorization }) => {
+          const response = await fetch(url, { headers: { authorization }, credentials: 'omit' });
+          const data = new Uint8Array(await response.arrayBuffer());
+          return {
+            status: response.status,
+            type: response.headers.get('content-type'),
+            size: data.length,
+            head: [...data.subarray(0, 8)].map((b) => b.toString(16).padStart(2, '0')).join(''),
+          };
+        },
+        { url: images[0].url, authorization: auth.authorization },
+      );
+      if (
+        bytes.status !== 200 ||
+        bytes.head !== '89504e470d0a1a0a' ||
+        bytes.size !== images[0].sizeBytes
+      )
+        throw new Error(
+          `image bytes: HTTP ${bytes.status}, ${bytes.size} bytes, starts ${bytes.head}`,
+        );
+      const versions = (text.body.match(/\nVERSION \d+\n/g) ?? []).length;
+      return `${versions} versions; image ${images[0].fileName}, ${bytes.size} bytes, ${bytes.type}`;
+    },
+  );
+  await step('version history of the interview session through the API', async () => {
+    const auth = { authorization: `Bearer ${key}` };
+    const text = await api(
+      page,
+      'GET',
+      `/api/v1/interview-sessions/${sessionId}/version-history`,
+      undefined,
+      auth,
+    );
+    if (text.status !== 200 || typeof text.body !== 'string')
+      throw new Error(`HTTP ${text.status}`);
+    for (const expected of [
+      `Session ID: ${sessionId}\n`,
+      'Candidate: Smoke Candidate\n',
+      'Round: 1 Smoke\n',
+      'Edited By: Smoke Candidate (Candidate, candidate@smoke.invalid)\n',
+      '] candidate types\n',
+    ]) {
+      if (!text.body.includes(expected)) throw new Error(`missing ${JSON.stringify(expected)}`);
+    }
+    const json = await api(
+      page,
+      'GET',
+      `/api/v1/interview-sessions/${sessionId}/version-history?format=json`,
+      undefined,
+      auth,
+    );
+    if (json.status !== 200 || !Array.isArray(json.body?.versions) || json.body.versions.length < 1)
+      throw new Error(`json: HTTP ${json.status}`);
+    return `${json.body.versions.length} version(s), finalized ${json.body.finalizedAt}`;
   });
   await step('an API key may read /api/openapi.json', async () => {
     const result = await api(page, 'GET', '/api/openapi.json', undefined, {

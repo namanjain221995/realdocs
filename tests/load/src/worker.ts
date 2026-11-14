@@ -29,7 +29,9 @@ function pick(groups?: string[]): LoadClient[] {
   return shared.clients.filter((c) => !groups || groups.includes(c.group));
 }
 
-const handlers: Record<string, (args: any) => Promise<unknown> | unknown> = {
+/** Exported so that tests/performance can add commands to the same worker process. */
+export const getShared = (): Shared => shared;
+export const handlers: Record<string, (args: any) => Promise<unknown> | unknown> = {
   init({ origin }: { origin: string }) {
     shared = new Shared(origin);
     setInterval(() => shared.prune(), 30_000).unref();

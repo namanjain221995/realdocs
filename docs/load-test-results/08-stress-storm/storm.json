@@ -1,0 +1,498 @@
+{
+ "scenario": "storm",
+ "title": "Stress: reconnect storm",
+ "topology": "A",
+ "startedAt": "2026-11-14T07:36:02.981Z",
+ "config": {
+  "docs": 250,
+  "clients": 1000,
+  "rampS": 60,
+  "variant": "lb",
+  "serverEnvOverrides": {},
+  "typingDuringStorm": false
+ },
+ "phases": [
+  {
+   "name": "initial connect",
+   "durationS": 60.018,
+   "latency": {
+    "u": {
+     "ticketMs": {
+      "n": 1000,
+      "min": 1.3125,
+      "p50": 2.859619140625,
+      "p95": 4.196533203125,
+      "p99": 5.6103515625,
+      "mean": 2.98132666015625,
+      "max": 21.5966796875
+     },
+     "connect": {
+      "n": 1000,
+      "min": 23.074951171875,
+      "p50": 29.52490234375,
+      "p95": 41.37109375,
+      "p99": 49.986083984375,
+      "mean": 31.05203125,
+      "max": 109.02587890625
+     }
+    },
+    "ALL": {
+     "ticketMs": {
+      "n": 1000,
+      "min": 1.3125,
+      "p50": 2.859619140625,
+      "p95": 4.196533203125,
+      "p99": 5.6103515625,
+      "mean": 2.98132666015625,
+      "max": 21.5966796875
+     },
+     "connect": {
+      "n": 1000,
+      "min": 23.074951171875,
+      "p50": 29.52490234375,
+      "p95": 41.37109375,
+      "p99": 49.986083984375,
+      "mean": 31.05203125,
+      "max": 109.02587890625
+     }
+    }
+   },
+   "counts": {},
+   "errors": {},
+   "closeCodes": {},
+   "generator": [
+    {
+     "pid": 141558,
+     "cpuPct": 1.574169245902689,
+     "cpuSecondsTotal": 1.187189,
+     "rssMb": 118.05859375,
+     "lagP99Ms": 10.780671,
+     "lagMaxMs": 33.783807,
+     "clients": 128
+    },
+    {
+     "pid": 141585,
+     "cpuPct": 1.6359407162652246,
+     "cpuSecondsTotal": 1.248804,
+     "rssMb": 117.76953125,
+     "lagP99Ms": 10.788863,
+     "lagMaxMs": 29.310975,
+     "clients": 128
+    },
+    {
+     "pid": 141612,
+     "cpuPct": 1.583517369311581,
+     "cpuSecondsTotal": 1.177914,
+     "rssMb": 126.81640625,
+     "lagP99Ms": 10.805247,
+     "lagMaxMs": 21.102591,
+     "clients": 124
+    },
+    {
+     "pid": 141620,
+     "cpuPct": 1.5398560538729555,
+     "cpuSecondsTotal": 1.152494,
+     "rssMb": 131.2109375,
+     "lagP99Ms": 10.805247,
+     "lagMaxMs": 26.836991,
+     "clients": 124
+    },
+    {
+     "pid": 141628,
+     "cpuPct": 1.570044020264898,
+     "cpuSecondsTotal": 1.200605,
+     "rssMb": 128.93359375,
+     "lagP99Ms": 10.829823,
+     "lagMaxMs": 20.267007,
+     "clients": 124
+    },
+    {
+     "pid": 141659,
+     "cpuPct": 1.5765322584456682,
+     "cpuSecondsTotal": 1.226704,
+     "rssMb": 127.85546875,
+     "lagP99Ms": 10.772479,
+     "lagMaxMs": 21.626879,
+     "clients": 124
+    },
+    {
+     "pid": 141667,
+     "cpuPct": 1.51581662548303,
+     "cpuSecondsTotal": 1.175473,
+     "rssMb": 128.55078125,
+     "lagP99Ms": 10.772479,
+     "lagMaxMs": 29.065215,
+     "clients": 124
+    },
+    {
+     "pid": 141798,
+     "cpuPct": 1.5475454087073857,
+     "cpuSecondsTotal": 1.17346,
+     "rssMb": 126.46484375,
+     "lagP99Ms": 10.731519,
+     "lagMaxMs": 22.249471,
+     "clients": 124
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 13,
+     "upSamples": 13,
+     "cpuPctAvg": 11.561051610362014,
+     "cpuPctMax": 15.430273945210956,
+     "rssMbMax": 329.26171875,
+     "rssMbEnd": 329.26171875,
+     "heapMbMax": 167.4408950805664,
+     "wsMax": 1000,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 250,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 21.266430999999997,
+     "queueBytesMax": 72,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 935,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 935,
+       "meanMs": 2.9107245443850744,
+       "p95UpperMs": 5,
+       "p99UpperMs": 5
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 1870,
+       "meanMs": 4.026585795187015,
+       "p95UpperMs": 25
+      },
+      "/api/share/exchange": {
+       "count": 935,
+       "meanMs": 6.1436317176469615,
+       "p95UpperMs": 25
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 935,
+       "meanMs": 1.9095398727270678,
+       "p95UpperMs": 5
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 935
+     }
+    }
+   ],
+   "hostLoadMax": 2.06,
+   "extra": {
+    "readyAfterInitial": 1000,
+    "total": 1000
+   }
+  },
+  {
+   "name": "storm and recovery",
+   "durationS": 1.546,
+   "latency": {
+    "u": {
+     "ticketMs": {
+      "n": 1000,
+      "min": 4.261474609375,
+      "p50": 218.271240234375,
+      "p95": 1010.74609375,
+      "p99": 1092.600830078125,
+      "mean": 257.8536110839844,
+      "max": 1106.319580078125
+     },
+     "reconnect": {
+      "n": 1000,
+      "min": 223.98291015625,
+      "p50": 856.462890625,
+      "p95": 1466.488037109375,
+      "p99": 1498.80078125,
+      "mean": 869.2002556152344,
+      "max": 1512.147705078125
+     }
+    },
+    "ALL": {
+     "ticketMs": {
+      "n": 1000,
+      "min": 4.261474609375,
+      "p50": 218.271240234375,
+      "p95": 1010.74609375,
+      "p99": 1092.600830078125,
+      "mean": 257.8536110839844,
+      "max": 1106.319580078125
+     },
+     "reconnect": {
+      "n": 1000,
+      "min": 223.98291015625,
+      "p50": 856.462890625,
+      "p95": 1466.488037109375,
+      "p99": 1498.80078125,
+      "mean": 869.2002556152344,
+      "max": 1512.147705078125
+     }
+    }
+   },
+   "counts": {
+    "u": {
+     "reconnects": 1000
+    }
+   },
+   "errors": {},
+   "closeCodes": {
+    "1006": 1000
+   },
+   "generator": [
+    {
+     "pid": 141558,
+     "cpuPct": 25.24969551371142,
+     "cpuSecondsTotal": 1.620814,
+     "rssMb": 120.55859375,
+     "lagP99Ms": 11.124735,
+     "lagMaxMs": 11.526143,
+     "clients": 128
+    },
+    {
+     "pid": 141585,
+     "cpuPct": 25.992958927026947,
+     "cpuSecondsTotal": 1.693647,
+     "rssMb": 120.609375,
+     "lagP99Ms": 11.362303,
+     "lagMaxMs": 11.952127,
+     "clients": 128
+    },
+    {
+     "pid": 141612,
+     "cpuPct": 24.969755919036338,
+     "cpuSecondsTotal": 1.607816,
+     "rssMb": 129.62890625,
+     "lagP99Ms": 10.952703,
+     "lagMaxMs": 11.632639,
+     "clients": 124
+    },
+    {
+     "pid": 141620,
+     "cpuPct": 26.515834928200317,
+     "cpuSecondsTotal": 1.604979,
+     "rssMb": 134.1796875,
+     "lagP99Ms": 10.805247,
+     "lagMaxMs": 10.903551,
+     "clients": 124
+    },
+    {
+     "pid": 141628,
+     "cpuPct": 26.83321964495709,
+     "cpuSecondsTotal": 1.654464,
+     "rssMb": 132.05859375,
+     "lagP99Ms": 11.452415,
+     "lagMaxMs": 12.042239,
+     "clients": 124
+    },
+    {
+     "pid": 141659,
+     "cpuPct": 23.819015110817556,
+     "cpuSecondsTotal": 1.642968,
+     "rssMb": 131.13671875,
+     "lagP99Ms": 10.960895,
+     "lagMaxMs": 11.395071,
+     "clients": 124
+    },
+    {
+     "pid": 141667,
+     "cpuPct": 27.169693823300616,
+     "cpuSecondsTotal": 1.639125,
+     "rssMb": 131.51953125,
+     "lagP99Ms": 11.149311,
+     "lagMaxMs": 12.115967,
+     "clients": 124
+    },
+    {
+     "pid": 141798,
+     "cpuPct": 24.585142577813208,
+     "cpuSecondsTotal": 1.594342,
+     "rssMb": 129.90234375,
+     "lagP99Ms": 11.231231,
+     "lagMaxMs": 11.411455,
+     "clients": 124
+    }
+   ],
+   "server": [
+    {
+     "port": 4450,
+     "samples": 2,
+     "upSamples": 2,
+     "cpuPctAvg": 80.40963154492572,
+     "cpuPctMax": 80.40963154492572,
+     "rssMbMax": 358.16796875,
+     "rssMbEnd": 358.16796875,
+     "heapMbMax": 167.25509643554688,
+     "wsMax": 1000,
+     "wsForwardedMax": 0,
+     "docsLoadedMax": 250,
+     "poolMax": 10,
+     "poolConnectionsMax": 10,
+     "poolWaitingMax": 0,
+     "poolWaitingAvg": 0,
+     "lagP99MaxMs": 26.017791,
+     "queueBytesMax": 0,
+     "redisPingMaxMs": 0,
+     "yjsUpdates": 0,
+     "persistFailures": 0,
+     "persist": {
+      "append": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null,
+       "p99UpperMs": null
+      },
+      "compact": {
+       "count": 250,
+       "meanMs": 35.669790560000045,
+       "p95UpperMs": 100,
+       "p99UpperMs": 100
+      }
+     },
+     "http": {
+      "ALL /api": {
+       "count": 1000,
+       "meanMs": 118.86102869099979,
+       "p95UpperMs": 250
+      },
+      "/api/documents/:documentId/collab-ticket": {
+       "count": 1000,
+       "meanMs": 118.86102869099979,
+       "p95UpperMs": 250
+      },
+      "/api/auth/login": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/documents/:documentId/shares": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      },
+      "/api/share/exchange": {
+       "count": 0,
+       "meanMs": null,
+       "p95UpperMs": null
+      }
+     },
+     "wsOutcomes": {
+      "accepted": 1000
+     }
+    }
+   ],
+   "hostLoadMax": 1.7,
+   "extra": {
+    "timeTo99PctSyncedMs": 1505,
+    "timeToAllSyncedMs": 1505,
+    "readyAtEnd": 1000,
+    "total": 1000,
+    "readySeries": [
+     {
+      "tMs": 1,
+      "ready": 0
+     }
+    ]
+   }
+  }
+ ],
+ "results": {
+  "storm": {
+   "timeTo99PctSyncedMs": 1505,
+   "timeToAllSyncedMs": 1505,
+   "total": 1000
+  },
+  "system": {
+   "samples": 14,
+   "host": {
+    "load1Max": 2.1,
+    "availableMbMin": 29936,
+    "swapUsedMbMax": 17529.7
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 10,
+     "cpuPctMax": 13.8,
+     "rssMbMax": 329.3
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 19.9,
+    "cpuPctMax": 132.7,
+    "memMbMax": 70.6,
+    "commitsPerSecond": 335.5,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 68.1,
+    "walMbPerSecond": 0.1,
+    "blockReadMs": 0.5,
+    "blockWriteMs": 8.2,
+    "deadlocks": 0,
+    "backendsMax": 11,
+    "activeMax": 0,
+    "waitingOnLocksMax": 0
+   }
+  },
+  "systemWholeScenario": {
+   "samples": 14,
+   "host": {
+    "load1Max": 2.1,
+    "availableMbMin": 29936,
+    "swapUsedMbMax": 17529.7
+   },
+   "server": {
+    "4450": {
+     "cpuPctAvg": 10,
+     "cpuPctMax": 13.8,
+     "rssMbMax": 329.3
+    }
+   },
+   "postgres": {
+    "cpuPctAvg": 19.9,
+    "cpuPctMax": 132.7,
+    "memMbMax": 70.6,
+    "commitsPerSecond": 335.5,
+    "rollbacksPerSecond": 0,
+    "rowsInsertedPerSecond": 68.1,
+    "walMbPerSecond": 0.1,
+    "blockReadMs": 0.5,
+    "blockWriteMs": 8.2,
+    "deadlocks": 0,
+    "backendsMax": 11,
+    "activeMax": 0,
+    "waitingOnLocksMax": 0
+   }
+  }
+ },
+ "notes": [
+  "Scenario s13 of tests/load/src/scenarios.ts, run by the performance framework."
+ ],
+ "status": "ok",
+ "endedAt": "2026-11-14T07:37:14.993Z"
+}

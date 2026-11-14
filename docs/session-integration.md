@@ -45,7 +45,7 @@ curl -sS https://docs.example.com/api/v1/interview-sessions \
   -H "Content-Type: application/json" -d '{
     "candidate": {"name": "Aarav Sharma", "email": "aarav@example.com"},
     "interviewers": [{"name": "Meera Iyer", "email": "meera@acme.example"}],
-    "companyName": "Acme Corp", "round": {"number": 2, "name": "System design"},
+    "companyName": "Acme Corp", "round": {"number": "2", "name": "System design"},
     "scheduledAt": "2030-03-14T15:30:00+05:30", "timezone": "Asia/Kolkata",
     "expiresAt": "2030-03-21T00:00:00Z",
     "permissions": {"candidateCanEdit": true, "interviewerCanEdit": true,
@@ -53,7 +53,9 @@ curl -sS https://docs.example.com/api/v1/interview-sessions \
     "metadata": {"externalInterviewId": "int_84721"} }'
 ```
 
-Rules: 1 to 20 interviewers; `round.number` 1 to 99; `scheduledAt` ISO 8601 with offset; `timezone` an IANA
+Rules: 1 to 20 interviewers; `round.number` a string of digits from `"1"` to `"99"` (every value in the
+request is a string, an object or a boolean; a JSON number is still accepted for `round.number` and answered
+as a string); `scheduledAt` ISO 8601 with offset; `timezone` an IANA
 name; `expiresAt` in the future and at most 90 days away; `metadata` string values (at most 20 keys, 256
 characters each, keys `[A-Za-z0-9_.-]{1,64}`). Permission defaults are as shown above.
 
@@ -104,6 +106,58 @@ returned once).
 `scheduledAt`), `q` (title). Returns `{items, nextCursor}`. `GET /:id/document` returns ProseMirror JSON;
 `GET /:id/audit` returns events of the session and its document. Reads by administrators in the admin UI
 write `admin.session_viewed`.
+
+Every session response gives `round.number` as a string, and each participant has `accountLinked`
+(see "Interviewers with an account").
+
+### Version history of the document
+
+With the scope `documents:history:read`, by session id or by document id:
+
+| Request                                                                | Answer                                                                                |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `GET /interview-sessions/{sessionId}/version-history`                  | `doc.txt` as `text/plain`; `?format=json` for the same content as data                |
+| `GET /interview-sessions/{sessionId}/version-history/images`           | the images that appeared, each with `id`, `fileName`, `sha256`, `firstVersion`, `url` |
+| `GET /interview-sessions/{sessionId}/version-history/images/{imageId}` | the image file                                                                        |
+| `GET /interview-sessions/{sessionId}/version-history/archive`          | a zip with `docs/doc.txt`, `images/<file name>` and `manifest.json`                   |
+| `GET /documents/{documentId}/version-history` and the three below it   | the same for any document of the workspace                                            |
+
+```bash
+curl -sS -H "Authorization: Bearer $RDK_KEY" \
+  "https://docs.example.com/api/v1/interview-sessions/$SESSION_ID/version-history" -o doc.txt
+curl -sS -H "Authorization: Bearer $RDK_KEY" \
+  "https://docs.example.com/api/v1/interview-sessions/$SESSION_ID/version-history/archive" -o history.zip
+```
+
+The layout of `doc.txt`, what a version is, the time zone and grouping parameters (`timezone`,
+`gapSeconds`, `maxSpanSeconds`) and the limits are in [version-history.md](version-history.md). The
+document names every editor with role and e-mail address and every pasted image as
+`[IMAGE <id>] images/<file name>`; the `url` of an image is a path on the same server and needs the
+same key.
+
+## Interviewers with an account
+
+An interviewer always receives a personal link. When the interviewer's e-mail address is also the
+address of an active account of the workspace, the server additionally makes that account a member of
+the session's document: after signing in, the person finds the document in their own documents list
+(marked as an interview session, with company, round, candidate and time) and opens it with their
+account, without the link. `accountLinked` on the participant says whether that happened.
+
+- The role follows the session: editor when `interviewerCanEdit`, viewer otherwise; viewer once the
+  session is completed or cancelled; the membership is removed when the session is archived or the
+  interviewer is removed from it.
+- A membership an administrator gave the person by hand is never changed or removed by any of this
+  (`accountLinked` is then `false`: the account already had the document).
+- An account that is created later is linked at that moment to the open sessions that name its
+  address, when the administrator wrote that address into the invitation.
+- **Only addresses an administrator fixed count.** The product sends no e-mail and cannot verify an
+  address. An account whose address was typed in by the person (self sign-up, or an invitation that
+  named no address) is never linked by its address: otherwise anyone could obtain interview documents
+  by claiming an interviewer's address. Invite interviewers with their address filled in.
+- Addresses are compared without regard to case. Candidates are never linked. Disabled accounts are
+  not linked.
+- Each automatic membership is written to the audit trail (`member.added`, `member.role_changed`,
+  `member.removed` with `via: interview_session`).
 
 ## Errors
 

@@ -40,6 +40,12 @@ import { auditActorOf, type OperationActor } from './actor';
 import { decodeCursor, encodeCursor } from './pagination';
 import { isClosedStatus, isEditableStatus, nextStatus, type SessionAction } from './state-machine';
 import { uniqueTitle } from './title';
+import {
+  linkInterviewerAccounts,
+  setLinkedInterviewerRole,
+  unlinkInterviewerAccounts,
+  type MemberRole,
+} from './interviewer-accounts';
 import { emitWebhookEvent } from './webhooks';
 
 const MAX_INTERVIEWERS = 20;
@@ -94,13 +100,16 @@ interface ParticipantRow {
   removedAt: Date | null;
   grantRevokedAt: Date | null;
   grantExpiresAt: Date | null;
+  accountLinked: boolean;
 }
 
 const PARTICIPANT_COLUMNS = `
   p.id, p.session_id AS "sessionId", p.role, p.name, p.email::text AS email,
   p.share_grant_id AS "shareGrantId", p.first_joined_at AS "firstJoinedAt",
   p.last_joined_at AS "lastJoinedAt", p.removed_at AS "removedAt",
-  g.revoked_at AS "grantRevokedAt", g.expires_at AS "grantExpiresAt"`;
+  g.revoked_at AS "grantRevokedAt", g.expires_at AS "grantExpiresAt",
+  EXISTS (SELECT 1 FROM document_members m WHERE m.interview_participant_id = p.id)
+    AS "accountLinked"`;
 
 const PARTICIPANT_FROM =
   'interview_participants p LEFT JOIN share_grants g ON g.id = p.share_grant_id';
@@ -131,6 +140,7 @@ function toParticipant(row: ParticipantRow, live: Map<string, number>): SessionP
     removedAt: row.removedAt ? row.removedAt.toISOString() : null,
     linkState: row.removedAt ? 'revoked' : linkState(row),
     liveConnections: row.shareGrantId ? (live.get(row.shareGrantId) ?? 0) : 0,
+    accountLinked: row.accountLinked,
   };
 }
 
@@ -147,7 +157,8 @@ function toSession(
     generatedTitle: row.generatedTitle,
     status: row.status,
     companyName: row.companyName,
-    round: { number: row.roundNumber, name: row.roundName },
+    // Strings, like the values the create request takes.
+    round: { number: String(row.roundNumber), name: row.roundName },
     scheduledAt: row.scheduledAt.toISOString(),
     timezone: row.timezone,
     expiresAt: row.expiresAt.toISOString(),
@@ -226,6 +237,11 @@ function grantRoleFor(role: ParticipantRole, permissions: SessionPermissions): '
   return canEdit ? 'editor' : 'viewer';
 }
 
+/** The role of an interviewer's account membership: what their link allows. */
+function memberRoleFor(permissions: SessionPermissions): MemberRole {
+  return grantRoleFor('interviewer', permissions);
+}
+
 interface NewGrant {
   grantId: string;
   secret: string;
@@ -302,13 +318,15 @@ export async function createSession(
 ): Promise<CreateInterviewSessionResponse> {
   const { db, workspace } = ctx;
   const permissions = effectivePermissions(input.permissions ?? {});
+  // The request takes the round as a string of digits (or, still, a number); it is stored as an integer.
+  const roundNumber = Number(input.round.number);
   const scheduledAt = new Date(input.scheduledAt);
   const expiresAt = new Date(input.expiresAt);
   const title = await uniqueTitle(
     {
       candidateName: input.candidate.name,
       companyName: input.companyName,
-      roundNumber: input.round.number,
+      roundNumber: roundNumber,
       scheduledAt,
       timezone: input.timezone,
     },
@@ -339,7 +357,7 @@ export async function createSession(
         workspace.id,
         document.id,
         input.companyName,
-        input.round.number,
+        roundNumber,
         input.round.name ?? null,
         scheduledAt,
         input.timezone,
@@ -375,6 +393,20 @@ export async function createSession(
       });
       participants.push(withAccess({ id: participantId, ...person }, grant, expiresAt));
     }
+    // Interviewers who have an account also get the document in their own list.
+    const linked = new Set(
+      await linkInterviewerAccounts(tx, {
+        workspaceId: workspace.id,
+        sessionId,
+        documentId: document.id,
+        role: memberRoleFor(permissions),
+        grantedBy: creatorId(actor),
+        audit: { actor: auditActorOf(actor), requestId },
+      }),
+    );
+    for (const participant of participants) {
+      participant.accountLinked = linked.has(participant.participantId);
+    }
 
     await writeAudit(tx, {
       workspaceId: workspace.id,
@@ -385,7 +417,7 @@ export async function createSession(
       details: {
         documentId: document.id,
         participants: participants.length,
-        round: input.round.number,
+        round: roundNumber,
         ...(input.metadata?.externalInterviewId
           ? { externalInterviewId: input.metadata.externalInterviewId }
           : {}),
@@ -397,7 +429,7 @@ export async function createSession(
       documentId: document.id,
       status: 'scheduled',
       scheduledAt: scheduledAt.toISOString(),
-      roundNumber: input.round.number,
+      roundNumber: String(roundNumber),
       participants: participants.map((p) => ({ participantId: p.participantId, role: p.role })),
       ...(input.metadata?.externalInterviewId
         ? { externalInterviewId: input.metadata.externalInterviewId }
@@ -584,6 +616,12 @@ export async function updateSession(
         );
       }
     }
+    if (input.permissions) {
+      await setLinkedInterviewerRole(tx, workspace.id, id, memberRoleFor(permissions), {
+        actor: auditActorOf(actor),
+        requestId,
+      });
+    }
     await writeAudit(tx, {
       workspaceId: workspace.id,
       actor: auditActorOf(actor),
@@ -637,6 +675,15 @@ export async function addParticipant(
       expiresAt: current.expiresAt,
       createdBy: creatorId(actor),
     });
+    const linked = await linkInterviewerAccounts(tx, {
+      workspaceId: workspace.id,
+      sessionId: id,
+      documentId: current.documentId,
+      role: memberRoleFor(permissions),
+      grantedBy: creatorId(actor),
+      participantIds: [participantId],
+      audit: { actor: auditActorOf(actor), requestId },
+    });
     await writeAudit(tx, {
       workspaceId: workspace.id,
       actor: auditActorOf(actor),
@@ -648,11 +695,14 @@ export async function addParticipant(
     });
     return {
       sessionId: id,
-      participant: withAccess(
-        { id: participantId, role: 'interviewer', name: input.name, email: input.email },
-        grant,
-        current.expiresAt,
-      ),
+      participant: {
+        ...withAccess(
+          { id: participantId, role: 'interviewer', name: input.name, email: input.email },
+          grant,
+          current.expiresAt,
+        ),
+        accountLinked: linked.includes(participantId),
+      },
     };
   });
 }
@@ -696,6 +746,12 @@ export async function removeParticipant(
       participantId,
     ]);
     const sessions = await revokeParticipantLinks(tx, [participantId]);
+    // The membership that was created for this interviewer goes with them; one an administrator
+    // added by hand stays.
+    await unlinkInterviewerAccounts(tx, workspace.id, [participantId], {
+      actor: auditActorOf(actor),
+      requestId,
+    });
     await writeAudit(tx, {
       workspaceId: workspace.id,
       actor: auditActorOf(actor),
@@ -852,6 +908,26 @@ export async function transitionSession(
       revokedRoles = people.rows.map((p) => p.role);
       sessions = await revokeParticipantLinks(tx, revokedIds);
     }
+    // Account memberships of interviewers follow their links: read-only once the interview is
+    // over, gone when the session is archived.
+    if (action === 'complete' || action === 'cancel') {
+      await setLinkedInterviewerRole(tx, workspace.id, id, 'viewer', {
+        actor: auditActorOf(actor),
+        requestId,
+      });
+    }
+    if (action === 'archive') {
+      const everyone = await tx.query<{ id: string }>(
+        'SELECT id FROM interview_participants WHERE session_id = $1',
+        [id],
+      );
+      await unlinkInterviewerAccounts(
+        tx,
+        workspace.id,
+        everyone.rows.map((row) => row.id),
+        { actor: auditActorOf(actor), requestId },
+      );
+    }
     if (action === 'archive') {
       const archived = await tx.query(
         `UPDATE documents SET status = 'archived', archived_at = now(), updated_at = now()
@@ -1004,6 +1080,29 @@ export async function sessionDocument(
     contentUpdatedAt: row.contentUpdatedAt.toISOString(),
     content: content as unknown as Record<string, unknown>,
   };
+}
+
+/** The document of a session, for routes that work on the document itself. */
+export async function sessionDocumentRef(
+  ctx: AppContext,
+  sessionId: string,
+): Promise<{ id: string; title: string }> {
+  const session = await requireSession(ctx.db, ctx.workspace.id, sessionId);
+  return { id: session.documentId, title: session.title };
+}
+
+/** A document of this workspace by its id (trashed ones included: their history stays readable). */
+export async function workspaceDocumentRef(
+  ctx: AppContext,
+  documentId: string,
+): Promise<{ id: string; title: string }> {
+  const result = await ctx.db.query<{ id: string; title: string }>(
+    'SELECT id, title FROM documents WHERE id = $1 AND workspace_id = $2',
+    [documentId, ctx.workspace.id],
+  );
+  const row = result.rows[0];
+  if (!row) throw errors.notFound('That document does not exist.');
+  return row;
 }
 
 /** Admin reads of a session, its document or its audit trail are themselves audited. */

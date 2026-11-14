@@ -20,6 +20,7 @@ import type { Queryable } from '../../db/pool';
 import { sqlState } from '../../db/pool';
 import { USER_COLUMNS, type UserRow } from '../../db/rows';
 import { errors } from '../../errors';
+import { linkAccountToInterviewSessions } from '../../service/interviewer-accounts';
 import type { RouteDeps } from '../app';
 import { requireAdmin, setSessionCookie } from '../auth';
 import {
@@ -218,6 +219,17 @@ export function registerInvitationRoutes(app: FastifyInstance, { ctx, limits }: 
           'UPDATE invitations SET accepted_at = now(), accepted_by = $1 WHERE id = $2',
           [userId, invitation.id],
         );
+        // Only an address the administrator wrote into the invitation is taken as the person's
+        // own: an address typed in here is a claim the server cannot check.
+        if (invited) {
+          await linkAccountToInterviewSessions(tx, workspace.id, {
+            id: userId,
+            email,
+            displayName: user.displayName,
+          });
+        } else {
+          await tx.query('UPDATE users SET address_confirmed = false WHERE id = $1', [userId]);
+        }
         const created = await createSession(tx, config.sessions, {
           workspaceId: workspace.id,
           kind: 'user',

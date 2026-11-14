@@ -1,0 +1,52 @@
+{
+  "light": {
+    "rate": 0.05,
+    "type": 1,
+    "delete": 0,
+    "format": 0,
+    "cursor": 4,
+    "pauseChance": 0.3,
+    "pauseS": [5, 30],
+    "reconnectChance": 0.002
+  },
+  "normal": {
+    "rate": 0.3,
+    "type": 6,
+    "delete": 1,
+    "format": 1,
+    "cursor": 2,
+    "pauseChance": 0.1,
+    "pauseS": [2, 15],
+    "reconnectChance": 0.002
+  },
+  "active": {
+    "rate": 1,
+    "type": 7,
+    "delete": 1,
+    "format": 1,
+    "cursor": 1,
+    "pauseChance": 0.04,
+    "pauseS": [1, 6],
+    "reconnectChance": 0.001
+  },
+  "heavy": {
+    "rate": 3,
+    "type": 8,
+    "delete": 1,
+    "format": 0.5,
+    "cursor": 0.5,
+    "pauseChance": 0.01,
+    "pauseS": [0.5, 3],
+    "reconnectChance": 0.0005
+  },
+  "collab": {
+    "rate": 2,
+    "type": 7,
+    "delete": 1,
+    "format": 1,
+    "cursor": 1,
+    "pauseChance": 0.02,
+    "pauseS": [0.5, 4],
+    "reconnectChance": 0.001
+  }
+}

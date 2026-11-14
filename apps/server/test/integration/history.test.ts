@@ -130,6 +130,35 @@ describe('attribution', () => {
     expect(next.entries.map((entry) => entry.revision)).toEqual([3, 2]);
     // Looking at the history is itself on record.
     expect(body.events.map((event) => event.action)).toContain('document.created');
+    // Events that target the document and events that only name it in their details (the share
+    // link) are both listed, each once, newest first, and other documents' events are not.
+    const actions = body.events.map((event) => event.action);
+    expect(actions).toContain('share.created');
+    const ids = (body.events as unknown as { id: string }[]).map((event) => event.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const times = (body.events as unknown as { at: string }[]).map((event) => Date.parse(event.at));
+    expect([...times].sort((a, b) => b - a)).toEqual(times);
+    const other = await fx.createDocument('Another document');
+    await fx.createShare(other, { role: 'viewer' });
+    const again = await history(fx.admin, documentId);
+    const expected = await fx.server.sql<{ id: string }>(
+      `SELECT id FROM audit_events
+        WHERE target_id = $1 OR details ->> 'documentId' = $1
+        ORDER BY at DESC, id`,
+      [documentId],
+    );
+    // (Looking at the history writes an event itself, after the list was read: compare the
+    // rows the response holds, in the order the database gives them.)
+    const listed = (again.events as unknown as { id: string }[]).map((event) => event.id);
+    expect(listed.length).toBeGreaterThanOrEqual(3);
+    expect(expected.map((row) => row.id).filter((id) => listed.includes(id))).toEqual(listed);
+    // The lookups use the indexes of migration 0005, not a scan of the audit log.
+    const indexes = await fx.server.sql<{ indexname: string }>(
+      `SELECT indexname FROM pg_indexes WHERE tablename = 'audit_events'`,
+    );
+    expect(indexes.map((row) => row.indexname)).toEqual(
+      expect.arrayContaining(['audit_events_target_idx', 'audit_events_document_idx']),
+    );
     const viewed = await fx.server.sql(
       `SELECT 1 FROM audit_events WHERE action = 'history.viewed' AND target_id = $1`,
       [documentId],

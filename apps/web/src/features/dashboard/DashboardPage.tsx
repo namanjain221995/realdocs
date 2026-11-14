@@ -40,6 +40,7 @@ import { RoleBadge } from '../../components/RoleBadge';
 import { api } from '../../lib/api';
 import { byLatestChange, latestChange } from '../../lib/documentOrder';
 import { useDebouncedValue, useDocumentTitle, useEagerValue, useNow } from '../../lib/hooks';
+import { interviewInfo } from '../../lib/interviewInfo';
 import { documentPath } from '../../lib/navigation';
 import { dashboardViews, type DocumentAction, documentActions } from '../../lib/permissions';
 import { queryKeys } from '../../lib/queryKeys';
@@ -220,6 +221,7 @@ function DocumentRow({
   const { user } = useSession();
   const actions = documentActions(document.status, user);
   const canOpen = actions.includes('open');
+  const interview = interviewInfo(document);
   // The menu is for administrators; a member's only action is opening, which the title does.
   const showMenu = actions.some((action) => action !== 'open');
   return (
@@ -237,8 +239,24 @@ function DocumentRow({
         <span className="dash-row__badges">
           {document.status === 'archived' && view !== 'archived' ? <Badge>Archived</Badge> : null}
           <RoleBadge role={document.access.role} />
+          {interview ? (
+            <Badge tone="info" data-testid="interview-badge">
+              Interview · {interview.company}
+              {interview.roundText ? ` · ${interview.roundText}` : ''}
+            </Badge>
+          ) : null}
         </span>
         <RowWhen document={document} view={view} />
+        {interview ? (
+          <span className="app-muted" data-testid="interview-detail">
+            {[
+              interview.candidateName,
+              interview.scheduledAt ? formatDateTime(interview.scheduledAt) : '',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
+        ) : null}
       </div>
       <div className="dash-row__actions">
         {showMenu ? <RowMenu document={document} actions={actions} handlers={handlers} /> : null}

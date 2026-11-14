@@ -12,9 +12,11 @@ import type { ServiceRoute } from '../../service/registry';
 import { auditAdminView } from '../../service/sessions';
 import { SERVICE_ROUTES } from '../../service/v1-routes';
 import { errors } from '../../errors';
+import { RawResponse } from '../../history/version-history-responses';
 import type { RouteDeps } from '../app';
 import { requireAdmin, requireService, requireSpecReader } from '../auth';
 import { parseInput } from '../util';
+import { sendRaw } from './version-history';
 
 export function registerV1Routes(app: FastifyInstance, { ctx, limits }: RouteDeps): void {
   const store = new IdempotencyStore(ctx.db, ctx.workspace.id, ctx.config.sessionSecret);
@@ -82,6 +84,7 @@ export function registerV1Routes(app: FastifyInstance, { ctx, limits }: RouteDep
       }
     }
     reply.code(route.status);
+    if (result instanceof RawResponse) return sendRaw(reply, result);
     if (route.response === null) return reply.send();
     return result;
   }
